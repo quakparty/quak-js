@@ -573,7 +573,7 @@ export interface paths {
         };
         /**
          * List sounds
-         * @description Scope: `play`. Returns available sounds with a description of what you hear and search keywords. Filter with `q` and `tags`.
+         * @description Public. Returns available sounds with audio URLs, descriptions, and search keywords. Filter with `q` and `tags`.
          */
         get: operations["getV1Sounds"];
         put?: never;
@@ -593,7 +593,7 @@ export interface paths {
         };
         /**
          * List sound tags
-         * @description Scope: `play`. Returns all available sound tags.
+         * @description Public. Returns all available sound tags.
          */
         get: operations["getV1SoundsTags"];
         put?: never;
@@ -777,7 +777,7 @@ export interface paths {
         put?: never;
         /**
          * Play a sound
-         * @description Scope: `play`. Plays a built-in sound from /v1/sounds, fetched by Sonos from the CDN. With process: true, or when the request names intro, outro, gap, effect or ambience, it gets them (only what the request names, not the account defaults), mixed on the server and cached. Credits: 1, processed 2.
+         * @description Scope: `play`. Plays a built-in sound from /v1/sounds, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.
          */
         post: operations["postV1PlaySound"];
         delete?: never;
@@ -797,7 +797,7 @@ export interface paths {
         put?: never;
         /**
          * Play a clip
-         * @description Scope: `play`. Plays one of your clips from /v1/clips, fetched by Sonos from the CDN. With process: true, or when the request names intro, outro, gap, effect or ambience, it gets them (only what the request names, not the account defaults), mixed on the server and cached. Credits: 1, processed 2.
+         * @description Scope: `play`. Plays one of your clips from /v1/clips, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.
          */
         post: operations["postV1PlayClip"];
         delete?: never;
@@ -1417,8 +1417,8 @@ export interface operations {
                      */
                     name?: string;
                     /**
-                     * @description language of the client (system or browser), e.g. de-DE, de or de_DE. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example de-DE
+                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -1447,8 +1447,8 @@ export interface operations {
                      */
                     name?: string;
                     /**
-                     * @description language of the client (system or browser), e.g. de-DE, de or de_DE. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example de-DE
+                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -1477,8 +1477,8 @@ export interface operations {
                      */
                     name?: string;
                     /**
-                     * @description language of the client (system or browser), e.g. de-DE, de or de_DE. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example de-DE
+                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -2906,7 +2906,7 @@ export interface operations {
                             };
                             defaults: {
                                 voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
                                 intro: (string | null) | null;
@@ -3193,7 +3193,7 @@ export interface operations {
                             };
                             defaults: {
                                 voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
                                 intro: (string | null) | null;
@@ -3386,7 +3386,7 @@ export interface operations {
                      */
                     gap?: number;
                     /**
-                     * @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example radiodj
                      * @enum {string}
                      */
@@ -3398,7 +3398,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
                      * @enum {string}
                      */
@@ -3410,8 +3410,8 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description TTS language of multi-language voices when a play names none, e.g. de-DE or de
-                     * @example de-DE
+                     * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -3451,7 +3451,7 @@ export interface operations {
                      */
                     gap?: number;
                     /**
-                     * @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example radiodj
                      * @enum {string}
                      */
@@ -3463,7 +3463,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
                      * @enum {string}
                      */
@@ -3475,8 +3475,8 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description TTS language of multi-language voices when a play names none, e.g. de-DE or de
-                     * @example de-DE
+                     * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -3516,7 +3516,7 @@ export interface operations {
                      */
                     gap?: number;
                     /**
-                     * @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example radiodj
                      * @enum {string}
                      */
@@ -3528,7 +3528,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off (not for sounds and clips)
+                     * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
                      * @enum {string}
                      */
@@ -3540,8 +3540,8 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description TTS language of multi-language voices when a play names none, e.g. de-DE or de
-                     * @example de-DE
+                     * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
+                     * @example en-GB
                      */
                     language?: string;
                     /**
@@ -3594,7 +3594,7 @@ export interface operations {
                             };
                             defaults: {
                                 voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
                                 intro: (string | null) | null;
@@ -3843,7 +3843,7 @@ export interface operations {
                             };
                             defaults: {
                                 voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
                                 intro: (string | null) | null;
@@ -4979,7 +4979,7 @@ export interface operations {
                             };
                             defaults: {
                                 voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
                                 intro: (string | null) | null;
@@ -5350,8 +5350,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5367,8 +5367,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5384,8 +5384,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5668,8 +5668,8 @@ export interface operations {
                     /**
                      * @description replaces all speakers of the group
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5682,8 +5682,8 @@ export interface operations {
                     /**
                      * @description replaces all speakers of the group
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5696,8 +5696,8 @@ export interface operations {
                     /**
                      * @description replaces all speakers of the group
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -5847,8 +5847,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers: string[] | string;
@@ -5857,8 +5857,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers: string[] | string;
@@ -5867,8 +5867,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers: string[] | string;
@@ -5996,8 +5996,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -6006,8 +6006,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -6016,8 +6016,8 @@ export interface operations {
                     /**
                      * @description speaker slugs from GET /v1/speakers as array or CSV, no groups
                      * @example [
-                     *       "kueche",
-                     *       "wohnzimmer"
+                     *       "kitchen",
+                     *       "living-room"
                      *     ]
                      */
                     speakers?: string[] | string;
@@ -6206,28 +6206,6 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_FORBIDDEN_ORIGIN" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NO_TESTERS" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_OAUTH_CANCELED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
         };
     };
     getV1SoundsTags: {
@@ -6253,28 +6231,6 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                        };
-                    };
-                };
-            };
-            /** @description Response for status 401 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_FORBIDDEN_ORIGIN" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NO_TESTERS" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_OAUTH_CANCELED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
                         };
                     };
                 };
@@ -6741,7 +6697,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices, default: the user default */
                     voice?: string;
                     /**
-                     * @description multi-language voices only: the language to speak, e.g. en or de-DE
+                     * @description multi-language voices only: the language to speak, e.g. en or en-GB
                      * @example en
                      */
                     language?: string;
@@ -6762,7 +6718,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -6777,7 +6733,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -6806,8 +6762,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -6852,7 +6808,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices, default: the user default */
                     voice?: string;
                     /**
-                     * @description multi-language voices only: the language to speak, e.g. en or de-DE
+                     * @description multi-language voices only: the language to speak, e.g. en or en-GB
                      * @example en
                      */
                     language?: string;
@@ -6873,7 +6829,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -6888,7 +6844,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -6917,8 +6873,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -6963,7 +6919,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices, default: the user default */
                     voice?: string;
                     /**
-                     * @description multi-language voices only: the language to speak, e.g. en or de-DE
+                     * @description multi-language voices only: the language to speak, e.g. en or en-GB
                      * @example en
                      */
                     language?: string;
@@ -6984,7 +6940,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -6999,7 +6955,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -7028,8 +6984,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -7124,7 +7080,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7195,7 +7151,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7266,7 +7222,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7448,7 +7404,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -7463,7 +7419,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -7506,8 +7462,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -7602,7 +7558,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7673,7 +7629,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7744,7 +7700,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7948,7 +7904,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -7963,7 +7919,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -7987,8 +7943,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8052,7 +8008,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -8067,7 +8023,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -8091,8 +8047,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8156,7 +8112,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -8171,7 +8127,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -8195,8 +8151,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8291,7 +8247,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8362,7 +8318,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8433,7 +8389,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8619,7 +8575,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -8634,7 +8590,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -8658,8 +8614,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8723,7 +8679,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -8738,7 +8694,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -8762,8 +8718,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8827,7 +8783,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -8842,7 +8798,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -8866,8 +8822,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -8962,7 +8918,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9033,7 +8989,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9104,7 +9060,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9286,7 +9242,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -9301,7 +9257,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -9330,8 +9286,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -9426,7 +9382,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9497,7 +9453,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9568,7 +9524,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9755,7 +9711,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -9770,7 +9726,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -9794,8 +9750,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -9860,7 +9816,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -9875,7 +9831,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -9899,8 +9855,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -9965,7 +9921,7 @@ export interface operations {
                      */
                     gap?: number | string;
                     /**
-                     * @description Beta, may change without notice. voice effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example faster
                      * @example echo
@@ -9980,7 +9936,7 @@ export interface operations {
                      */
                     effectIntensity?: "off" | "weak" | "medium" | "strong";
                     /**
-                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the user default (not for sounds and clips)
+                     * @description Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
                      * @example stadium
                      * @example rain
@@ -10004,8 +9960,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -10100,7 +10056,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10171,7 +10127,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10242,7 +10198,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10617,7 +10573,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10755,7 +10711,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10887,7 +10843,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11167,8 +11123,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -11210,8 +11166,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -11253,8 +11209,8 @@ export interface operations {
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
-                     *       "kueche": 40,
-                     *       "schlafzimmer": 10
+                     *       "kitchen": 40,
+                     *       "bedroom": 10
                      *     }
                      */
                     volumes?: {
@@ -11346,7 +11302,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11417,7 +11373,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11488,7 +11444,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT and MCP for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12120,7 +12076,7 @@ export interface operations {
                                 };
                                 defaults: {
                                     voice: string;
-                                    /** @description TTS language of multi-language voices when a play names none, e.g. de-DE */
+                                    /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                     language: string;
                                     volume: number;
                                     intro: (string | null) | null;
