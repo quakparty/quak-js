@@ -5,7 +5,14 @@
 ## Language
 
 Everything in this repository is in English: code, comments, error messages, README, CHANGELOG, these notes and
-commit messages. The package is for third parties.
+commit messages. The package is for third parties. This holds for all public Quak repositories (rule of 03.10.2026,
+quak-api `docs/repos.md`): German planning notes are removed, not translated.
+
+## Planning
+
+There is one backlog for all Quak repositories, in quak-api `docs/backlog.md` (private). This repository has no planning
+files of its own (no plan.md, todo.md or backlog sections). New open items go to the Claude session quak-api, which
+enters them there.
 
 ## Structure
 
