@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.8 - 2026-10-05
+
 - English examples throughout: README, and the OpenAPI snapshot (kitchen, living-room, bedroom instead of German room
   names, en-GB as the first language)
 - OpenAPI snapshot updated: platform `GITHUB`; sounds and sound tags are public (no 401 any more)
