@@ -5,7 +5,7 @@ describe("lookups", () => {
   test("each lookup hits its route with its query", async () => {
     const { quak, calls } = mockQuak({}, () => json({ data: [] }));
     await quak.speakers.list({ type: "ALL" });
-    await quak.voices.list({ language: "de", gender: "FEMALE" });
+    await quak.voices.list({ language: "en", gender: "FEMALE" });
     await quak.voices.languages();
     await quak.voices.locales({ language: "en" });
     await quak.voices.models();
@@ -16,7 +16,7 @@ describe("lookups", () => {
 
     expect(calls.map(({ request, url }) => `${request.method} ${url.pathname}${url.search}`)).toEqual([
       "GET /v1/speakers?type=ALL",
-      "GET /v1/voices?language=de&gender=FEMALE",
+      "GET /v1/voices?language=en&gender=FEMALE",
       "GET /v1/voices/languages",
       "GET /v1/voices/locales?language=en",
       "GET /v1/voices/models",

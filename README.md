@@ -413,9 +413,9 @@ Everything a play can name, read-only (scope `play`). Each returns the parsed an
 | `quak.effects.list({ kind? })`                                                         | `GET /v1/effects`                                 | `effect`, `ambience`           |
 
 ```ts
-// Speak with the first German voice
-const { data: voices } = await quak.voices.list({ language: "de" });
-await quak.play.text({ text: "Hallo zusammen!", voice: voices[0]!.slug });
+// Speak with the first English voice
+const { data: voices } = await quak.voices.list({ language: "en" });
+await quak.play.text({ text: "Hello everyone!", voice: voices[0]!.slug });
 
 // Play the first sound the search finds
 const { data: sounds } = await quak.sounds.list({ q: "bell" });
