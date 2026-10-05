@@ -33,8 +33,8 @@ export type Watch = {
 
 type Message = { type: "ready" } | { type: "play"; data: Play } | { type: "ping" } | { type: "error"; code: string };
 
-// 4001: key missing or rejected, 4401: ticket rejected, 4403: origin refused. Trying again cannot help.
-const FINAL_CODES = new Set([4001, 4401, 4403]);
+// 4001: key missing or rejected, 4401: ticket rejected. Trying again cannot help.
+const FINAL_CODES = new Set([4001, 4401]);
 const FIRST_RETRY_MS = 1000;
 const MAX_RETRY_MS = 30_000;
 // The server pings every 25 s; this long without any message means the connection is dead without a close.

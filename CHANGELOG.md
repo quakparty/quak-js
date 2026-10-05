@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `watch()` no longer treats close code 4403 as final: the API accepts every browser origin and no longer sends it
+
 ## 0.9.8 - 2026-10-05
 
 - English examples throughout: README, and the OpenAPI snapshot (kitchen, living-room, bedroom instead of German room

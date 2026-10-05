@@ -27,7 +27,7 @@ enters them there.
   workspace settings, groups, members, invites, Sonos, integrations, user, creating, changing and deleting clips) is not
   wrapped and stays on the raw client `quak.api`.
 - `src/watch.ts`: the live status (`GET /v1/plays/watch`) behind `quak.watch()`: auth message, reconnect with growing
-  pauses, no reconnect after 4001/4401/4403, a dead connection after 60 s of silence. Only the global `WebSocket` or the
+  pauses, no reconnect after 4001/4401, a dead connection after 60 s of silence. Only the global `WebSocket` or the
   one passed in, never a dependency.
 - `src/types.ts`: all parameter and response types, **only derived** from `src/generated/schema.ts`, never rebuilt by
   hand. When the schema lacks a type, fix it in the API, not here.
