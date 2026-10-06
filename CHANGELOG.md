@@ -7,7 +7,6 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 - OpenAPI snapshot updated: plays carry `user` (who triggered it), `key` (which key, never its token) and `requestId`
   (beta); public invitation routes `GET /v1/invites/{token}` and `POST /v1/invites/{token}/accept` (raw client); error
   codes `ERROR_NO_WORKSPACE`, `ERROR_INVITE_NOT_FOUND`, `ERROR_INVITE_EXPIRED`, without `ERROR_FORBIDDEN_ORIGIN`
-
 - `watch()` no longer treats close code 4403 as final: the API accepts every browser origin and no longer sends it
 
 ## 0.9.8 - 2026-10-05
