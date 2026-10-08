@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: platform `TRIGGER` (plays from a trigger URL); new management routes on the raw client:
+  triggers (`/v1/triggers`), billing (`/v1/workspace/billing`) and credit grants (`GET /v1/workspace/credits/grants`);
+  error codes for billing and triggers
 - OpenAPI snapshot updated: plays carry `user` (who triggered it), `key` (which key, never its token) and `requestId`
   (beta); public invitation routes `GET /v1/invites/{token}` and `POST /v1/invites/{token}/accept` (raw client); error
   codes `ERROR_NO_WORKSPACE`, `ERROR_INVITE_NOT_FOUND`, `ERROR_INVITE_EXPIRED`, without `ERROR_FORBIDDEN_ORIGIN`
