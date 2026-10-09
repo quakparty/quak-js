@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: plays carry `test` (trigger tests, hidden from the history); trigger fields (rules, limits,
+  sound settings), `POST /v1/triggers/{id}/test`, `GET /v1/triggers/{id}/calls`, billing changes and their error codes
+  for the raw client. `watch()` skips message types it does not know, like `trigger_call`
 - OpenAPI snapshot updated: platform `TRIGGER` (plays from a trigger URL); new management routes on the raw client:
   triggers (`/v1/triggers`), billing (`/v1/workspace/billing`) and credit grants (`GET /v1/workspace/credits/grants`);
   error codes for billing and triggers

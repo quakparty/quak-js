@@ -61,6 +61,8 @@ describe("watch", () => {
 
     last().message({ type: "ready" });
     last().message({ type: "ping" });
+    // messages this version does not know, like trigger_call for admins, are skipped
+    last().message({ type: "trigger_call", data: {} });
     last().message({ type: "play", data: { ...play(), status: "ACTIVE" } });
     last().message({ type: "play", data: { ...play(), status: "DONE" } });
     expect(ready).toBe(1);
