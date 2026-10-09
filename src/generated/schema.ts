@@ -193,14 +193,14 @@ export interface paths {
         };
         /**
          * List my logins
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Your logins, one per device or client (CLI, web app, apps), most recently used first, and the apps you let in with OAuth (type OAUTH, e.g. Claude or ChatGPT through the MCP server). `current` marks the login of this request. Keys you made with /v1/keys are not in it. Logins do not expire, they stay valid until you sign them out. Login keys only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Your logins, one per device or client (CLI, web app, apps), most recently used first, and the apps you let in with OAuth (type OAUTH, e.g. Claude or ChatGPT through the MCP server). `current` marks the login of this request. Keys you made with /v1/keys are not in it. Logins do not expire, they stay valid until you sign them out.
          */
         get: operations["getV1UserLogins"];
         put?: never;
         post?: never;
         /**
          * Sign out everywhere
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs all your logins out right away, the apps you let in with OAuth too. With `?except=current` the login of this request stays. Keys you made with /v1/keys stay valid, manage them under /v1/keys. Login keys only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs all your logins out right away, the apps you let in with OAuth too. With `?except=current` the login of this request stays. Keys you made with /v1/keys stay valid, manage them under /v1/keys.
          */
         delete: operations["deleteV1UserLogins"];
         options?: never;
@@ -220,7 +220,7 @@ export interface paths {
         post?: never;
         /**
          * Sign out a login
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs one of your logins out right away, e.g. of a lost laptop. Also works for the login of this request. Login keys only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs one of your logins out right away, e.g. of a lost laptop. Also works for the login of this request.
          */
         delete: operations["deleteV1UserLoginsById"];
         options?: never;
@@ -237,7 +237,7 @@ export interface paths {
         };
         /**
          * Export my data
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Everything Quak stores about you as one JSON file (GDPR access and portability): account, workspaces, and for workspaces you administer their settings, Sonos connections, groups, keys (never the tokens), credits and open invitations; your clips with download links (24 hours) and your announcements. Texts and audio are not stored, so they are not in it. Login keys only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Everything Quak stores about you as one JSON file (GDPR access and portability): account, workspaces, and for workspaces you administer their settings, Sonos connections, groups, keys (never the tokens), credits and open invitations; your clips with download links (24 hours) and your announcements. Texts and audio are not stored, so they are not in it.
          */
         get: operations["getV1UserExport"];
         put?: never;
@@ -260,7 +260,11 @@ export interface paths {
         post?: never;
         /**
          * Delete my account
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Sends a confirmation link to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the account goes right away and for good. Workspaces you are alone in are deleted with it, from the others you leave (your announcements there stay without your name). A deleted workspace's subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (billing shows what is at stake). If you are the only admin of a workspace with other members: 409 ERROR_LAST_ADMIN, make someone else admin or delete that workspace first. Login keys only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Deletes your account after a confirmation: a link goes to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the account goes right away and for good.
+         *
+         *     - Workspaces you are alone in are deleted with it. From the others you leave; your announcements there stay without your name.
+         *     - A deleted workspace's subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (`workspaces` in the answer shows what is at stake).
+         *     - The only admin of a workspace with other members: `409 ERROR_LAST_ADMIN`. Make someone else admin or delete that workspace first.
          */
         delete: operations["deleteV1User"];
         options?: never;
@@ -277,21 +281,25 @@ export interface paths {
         };
         /**
          * Get workspace
-         * @description Scope: `play`. The workspace of the API key (scope play): its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run, and the plan's limits with what is used (planLimits). Everything played, the speakers, groups, clips and keys belong to it.
+         * @description Scope: `play`. The workspace of the API key: its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run, and the plan's limits with what is used (planLimits). Everything played, the speakers, groups, clips and keys belong to it.
          */
         get: operations["getV1Workspace"];
         put?: never;
         post?: never;
         /**
          * Delete workspace
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Admins of the workspace only. Sends a confirmation link to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the workspace goes right away with everything in it: announcements, clips, groups, keys, credits, invitations and Sonos connections. Other members lose access and get a mail. If it is your last workspace, your account is deleted too (accountToo). A running subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (billing shows what is at stake). Admins with a login key only (scope login).
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Admins of the workspace only. Deletes the workspace after a confirmation: a link goes to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page.
+         *
+         *     - Then it goes right away with everything in it: announcements, clips, groups, keys, triggers, credits, invitations and Sonos connections. Other members lose access and get a mail.
+         *     - If it is your last workspace, your account is deleted too (`accountToo`).
+         *     - A running subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded.
          */
         delete: operations["deleteV1Workspace"];
         options?: never;
         head?: never;
         /**
          * Update workspace
-         * @description Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug or its time zone (scope manage, owners and admins). Quiet hours run in the workspace time zone.
+         * @description Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug or its time zone. Quiet hours run in the workspace time zone.
          */
         patch: operations["patchV1Workspace"];
         trace?: never;
@@ -311,7 +319,7 @@ export interface paths {
         head?: never;
         /**
          * Update playback defaults
-         * @description Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace (scope manage), for everyone in it. Intro and outro accept a sound slug, "clip:<slug>" for one of your clips, or "none" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, "none" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none".
+         * @description Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace, for everyone in it. Intro and outro accept a sound slug, "clip:<slug>" for one of your clips, or "none" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, "none" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none".
          */
         patch: operations["patchV1WorkspaceDefaults"];
         trace?: never;
@@ -331,7 +339,11 @@ export interface paths {
         head?: never;
         /**
          * Update audio cache
-         * @description Scope: `manage`. Admins of the workspace only. Sets for the workspace (scope manage) how long generated play audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes. Within that time a repeat of the same play uses the same audio (no new TTS credits) and the play can be saved as a clip; afterwards the audio is deleted. The speech of text plays is kept just as long, so another effect, intro or outro needs no new synthesis, and the text of a text play stays visible in the history (params.text) as long as its audio exists. A shorter time also applies to audio already in the cache.
+         * @description Scope: `manage`. Admins of the workspace only. How long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes.
+         *
+         *     - Within that time the same play reuses its audio (no new TTS credits), and a play can be replayed or saved as a clip. Afterwards the audio is deleted.
+         *     - The speech of a text play is kept just as long: another effect, intro or outro needs no new synthesis, and the text stays visible in the history (`params.text`).
+         *     - A shorter time also applies to audio already in the cache.
          */
         patch: operations["patchV1WorkspaceAudio-cache"];
         trace?: never;
@@ -345,7 +357,7 @@ export interface paths {
         };
         /**
          * List members
-         * @description Scope: `play`. Everyone in the workspace with their role (scope play).
+         * @description Scope: `play`. Everyone in the workspace with their role.
          */
         get: operations["getV1WorkspaceMembers"];
         put?: never;
@@ -368,14 +380,14 @@ export interface paths {
         post?: never;
         /**
          * Remove a member or leave
-         * @description Scope: `manage`. Admins remove anyone, everyone may leave (scope manage). The member's own keys of this workspace stop working; the last admin cannot leave (409 ERROR_LAST_ADMIN).
+         * @description Scope: `manage`. Admins remove anyone, everyone may leave. The member's own keys of this workspace stop working; the last admin cannot leave (`409 ERROR_LAST_ADMIN`).
          */
         delete: operations["deleteV1WorkspaceMembersByUserId"];
         options?: never;
         head?: never;
         /**
          * Change a member's role
-         * @description Scope: `manage`. Admins of the workspace only. Admins change roles (scope manage). The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).
+         * @description Scope: `manage`. Admins of the workspace only. Admins change roles. The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).
          */
         patch: operations["patchV1WorkspaceMembersByUserId"];
         trace?: never;
@@ -389,13 +401,13 @@ export interface paths {
         };
         /**
          * List open invitations
-         * @description Scope: `manage`. Admins of the workspace only. Invitations not accepted and not expired yet (scope manage, admins).
+         * @description Scope: `manage`. Admins of the workspace only. Invitations not accepted and not expired yet.
          */
         get: operations["getV1WorkspaceInvites"];
         put?: never;
         /**
          * Invite someone
-         * @description Scope: `manage`. Admins of the workspace only. Sends an invitation mail (scope manage, admins). Its link shows the invitation, the button accepts it; valid 7 days, once. A new invitation for the same address replaces an open one. Accepting without a Quak account creates one (without starting credits). Members and open invitations count against the users of the plan (Free and Home 1, Family 5, Team 20, Business 30): above it 403 ERROR_PLAN_LIMIT_REACHED with limit, used, allowed and requiredPlan in details.
+         * @description Scope: `manage`. Admins of the workspace only. Sends an invitation mail. Its link shows the invitation, the button accepts it; valid 7 days, once. A new invitation for the same address replaces an open one. Accepting without a Quak account creates one (without starting credits). Members and open invitations count against the users of the plan (Free and Home 1, Family 5, Team 20, Business 30): above it `403 ERROR_PLAN_LIMIT_REACHED` with limit, used, allowed and requiredPlan in details.
          */
         post: operations["postV1WorkspaceInvites"];
         delete?: never;
@@ -416,7 +428,7 @@ export interface paths {
         post?: never;
         /**
          * Withdraw an invitation
-         * @description Scope: `manage`. Admins of the workspace only. The link in the mail stops working (scope manage, admins).
+         * @description Scope: `manage`. Admins of the workspace only. The link in the mail stops working.
          */
         delete: operations["deleteV1WorkspaceInvitesById"];
         options?: never;
@@ -435,7 +447,7 @@ export interface paths {
         put?: never;
         /**
          * Send an invitation again
-         * @description Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again (scope manage, admins). Also brings an expired invitation back, not an accepted (409 ERROR_INVITE_ACCEPTED) or withdrawn one (404). At most every 5 minutes per invitation (429 ERROR_TOO_MANY_REQUESTS). An expired invitation takes a seat again: 403 ERROR_PLAN_LIMIT_REACHED when the plan has none left.
+         * @description Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again. Also brings an expired invitation back, not an accepted (`409 ERROR_INVITE_ACCEPTED`) or withdrawn one (404). At most every 5 minutes per invitation (`429 ERROR_TOO_MANY_REQUESTS`). An expired invitation takes a seat again: `403 ERROR_PLAN_LIMIT_REACHED` when the plan has none left.
          */
         post: operations["postV1WorkspaceInvitesByIdResend"];
         delete?: never;
@@ -453,7 +465,7 @@ export interface paths {
         };
         /**
          * Get billing
-         * @description Scope: `manage`. Admins of the workspace only. Plan, subscription state, trial, renewal and credits of the workspace (scope manage, admins). Payments run through Stripe (merchant of record).
+         * @description Scope: `manage`. Admins of the workspace only. Plan, subscription state, trial, renewal and credits of the workspace. Payments run through Stripe (merchant of record).
          */
         get: operations["getV1WorkspaceBilling"];
         put?: never;
@@ -463,7 +475,7 @@ export interface paths {
         head?: never;
         /**
          * Update billing
-         * @description Scope: `manage`. Admins of the workspace only. The billing email of the workspace (scope manage, admins): where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.
+         * @description Scope: `manage`. Admins of the workspace only. The billing email of the workspace: where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.
          */
         patch: operations["patchV1WorkspaceBilling"];
         trace?: never;
@@ -479,7 +491,7 @@ export interface paths {
         put?: never;
         /**
          * Start a checkout
-         * @description Scope: `manage`. Admins of the workspace only. A Stripe Checkout for a plan or a credit pack (scope manage, admins), answers its URL. Home, Family and Team start with a 7-day trial once per person and Sonos household, packs get the discount of the plan. An optional promotion code (from Stripe) comes filled in, an unknown one is left out. A workspace with a subscription changes it in the portal (409).
+         * @description Scope: `manage`. Admins of the workspace only. A Stripe Checkout for a plan or a credit pack, answers its URL. Home, Family and Team start with a 7-day trial once per person and Sonos household, packs get the discount of the plan. An optional promotion code (from Stripe) comes filled in, an unknown one is left out. A workspace with a subscription changes it in the portal (409).
          */
         post: operations["postV1WorkspaceBillingCheckout"];
         delete?: never;
@@ -497,18 +509,23 @@ export interface paths {
         };
         /**
          * Preview a plan change
-         * @description Scope: `manage`. Admins of the workspace only. What switching the running subscription to another plan or interval does (scope manage, admins): upgrade or downgrade, when, the new price, what is charged today, the credits, the discount, and for a downgrade what is above the smaller plan's limits (blockedBy). Changes nothing.
+         * @description Scope: `manage`. Admins of the workspace only. What switching the running subscription to another plan or interval does: upgrade or downgrade, when, the new price, what is charged today, the credits, the discount, and for a downgrade what is above the smaller plan's limits (blockedBy). Changes nothing.
          */
         get: operations["getV1WorkspaceBillingChange"];
         put?: never;
         /**
          * Change the plan
-         * @description Scope: `manage`. Admins of the workspace only. Switches the running subscription (scope manage, admins). Upgrades (a bigger plan, monthly → yearly) at once with the difference charged now, downgrades at the end of the period. In the trial at once and free, Business ends the trial. 409 without a running subscription, for the current plan, a cancelled or past due subscription, or Team and Business without the full billing address. A downgrade needs the usage to fit the smaller plan: 409 ERROR_OVER_PLAN_LIMITS with details.blockedBy (as in the preview) until locations, members and invitations, triggers are within its limits. While a downgrade is scheduled, adding beyond its limits answers 403 ERROR_PLAN_LIMIT_REACHED; take the change back (DELETE …/billing/change) to grow.
+         * @description Scope: `manage`. Admins of the workspace only. Switches the running subscription.
+         *
+         *     - **Upgrade** (a bigger plan, monthly → yearly): at once, the difference is charged now. In the trial at once and free; Business ends the trial.
+         *     - **Downgrade**: at the end of the period. The usage must fit the smaller plan, else `409 ERROR_OVER_PLAN_LIMITS` with `details.blockedBy` (as in the preview) until locations, members, invitations and triggers are within its limits.
+         *     - While a downgrade is scheduled, adding beyond its limits answers `403 ERROR_PLAN_LIMIT_REACHED`; take the change back (`DELETE …/billing/change`) to grow.
+         *     - `409` without a running subscription, for the current plan, for a cancelled or past due subscription, and for Team and Business without the full billing address.
          */
         post: operations["postV1WorkspaceBillingChange"];
         /**
          * Undo a scheduled plan change
-         * @description Scope: `manage`. Admins of the workspace only. Takes back a downgrade scheduled for the end of the period (scope manage, admins), the plan stays. Answers the billing state; 409 without one.
+         * @description Scope: `manage`. Admins of the workspace only. Takes back a downgrade scheduled for the end of the period, the plan stays. Answers the billing state; 409 without one.
          */
         delete: operations["deleteV1WorkspaceBillingChange"];
         options?: never;
@@ -527,7 +544,7 @@ export interface paths {
         put?: never;
         /**
          * Open the customer portal
-         * @description Scope: `manage`. Admins of the workspace only. The Stripe customer portal of the workspace (scope manage, admins): payment method, billing address, VAT ID, invoices and cancelling; plan changes are POST …/billing/change. flow opens it right at cancelling, the payment method or the billing address; with address, plan and interval come back on the return URL (?plan=…&interval=…) so the change preview opens again. Answers its URL; 409 before the first purchase.
+         * @description Scope: `manage`. Admins of the workspace only. The Stripe customer portal of the workspace: payment method, billing address, VAT ID, invoices and cancelling; plan changes are POST …/billing/change. flow opens it right at cancelling, the payment method or the billing address; with address, plan and interval come back on the return URL (?plan=…&interval=…) so the change preview opens again. Answers its URL; 409 before the first purchase.
          */
         post: operations["postV1WorkspaceBillingPortal"];
         delete?: never;
@@ -565,13 +582,13 @@ export interface paths {
         };
         /**
          * List workspaces
-         * @description Scope: `play`. The workspaces you are a member of (scope play). With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.
+         * @description Scope: `play`. The workspaces you are a member of. With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.
          */
         get: operations["getV1Workspaces"];
         put?: never;
         /**
          * Create workspace
-         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (409 ERROR_WORKSPACE_LIMIT), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.
+         * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (`409 ERROR_WORKSPACE_LIMIT`), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.
          */
         post: operations["postV1Workspaces"];
         delete?: never;
@@ -589,7 +606,7 @@ export interface paths {
         };
         /**
          * Show invitation
-         * @description Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. 404 ERROR_INVITE_NOT_FOUND, 410 ERROR_INVITE_EXPIRED (details name the workspace and who invited, to ask for a new one), 409 ERROR_INVITE_ACCEPTED.
+         * @description Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. `404 ERROR_INVITE_NOT_FOUND`, `410 ERROR_INVITE_EXPIRED` (details name the workspace and who invited, to ask for a new one), `409 ERROR_INVITE_ACCEPTED`.
          */
         get: operations["getV1InvitesByToken"];
         put?: never;
@@ -611,7 +628,7 @@ export interface paths {
         put?: never;
         /**
          * Accept invitation
-         * @description Beta, may change without notice. Accepts the invitation once and logs the invited address in: the answer has a login key (scope manage), like the end of a login. The link came by mail to that address, the same proof as a login link. An address without an account gets one, then `name` is required (400 ERROR_INVALID_PARAMS, field name); it is only a member of the invited workspace, without an own one and without starting credits (500 come with the first own workspace, POST /v1/workspaces). Sent with a login key of the invited user, `apiKey` is null and no new key is made. 404, 410 and 409 as for GET /v1/invites/:token.
+         * @description Beta, may change without notice. Accepts the invitation once and logs the invited address in: the answer has a login key (scope manage), like the end of a login. The link came by mail to that address, the same proof as a login link. An address without an account gets one, then `name` is required (`400 ERROR_INVALID_PARAMS`, field name); it is only a member of the invited workspace, without an own one and without starting credits (500 come with the first own workspace, POST /v1/workspaces). Sent with a login key of the invited user, `apiKey` is null and no new key is made. 404, 410 and 409 as for GET /v1/invites/:token.
          */
         post: operations["postV1InvitesByTokenAccept"];
         delete?: never;
@@ -921,7 +938,6 @@ export interface paths {
          *     - Optional, as with the other plays: `volume`, `volumes`, `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `intro`, `outro`, `gap`, `priority`, `quietHours`.
          *     - Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `"ticket": "qk_wst_…"`, a one-time ticket from `POST /v1/ws/tickets` with purpose `talk-live` (60 s, it names the workspace; an invalid one closes with `4401` and `ERROR_INVALID_TICKET`).
          *     - A login key names its workspace with `"workspace": "<slug or id>"` in the start, `?workspace=` or `X-Quak-Workspace`.
-         *     - Browsers from other origins are refused (`4403`).
          *
          *     ### 2. Talk
          *
@@ -972,7 +988,11 @@ export interface paths {
         put?: never;
         /**
          * Play a sound
-         * @description Scope: `play`. Plays a built-in sound from /v1/sounds, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.
+         * @description Scope: `play`. Plays a built-in sound from `/v1/sounds`, fetched by Sonos from the CDN.
+         *
+         *     - Played as stored by default. A processing field alone (`intro`, `outro`, `gap`, `effect`, `ambience`) does not turn processing on and is ignored.
+         *     - With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.
+         *     - Credits: 1, processed 2.
          */
         post: operations["postV1PlaySound"];
         delete?: never;
@@ -992,7 +1012,11 @@ export interface paths {
         put?: never;
         /**
          * Play a clip
-         * @description Scope: `play`. Plays one of your clips from /v1/clips, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.
+         * @description Scope: `play`. Plays one of your clips from `/v1/clips`, fetched by Sonos from the CDN.
+         *
+         *     - Played as stored by default. A processing field alone (`intro`, `outro`, `gap`, `effect`, `ambience`) does not turn processing on and is ignored.
+         *     - With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.
+         *     - Credits: 1, processed 2.
          */
         post: operations["postV1PlayClip"];
         delete?: never;
@@ -1072,7 +1096,33 @@ export interface paths {
          * Watch plays (WebSocket)
          * @description **WebSocket.** Connect to `wss://<host>/v1/plays/watch` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.
          *
-         *     Live status of your plays. Log in with the first message {"type":"auth","apiKey":"…"} (or the Authorization header). From a browser that should not see the key: {"type":"auth","ticket":"qk_wst_…"} or ?ticket=, a one-time ticket from POST /v1/ws/tickets with purpose watch (60 s, an invalid one closes with 4401 and ERROR_INVALID_TICKET). Browsers from other origins are refused (4403). A login key watches the workspace named by `workspace` in that message, ?workspace= or X-Quak-Workspace (slug or id), else the last used one. Then you get {"type":"ready"}, every running play once and every change of a play as {"type":"play","data":{…}} (the same object as GET /v1/plays/:uuid), plus {"type":"ping"} every 25 s. With a manage key and the admin role also every call of a trigger URL as {"type":"trigger_call","data":{…}} (like GET /v1/triggers/:id/calls). Reconnect after a drop, you get the current state again.
+         *     Live status of your plays: every running play once, then every change.
+         *
+         *     ### 1. Log in
+         *
+         *     The first message, as text, within 5 s:
+         *
+         *     ```json
+         *     { "type": "auth", "apiKey": "qk_key_…" }
+         *     ```
+         *
+         *     - Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `"ticket": "qk_wst_…"` (or `?ticket=` on the URL), a one-time ticket from `POST /v1/ws/tickets` with purpose `watch` (60 s; an invalid one closes with `4401` and `ERROR_INVALID_TICKET`).
+         *     - A login key watches the workspace named by `"workspace"` in that message, `?workspace=` or `X-Quak-Workspace` (slug or id), else the last used one.
+         *     - No or a wrong key closes with `4001`.
+         *
+         *     ### 2. Receive
+         *
+         *     ```json
+         *     { "type": "ready" }
+         *     { "type": "play", "data": { "id": "…", "status": "ACTIVE", … } }
+         *     { "type": "ping" }
+         *     ```
+         *
+         *     - `play`: every running play once, then every change, the same object as `GET /v1/plays/:id`. Plays with `test: true` are trigger tests from the app and not part of the history.
+         *     - `trigger_call`: with a `manage` key and the admin role also every call of a trigger URL, the same object as `GET /v1/triggers/:id/calls`.
+         *     - `ping` every 25 s, so proxies keep the connection.
+         *
+         *     Reconnect after a drop: you get the current state again.
          */
         get: operations["wsV1PlaysWatch"];
         put?: never;
@@ -1154,7 +1204,11 @@ export interface paths {
         put?: never;
         /**
          * Save a play as a clip
-         * @description Scope: `create`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays and for sounds and clips played with processing (process: true, e.g. with intro, outro or an effect), also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits and needs a key with scope create, like uploading a clip (both create a lasting clip). A sound or clip without processing is already in the library: 400 ERROR_UNABLE_TO_SAVE.
+         * @description Scope: `create`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with `POST /v1/play/clip` or use it as intro or outro.
+         *
+         *     - Works for text, talk, file and processed URL plays and for sounds and clips played with `process: true`, previews too, as long as their audio is there (the audio cache time, at least 5 minutes).
+         *     - A sound or clip without processing is already in the library: `400 ERROR_UNABLE_TO_SAVE`.
+         *     - Costs 2 credits, like uploading a clip.
          */
         post: operations["postV1PlaysByUuidSave"];
         delete?: never;
@@ -1174,7 +1228,12 @@ export interface paths {
         put?: never;
         /**
          * Replay a play
-         * @description Scope: `play`. Plays the audio of a play once more, exactly as it played (intro, outro and effect included), e.g. what someone said into the mic, a preview on the speakers, or again in another room. Speakers, volume, volumes, priority and quiet hours are the ones of the play unless the body names others; the content cannot change (for another effect play it again, a text reuses its speech). A new play in the history with params.replayOf. Works for sounds and clips, and for text, talk, file and processed url plays while their audio is there (the audio cache time), else 409 ERROR_AUDIO_GONE. Not for talk live and url plays without processing (400 ERROR_NOT_REPLAYABLE). Credits: only the base fee, 1 for sounds and clips, 2 for the rest.
+         * @description Scope: `play`. Plays the audio of a play once more, exactly as it played (intro, outro and effect included): what someone said into the mic, a preview on the speakers, or again in another room.
+         *
+         *     - Speakers, volume, volumes, priority and quiet hours are the ones of the play unless the body names others. The content cannot change: for another effect play it again (a text reuses its speech).
+         *     - A new play in the history with `params.replayOf`.
+         *     - Works for sounds and clips, and for text, talk, file and processed URL plays while their audio is there (the audio cache time), else `409 ERROR_AUDIO_GONE`. Not for talk live and URL plays without processing (`400 ERROR_NOT_REPLAYABLE`).
+         *     - Credits: only the base fee, 1 for sounds and clips, 2 for the rest.
          */
         post: operations["postV1PlaysByUuidReplay"];
         delete?: never;
@@ -1246,7 +1305,12 @@ export interface paths {
         put?: never;
         /**
          * Create a trigger
-         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. A secret URL that plays a fixed announcement without an API key: a doorbell, a Stream Deck button, a shortcut. Call it with GET or POST; the answer and every read later have the URL. Free, each play costs like any play. How many a workspace may have depends on the plan (Home 3, Family 10, Team 30, Business 100, none without a plan): above it 403 ERROR_PLAN_LIMIT_REACHED with limit, used, allowed and requiredPlan in details.
+         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. A secret URL that plays an announcement without an API key, for anything that can call a URL: a doorbell, a button, a shortcut, a webhook.
+         *
+         *     - Call it with `GET` or `POST`. The answer and every later read have `url`.
+         *     - It plays its own text, sound or clip, or one entry of a rule's pool (`rules`: if/then by event, values of the call, day and hour).
+         *     - Each play costs credits like any play. Cooldown, daily limit and allowed websites limit what a leaked URL can do.
+         *     - How many a workspace may have depends on the plan (Home 3, Family 10, Team 30, Business 100, none without a plan): above it `403 ERROR_PLAN_LIMIT_REACHED` with `limit`, `used`, `allowed` and `requiredPlan` in `details`.
          */
         post: operations["postV1Triggers"];
         delete?: never;
@@ -1332,7 +1396,7 @@ export interface paths {
         };
         /**
          * List a trigger's calls
-         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as {"type":"trigger_call","data":{…}} (admins).
+         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as `{"type":"trigger_call","data":{…}}` (admins).
          */
         get: operations["getV1TriggersByIdCalls"];
         put?: never;
@@ -1376,13 +1440,17 @@ export interface paths {
         };
         /**
          * List API keys
-         * @description Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys (scope manage), with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.
+         * @description Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.
          */
         get: operations["getV1Keys"];
         put?: never;
         /**
          * Create API key
-         * @description Scope: `manage`. Admins of the workspace only. Creates a new API key for the workspace (scope manage). A non-empty name is required, names are unique among the workspace's keys (case-insensitive). The slug comes from the name (-2, -3 … when taken) unless you pass one, a given slug that is taken is a 409. The scope is play unless you ask for read or manage, never more than your own key (403 ERROR_INSUFFICIENT_SCOPE). The full key is in this answer only: store it now, it cannot be read again.
+         * @description Scope: `manage`. Admins of the workspace only. Creates a new API key for the workspace.
+         *
+         *     - `name` is required and unique among the workspace's keys (case-insensitive). The slug comes from the name (`-2`, `-3` … when taken) unless you pass one; a given slug that is taken is `409`.
+         *     - `scope`: `play` (default), `create` or `manage`, never more than your own key (`403 ERROR_INSUFFICIENT_SCOPE`).
+         *     - The full key is in this answer only: store it now, it cannot be read again.
          */
         post: operations["postV1Keys"];
         delete?: never;
@@ -1403,14 +1471,14 @@ export interface paths {
         post?: never;
         /**
          * Delete API key
-         * @description Scope: `manage`. Admins of the workspace only. Deletes one of the workspace's API keys by its id or slug (scope manage), so it no longer works and no longer appears in the list. Its slug is free again.
+         * @description Scope: `manage`. Admins of the workspace only. Deletes one of the workspace's API keys by its id or slug, so it no longer works and no longer appears in the list. Its slug is free again.
          */
         delete: operations["deleteV1KeysById"];
         options?: never;
         head?: never;
         /**
          * Update API key
-         * @description Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug (scope manage): name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.
+         * @description Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug: name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.
          */
         patch: operations["patchV1KeysById"];
         trace?: never;
@@ -1508,7 +1576,7 @@ export interface paths {
         };
         /**
          * List integrations
-         * @description Scope: `play`. Every integration of Quak with its state in this workspace (scope play), also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.
+         * @description Scope: `play`. Every integration of Quak with its state in this workspace, also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.
          */
         get: operations["getV1Integrations"];
         put?: never;
@@ -1530,7 +1598,11 @@ export interface paths {
         put?: never;
         /**
          * Connect integration
-         * @description Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace (scope manage, admins): open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it. Slack: “Add to Slack”, afterwards everyone in the Slack workspace plays with `/quak <text>` using this workspace's credits and defaults; a Slack workspace connected elsewhere moves here. IFTTT: `authUrl` is the service page on IFTTT (the link does not really expire), “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection. Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`. From the web app pass `returnTo` to get the browser back there.
+         * @description Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace: open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it.
+         *
+         *     - **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here. From the web app pass `returnTo` to get the browser back there.
+         *     - **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.
+         *     - Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.
          */
         post: operations["postV1IntegrationsByProviderConnect"];
         delete?: never;
@@ -1551,7 +1623,7 @@ export interface paths {
         post?: never;
         /**
          * Disconnect integration
-         * @description Scope: `manage`. Admins of the workspace only. Disconnects a provider from this workspace (scope manage, admins). Slack: the Slack workspace stops playing, its key stops working and the bot token is revoked; the app stays listed in Slack until someone removes it there. IFTTT: every IFTTT account connected to this workspace stops working, its applets fail until connected again. Not connected: `404 ERROR_NOT_CONNECTED`.
+         * @description Scope: `manage`. Admins of the workspace only. Disconnects a provider from this workspace. Slack: the Slack workspace stops playing, its key stops working and the bot token is revoked; the app stays listed in Slack until someone removes it there. IFTTT: every IFTTT account connected to this workspace stops working, its applets fail until connected again. Not connected: `404 ERROR_NOT_CONNECTED`.
          */
         delete: operations["deleteV1IntegrationsByProvider"];
         options?: never;
@@ -1590,7 +1662,14 @@ export interface paths {
         put?: never;
         /**
          * Upload ticket
-         * @description Scope: `play`. A one-time ticket for an upload from a browser that should not see the API key: your server gets the ticket with its key and hands it to the browser, which uploads straight to the API with "Authorization: Bearer qk_upt_…" (or ?ticket=). It only opens POST /v1/play/file, POST /v1/play/talk and POST /v1/clips, works once and for 5 minutes, in the workspace of this request (X-Quak-Workspace) and with the rights of this key: a clip upload still needs scope manage. From a browser only the origins of the website are accepted.
+         * @description Scope: `play`. A one-time ticket for an upload from a browser that should not see the API key.
+         *
+         *     1. Your server gets the ticket with its key.
+         *     2. It hands the ticket to the browser.
+         *     3. The browser uploads straight to the API with `Authorization: Bearer qk_upt_…` (or `?ticket=`).
+         *
+         *     - Opens only `POST /v1/play/file`, `POST /v1/play/talk` and `POST /v1/clips`.
+         *     - Works once and for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key: a clip upload needs a key with scope `create`.
          */
         post: operations["postV1Upload-tickets"];
         delete?: never;

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Quak API",
-    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n\n2. Confirm the request via the email link.\n\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `PATCH /v1/workspace/audio-cache`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n\n- `201 Created`: a resource was created (for example an API key).\n\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n\n- `400 Bad Request`: invalid query/body/path parameters.\n\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n\n- `402 Payment Required`: not enough credits for the play.\n\n- `403 Forbidden`: the API key is valid but may not do this.\n\n- `404 Not Found`: requested resource does not exist in your scope.\n\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n\n- `422 Unprocessable Content`: request body failed schema validation.\n\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
+    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n2. Confirm the request via the email link.\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `PATCH /v1/workspace/audio-cache`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n- `201 Created`: a resource was created (for example an API key).\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n- `400 Bad Request`: invalid query/body/path parameters.\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n- `402 Payment Required`: not enough credits for the play.\n- `403 Forbidden`: the API key is valid but may not do this.\n- `404 Not Found`: requested resource does not exist in your scope.\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n- `422 Unprocessable Content`: request body failed schema validation.\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
     "version": "1.0.0",
     "contact": {
       "name": "Quak",
@@ -4000,7 +4000,7 @@
           "User"
         ],
         "summary": "List my logins",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Your logins, one per device or client (CLI, web app, apps), most recently used first, and the apps you let in with OAuth (type OAUTH, e.g. Claude or ChatGPT through the MCP server). `current` marks the login of this request. Keys you made with /v1/keys are not in it. Logins do not expire, they stay valid until you sign them out. Login keys only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Your logins, one per device or client (CLI, web app, apps), most recently used first, and the apps you let in with OAuth (type OAUTH, e.g. Claude or ChatGPT through the MCP server). `current` marks the login of this request. Keys you made with /v1/keys are not in it. Logins do not expire, they stay valid until you sign them out.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -4478,7 +4478,7 @@
           "User"
         ],
         "summary": "Sign out everywhere",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs all your logins out right away, the apps you let in with OAuth too. With `?except=current` the login of this request stays. Keys you made with /v1/keys stay valid, manage them under /v1/keys. Login keys only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs all your logins out right away, the apps you let in with OAuth too. With `?except=current` the login of this request stays. Keys you made with /v1/keys stay valid, manage them under /v1/keys.",
         "parameters": [
           {
             "name": "except",
@@ -4915,7 +4915,7 @@
           "User"
         ],
         "summary": "Sign out a login",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs one of your logins out right away, e.g. of a lost laptop. Also works for the login of this request. Login keys only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs one of your logins out right away, e.g. of a lost laptop. Also works for the login of this request.",
         "parameters": [
           {
             "name": "id",
@@ -5329,7 +5329,7 @@
           "User"
         ],
         "summary": "Export my data",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Everything Quak stores about you as one JSON file (GDPR access and portability): account, workspaces, and for workspaces you administer their settings, Sonos connections, groups, keys (never the tokens), credits and open invitations; your clips with download links (24 hours) and your announcements. Texts and audio are not stored, so they are not in it. Login keys only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Everything Quak stores about you as one JSON file (GDPR access and portability): account, workspaces, and for workspaces you administer their settings, Sonos connections, groups, keys (never the tokens), credits and open invitations; your clips with download links (24 hours) and your announcements. Texts and audio are not stored, so they are not in it.",
         "responses": {
           "401": {
             "description": "Response for status 401",
@@ -5598,7 +5598,7 @@
           "User"
         ],
         "summary": "Delete my account",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Sends a confirmation link to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the account goes right away and for good. Workspaces you are alone in are deleted with it, from the others you leave (your announcements there stay without your name). A deleted workspace's subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (billing shows what is at stake). If you are the only admin of a workspace with other members: 409 ERROR_LAST_ADMIN, make someone else admin or delete that workspace first. Login keys only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Deletes your account after a confirmation: a link goes to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the account goes right away and for good.\n\n- Workspaces you are alone in are deleted with it. From the others you leave; your announcements there stay without your name.\n- A deleted workspace's subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (`workspaces` in the answer shows what is at stake).\n- The only admin of a workspace with other members: `409 ERROR_LAST_ADMIN`. Make someone else admin or delete that workspace first.",
         "responses": {
           "202": {
             "description": "Response for status 202",
@@ -6124,7 +6124,7 @@
           "Workspace"
         ],
         "summary": "Get workspace",
-        "description": "Scope: `play`. The workspace of the API key (scope play): its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run, and the plan's limits with what is used (planLimits). Everything played, the speakers, groups, clips and keys belong to it.",
+        "description": "Scope: `play`. The workspace of the API key: its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run, and the plan's limits with what is used (planLimits). Everything played, the speakers, groups, clips and keys belong to it.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -6621,7 +6621,7 @@
           "Workspace"
         ],
         "summary": "Update workspace",
-        "description": "Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug or its time zone (scope manage, owners and admins). Quiet hours run in the workspace time zone.",
+        "description": "Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug or its time zone. Quiet hours run in the workspace time zone.",
         "requestBody": {
           "required": true,
           "content": {
@@ -7641,7 +7641,7 @@
           "Workspace"
         ],
         "summary": "Delete workspace",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Admins of the workspace only. Sends a confirmation link to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page; then the workspace goes right away with everything in it: announcements, clips, groups, keys, credits, invitations and Sonos connections. Other members lose access and get a mail. If it is your last workspace, your account is deleted too (accountToo). A running subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (billing shows what is at stake). Admins with a login key only (scope login).",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Admins of the workspace only. Deletes the workspace after a confirmation: a link goes to your address (valid 1 hour, once). Nothing is deleted before you confirm on its page.\n\n- Then it goes right away with everything in it: announcements, clips, groups, keys, triggers, credits, invitations and Sonos connections. Other members lose access and get a mail.\n- If it is your last workspace, your account is deleted too (`accountToo`).\n- A running subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded.",
         "responses": {
           "202": {
             "description": "Response for status 202",
@@ -8153,7 +8153,7 @@
           "Workspace"
         ],
         "summary": "Update playback defaults",
-        "description": "Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace (scope manage), for everyone in it. Intro and outro accept a sound slug, \"clip:<slug>\" for one of your clips, or \"none\" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, \"none\" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. \"22-7\", \"su-th 22-7, fr-sa 23-9\" or \"none\".",
+        "description": "Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace, for everyone in it. Intro and outro accept a sound slug, \"clip:<slug>\" for one of your clips, or \"none\" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, \"none\" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. \"22-7\", \"su-th 22-7, fr-sa 23-9\" or \"none\".",
         "requestBody": {
           "required": true,
           "content": {
@@ -9748,7 +9748,7 @@
           "Workspace"
         ],
         "summary": "Update audio cache",
-        "description": "Scope: `manage`. Admins of the workspace only. Sets for the workspace (scope manage) how long generated play audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes. Within that time a repeat of the same play uses the same audio (no new TTS credits) and the play can be saved as a clip; afterwards the audio is deleted. The speech of text plays is kept just as long, so another effect, intro or outro needs no new synthesis, and the text of a text play stays visible in the history (params.text) as long as its audio exists. A shorter time also applies to audio already in the cache.",
+        "description": "Scope: `manage`. Admins of the workspace only. How long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes.\n\n- Within that time the same play reuses its audio (no new TTS credits), and a play can be replayed or saved as a clip. Afterwards the audio is deleted.\n- The speech of a text play is kept just as long: another effect, intro or outro needs no new synthesis, and the text stays visible in the history (`params.text`).\n- A shorter time also applies to audio already in the cache.",
         "requestBody": {
           "required": true,
           "content": {
@@ -10724,7 +10724,7 @@
           "Workspace"
         ],
         "summary": "List members",
-        "description": "Scope: `play`. Everyone in the workspace with their role (scope play).",
+        "description": "Scope: `play`. Everyone in the workspace with their role.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -10979,7 +10979,7 @@
           "Workspace"
         ],
         "summary": "Change a member's role",
-        "description": "Scope: `manage`. Admins of the workspace only. Admins change roles (scope manage). The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).",
+        "description": "Scope: `manage`. Admins of the workspace only. Admins change roles. The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).",
         "parameters": [
           {
             "name": "userId",
@@ -11808,7 +11808,7 @@
           "Workspace"
         ],
         "summary": "Remove a member or leave",
-        "description": "Scope: `manage`. Admins remove anyone, everyone may leave (scope manage). The member's own keys of this workspace stop working; the last admin cannot leave (409 ERROR_LAST_ADMIN).",
+        "description": "Scope: `manage`. Admins remove anyone, everyone may leave. The member's own keys of this workspace stop working; the last admin cannot leave (`409 ERROR_LAST_ADMIN`).",
         "parameters": [
           {
             "name": "userId",
@@ -12348,7 +12348,7 @@
           "Workspace"
         ],
         "summary": "Invite someone",
-        "description": "Scope: `manage`. Admins of the workspace only. Sends an invitation mail (scope manage, admins). Its link shows the invitation, the button accepts it; valid 7 days, once. A new invitation for the same address replaces an open one. Accepting without a Quak account creates one (without starting credits). Members and open invitations count against the users of the plan (Free and Home 1, Family 5, Team 20, Business 30): above it 403 ERROR_PLAN_LIMIT_REACHED with limit, used, allowed and requiredPlan in details.",
+        "description": "Scope: `manage`. Admins of the workspace only. Sends an invitation mail. Its link shows the invitation, the button accepts it; valid 7 days, once. A new invitation for the same address replaces an open one. Accepting without a Quak account creates one (without starting credits). Members and open invitations count against the users of the plan (Free and Home 1, Family 5, Team 20, Business 30): above it `403 ERROR_PLAN_LIMIT_REACHED` with limit, used, allowed and requiredPlan in details.",
         "requestBody": {
           "required": true,
           "content": {
@@ -13073,7 +13073,7 @@
           "Workspace"
         ],
         "summary": "List open invitations",
-        "description": "Scope: `manage`. Admins of the workspace only. Invitations not accepted and not expired yet (scope manage, admins).",
+        "description": "Scope: `manage`. Admins of the workspace only. Invitations not accepted and not expired yet.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -13408,7 +13408,7 @@
           "Workspace"
         ],
         "summary": "Withdraw an invitation",
-        "description": "Scope: `manage`. Admins of the workspace only. The link in the mail stops working (scope manage, admins).",
+        "description": "Scope: `manage`. Admins of the workspace only. The link in the mail stops working.",
         "parameters": [
           {
             "name": "id",
@@ -13821,7 +13821,7 @@
           "Workspace"
         ],
         "summary": "Send an invitation again",
-        "description": "Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again (scope manage, admins). Also brings an expired invitation back, not an accepted (409 ERROR_INVITE_ACCEPTED) or withdrawn one (404). At most every 5 minutes per invitation (429 ERROR_TOO_MANY_REQUESTS). An expired invitation takes a seat again: 403 ERROR_PLAN_LIMIT_REACHED when the plan has none left.",
+        "description": "Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again. Also brings an expired invitation back, not an accepted (`409 ERROR_INVITE_ACCEPTED`) or withdrawn one (404). At most every 5 minutes per invitation (`429 ERROR_TOO_MANY_REQUESTS`). An expired invitation takes a seat again: `403 ERROR_PLAN_LIMIT_REACHED` when the plan has none left.",
         "parameters": [
           {
             "name": "id",
@@ -14528,7 +14528,7 @@
           "Workspace"
         ],
         "summary": "Get billing",
-        "description": "Scope: `manage`. Admins of the workspace only. Plan, subscription state, trial, renewal and credits of the workspace (scope manage, admins). Payments run through Stripe (merchant of record).",
+        "description": "Scope: `manage`. Admins of the workspace only. Plan, subscription state, trial, renewal and credits of the workspace. Payments run through Stripe (merchant of record).",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -15164,7 +15164,7 @@
           "Workspace"
         ],
         "summary": "Update billing",
-        "description": "Scope: `manage`. Admins of the workspace only. The billing email of the workspace (scope manage, admins): where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.",
+        "description": "Scope: `manage`. Admins of the workspace only. The billing email of the workspace: where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.",
         "requestBody": {
           "required": true,
           "content": {
@@ -16113,7 +16113,7 @@
           "Workspace"
         ],
         "summary": "Start a checkout",
-        "description": "Scope: `manage`. Admins of the workspace only. A Stripe Checkout for a plan or a credit pack (scope manage, admins), answers its URL. Home, Family and Team start with a 7-day trial once per person and Sonos household, packs get the discount of the plan. An optional promotion code (from Stripe) comes filled in, an unknown one is left out. A workspace with a subscription changes it in the portal (409).",
+        "description": "Scope: `manage`. Admins of the workspace only. A Stripe Checkout for a plan or a credit pack, answers its URL. Home, Family and Team start with a 7-day trial once per person and Sonos household, packs get the discount of the plan. An optional promotion code (from Stripe) comes filled in, an unknown one is left out. A workspace with a subscription changes it in the portal (409).",
         "requestBody": {
           "required": true,
           "content": {
@@ -17008,7 +17008,7 @@
           "Workspace"
         ],
         "summary": "Preview a plan change",
-        "description": "Scope: `manage`. Admins of the workspace only. What switching the running subscription to another plan or interval does (scope manage, admins): upgrade or downgrade, when, the new price, what is charged today, the credits, the discount, and for a downgrade what is above the smaller plan's limits (blockedBy). Changes nothing.",
+        "description": "Scope: `manage`. Admins of the workspace only. What switching the running subscription to another plan or interval does: upgrade or downgrade, when, the new price, what is charged today, the credits, the discount, and for a downgrade what is above the smaller plan's limits (blockedBy). Changes nothing.",
         "parameters": [
           {
             "name": "plan",
@@ -17971,7 +17971,7 @@
           "Workspace"
         ],
         "summary": "Change the plan",
-        "description": "Scope: `manage`. Admins of the workspace only. Switches the running subscription (scope manage, admins). Upgrades (a bigger plan, monthly → yearly) at once with the difference charged now, downgrades at the end of the period. In the trial at once and free, Business ends the trial. 409 without a running subscription, for the current plan, a cancelled or past due subscription, or Team and Business without the full billing address. A downgrade needs the usage to fit the smaller plan: 409 ERROR_OVER_PLAN_LIMITS with details.blockedBy (as in the preview) until locations, members and invitations, triggers are within its limits. While a downgrade is scheduled, adding beyond its limits answers 403 ERROR_PLAN_LIMIT_REACHED; take the change back (DELETE …/billing/change) to grow.",
+        "description": "Scope: `manage`. Admins of the workspace only. Switches the running subscription.\n\n- **Upgrade** (a bigger plan, monthly → yearly): at once, the difference is charged now. In the trial at once and free; Business ends the trial.\n- **Downgrade**: at the end of the period. The usage must fit the smaller plan, else `409 ERROR_OVER_PLAN_LIMITS` with `details.blockedBy` (as in the preview) until locations, members, invitations and triggers are within its limits.\n- While a downgrade is scheduled, adding beyond its limits answers `403 ERROR_PLAN_LIMIT_REACHED`; take the change back (`DELETE …/billing/change`) to grow.\n- `409` without a running subscription, for the current plan, for a cancelled or past due subscription, and for Team and Business without the full billing address.",
         "requestBody": {
           "required": true,
           "content": {
@@ -18775,7 +18775,7 @@
           "Workspace"
         ],
         "summary": "Undo a scheduled plan change",
-        "description": "Scope: `manage`. Admins of the workspace only. Takes back a downgrade scheduled for the end of the period (scope manage, admins), the plan stays. Answers the billing state; 409 without one.",
+        "description": "Scope: `manage`. Admins of the workspace only. Takes back a downgrade scheduled for the end of the period, the plan stays. Answers the billing state; 409 without one.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -19674,7 +19674,7 @@
           "Workspace"
         ],
         "summary": "Open the customer portal",
-        "description": "Scope: `manage`. Admins of the workspace only. The Stripe customer portal of the workspace (scope manage, admins): payment method, billing address, VAT ID, invoices and cancelling; plan changes are POST …/billing/change. flow opens it right at cancelling, the payment method or the billing address; with address, plan and interval come back on the return URL (?plan=…&interval=…) so the change preview opens again. Answers its URL; 409 before the first purchase.",
+        "description": "Scope: `manage`. Admins of the workspace only. The Stripe customer portal of the workspace: payment method, billing address, VAT ID, invoices and cancelling; plan changes are POST …/billing/change. flow opens it right at cancelling, the payment method or the billing address; with address, plan and interval come back on the return URL (?plan=…&interval=…) so the change preview opens again. Answers its URL; 409 before the first purchase.",
         "requestBody": {
           "required": true,
           "content": {
@@ -20755,7 +20755,7 @@
           "Workspace"
         ],
         "summary": "List workspaces",
-        "description": "Scope: `play`. The workspaces you are a member of (scope play). With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.",
+        "description": "Scope: `play`. The workspaces you are a member of. With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -20990,7 +20990,7 @@
           "Workspace"
         ],
         "summary": "Create workspace",
-        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (409 ERROR_WORKSPACE_LIMIT), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.",
+        "description": "Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (`409 ERROR_WORKSPACE_LIMIT`), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.",
         "requestBody": {
           "required": true,
           "content": {
@@ -21962,7 +21962,7 @@
         ],
         "summary": "Show invitation",
         "security": [],
-        "description": "Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. 404 ERROR_INVITE_NOT_FOUND, 410 ERROR_INVITE_EXPIRED (details name the workspace and who invited, to ask for a new one), 409 ERROR_INVITE_ACCEPTED.",
+        "description": "Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. `404 ERROR_INVITE_NOT_FOUND`, `410 ERROR_INVITE_EXPIRED` (details name the workspace and who invited, to ask for a new one), `409 ERROR_INVITE_ACCEPTED`.",
         "parameters": [
           {
             "name": "token",
@@ -22445,7 +22445,7 @@
         ],
         "summary": "Accept invitation",
         "security": [],
-        "description": "Beta, may change without notice. Accepts the invitation once and logs the invited address in: the answer has a login key (scope manage), like the end of a login. The link came by mail to that address, the same proof as a login link. An address without an account gets one, then `name` is required (400 ERROR_INVALID_PARAMS, field name); it is only a member of the invited workspace, without an own one and without starting credits (500 come with the first own workspace, POST /v1/workspaces). Sent with a login key of the invited user, `apiKey` is null and no new key is made. 404, 410 and 409 as for GET /v1/invites/:token.",
+        "description": "Beta, may change without notice. Accepts the invitation once and logs the invited address in: the answer has a login key (scope manage), like the end of a login. The link came by mail to that address, the same proof as a login link. An address without an account gets one, then `name` is required (`400 ERROR_INVALID_PARAMS`, field name); it is only a member of the invited workspace, without an own one and without starting credits (500 come with the first own workspace, POST /v1/workspaces). Sent with a login key of the invited user, `apiKey` is null and no new key is made. 404, 410 and 409 as for GET /v1/invites/:token.",
         "parameters": [
           {
             "name": "token",
@@ -29861,8 +29861,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -35807,7 +35806,7 @@
         ],
         "summary": "Talk live (WebSocket)",
         "security": [],
-        "description": "**WebSocket.** Connect to `wss://<host>/v1/play/talk/live` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.\n\nBeta, may change without notice. Plays what someone says while they say it.\n\n### 1. Start\n\nThe first message, as text, within 2 s:\n\n```json\n{ \"type\": \"start\", \"apiKey\": \"qk_key_…\", \"to\": [\"Kitchen\"], \"format\": { \"encoding\": \"opus\", \"sampleRate\": 48000 } }\n```\n\n- `format.encoding`: `opus`, `pcm_s16le` or `pcm_f32le`; `format.sampleRate`: `16000`, `24000`, `44100` or `48000`.\n- Optional, as with the other plays: `volume`, `volumes`, `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `intro`, `outro`, `gap`, `priority`, `quietHours`.\n- Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `\"ticket\": \"qk_wst_…\"`, a one-time ticket from `POST /v1/ws/tickets` with purpose `talk-live` (60 s, it names the workspace; an invalid one closes with `4401` and `ERROR_INVALID_TICKET`).\n- A login key names its workspace with `\"workspace\": \"<slug or id>\"` in the start, `?workspace=` or `X-Quak-Workspace`.\n- Browsers from other origins are refused (`4403`).\n\n### 2. Talk\n\nThe answer is `{\"type\":\"ready\",\"play\":{…},\"credits\":…,\"maxSeconds\":180}`. During quiet hours it is `{\"type\":\"skipped\",…}` instead and the socket closes, at no cost.\n\nSend the audio as binary frames, in the format of the start: Opus one raw 20 ms packet per frame, PCM mono little endian. Audio sent before `ready` is kept (up to 5 s).\n\nChange things while talking:\n\n```json\n{ \"type\": \"update\", \"effect\": \"none\", \"muted\": true }\n```\n\n→ `{\"type\":\"updated\",…}` with the current values. Fields: `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `muted`. The server sends `{\"type\":\"ping\"}` every 25 s.\n\n### 3. End\n\n```json\n{ \"type\": \"end\" }\n```\n\n→ `{\"type\":\"done\",\"play\":{…},\"credits\":…,\"balance\":…,\"endedBy\":\"client\"}`, then the socket closes. `balance` is the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.\n\n### Limits, errors, credits\n\n- At most 3 minutes. 30 s before, a warning comes: `{\"type\":\"warning\",\"code\":\"LIMIT_SOON\",\"message\":\"talk live ends in 30 s (max. 3 minutes)\",\"secondsLeft\":30}`.\n- Faster, slower and reverse do not work live.\n- Errors: `{\"type\":\"error\",\"code\":…,\"message\":…,\"field\":…,\"requestId\":…}`, then the socket closes with 4000 + the HTTP status (e.g. `4402` without credits).\n- Credits: 2 at the start, and the workspace needs enough for a minute of speech. After the end 1 per started 10 s of speech. If the credits no longer cover the next minute, a warning with `ERROR_NOT_ENOUGH_CREDITS` comes and the talk ends.",
+        "description": "**WebSocket.** Connect to `wss://<host>/v1/play/talk/live` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.\n\nBeta, may change without notice. Plays what someone says while they say it.\n\n### 1. Start\n\nThe first message, as text, within 2 s:\n\n```json\n{ \"type\": \"start\", \"apiKey\": \"qk_key_…\", \"to\": [\"Kitchen\"], \"format\": { \"encoding\": \"opus\", \"sampleRate\": 48000 } }\n```\n\n- `format.encoding`: `opus`, `pcm_s16le` or `pcm_f32le`; `format.sampleRate`: `16000`, `24000`, `44100` or `48000`.\n- Optional, as with the other plays: `volume`, `volumes`, `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `intro`, `outro`, `gap`, `priority`, `quietHours`.\n- Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `\"ticket\": \"qk_wst_…\"`, a one-time ticket from `POST /v1/ws/tickets` with purpose `talk-live` (60 s, it names the workspace; an invalid one closes with `4401` and `ERROR_INVALID_TICKET`).\n- A login key names its workspace with `\"workspace\": \"<slug or id>\"` in the start, `?workspace=` or `X-Quak-Workspace`.\n\n### 2. Talk\n\nThe answer is `{\"type\":\"ready\",\"play\":{…},\"credits\":…,\"maxSeconds\":180}`. During quiet hours it is `{\"type\":\"skipped\",…}` instead and the socket closes, at no cost.\n\nSend the audio as binary frames, in the format of the start: Opus one raw 20 ms packet per frame, PCM mono little endian. Audio sent before `ready` is kept (up to 5 s).\n\nChange things while talking:\n\n```json\n{ \"type\": \"update\", \"effect\": \"none\", \"muted\": true }\n```\n\n→ `{\"type\":\"updated\",…}` with the current values. Fields: `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `muted`. The server sends `{\"type\":\"ping\"}` every 25 s.\n\n### 3. End\n\n```json\n{ \"type\": \"end\" }\n```\n\n→ `{\"type\":\"done\",\"play\":{…},\"credits\":…,\"balance\":…,\"endedBy\":\"client\"}`, then the socket closes. `balance` is the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.\n\n### Limits, errors, credits\n\n- At most 3 minutes. 30 s before, a warning comes: `{\"type\":\"warning\",\"code\":\"LIMIT_SOON\",\"message\":\"talk live ends in 30 s (max. 3 minutes)\",\"secondsLeft\":30}`.\n- Faster, slower and reverse do not work live.\n- Errors: `{\"type\":\"error\",\"code\":…,\"message\":…,\"field\":…,\"requestId\":…}`, then the socket closes with 4000 + the HTTP status (e.g. `4402` without credits).\n- Credits: 2 at the start, and the workspace needs enough for a minute of speech. After the end 1 per started 10 s of speech. If the credits no longer cover the next minute, a warning with `ERROR_NOT_ENOUGH_CREDITS` comes and the talk ends.",
         "x-codeSamples": [
           {
             "lang": "javascript",
@@ -35830,7 +35829,7 @@
           "Play"
         ],
         "summary": "Play a sound",
-        "description": "Scope: `play`. Plays a built-in sound from /v1/sounds, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.",
+        "description": "Scope: `play`. Plays a built-in sound from `/v1/sounds`, fetched by Sonos from the CDN.\n\n- Played as stored by default. A processing field alone (`intro`, `outro`, `gap`, `effect`, `ambience`) does not turn processing on and is ignored.\n- With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.\n- Credits: 1, processed 2.",
         "requestBody": {
           "required": true,
           "content": {
@@ -38934,7 +38933,7 @@
           "Play"
         ],
         "summary": "Play a clip",
-        "description": "Scope: `play`. Plays one of your clips from /v1/clips, fetched by Sonos from the CDN. Played as stored unless process: true; a processing field alone (intro, outro, gap, effect, ambience) does not turn processing on and is ignored. With process: true it gets intro, outro, gap, effect and ambience from the workspace defaults, fields of the request override them and none turns one off, mixed on the server and cached. Credits: 1, processed 2.",
+        "description": "Scope: `play`. Plays one of your clips from `/v1/clips`, fetched by Sonos from the CDN.\n\n- Played as stored by default. A processing field alone (`intro`, `outro`, `gap`, `effect`, `ambience`) does not turn processing on and is ignored.\n- With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.\n- Credits: 1, processed 2.",
         "requestBody": {
           "required": true,
           "content": {
@@ -48228,7 +48227,14 @@
         ],
         "summary": "Watch plays (WebSocket)",
         "security": [],
-        "description": "**WebSocket.** Connect to `wss://<host>/v1/plays/watch` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.\n\nLive status of your plays. Log in with the first message {\"type\":\"auth\",\"apiKey\":\"…\"} (or the Authorization header). From a browser that should not see the key: {\"type\":\"auth\",\"ticket\":\"qk_wst_…\"} or ?ticket=, a one-time ticket from POST /v1/ws/tickets with purpose watch (60 s, an invalid one closes with 4401 and ERROR_INVALID_TICKET). Browsers from other origins are refused (4403). A login key watches the workspace named by `workspace` in that message, ?workspace= or X-Quak-Workspace (slug or id), else the last used one. Then you get {\"type\":\"ready\"}, every running play once and every change of a play as {\"type\":\"play\",\"data\":{…}} (the same object as GET /v1/plays/:uuid), plus {\"type\":\"ping\"} every 25 s. With a manage key and the admin role also every call of a trigger URL as {\"type\":\"trigger_call\",\"data\":{…}} (like GET /v1/triggers/:id/calls). Reconnect after a drop, you get the current state again.",
+        "description": "**WebSocket.** Connect to `wss://<host>/v1/plays/watch` (a GET with `Upgrade: websocket`), not a plain HTTP request. The protocol is below.\n\nLive status of your plays: every running play once, then every change.\n\n### 1. Log in\n\nThe first message, as text, within 5 s:\n\n```json\n{ \"type\": \"auth\", \"apiKey\": \"qk_key_…\" }\n```\n\n- Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `\"ticket\": \"qk_wst_…\"` (or `?ticket=` on the URL), a one-time ticket from `POST /v1/ws/tickets` with purpose `watch` (60 s; an invalid one closes with `4401` and `ERROR_INVALID_TICKET`).\n- A login key watches the workspace named by `\"workspace\"` in that message, `?workspace=` or `X-Quak-Workspace` (slug or id), else the last used one.\n- No or a wrong key closes with `4001`.\n\n### 2. Receive\n\n```json\n{ \"type\": \"ready\" }\n{ \"type\": \"play\", \"data\": { \"id\": \"…\", \"status\": \"ACTIVE\", … } }\n{ \"type\": \"ping\" }\n```\n\n- `play`: every running play once, then every change, the same object as `GET /v1/plays/:id`. Plays with `test: true` are trigger tests from the app and not part of the history.\n- `trigger_call`: with a `manage` key and the admin role also every call of a trigger URL, the same object as `GET /v1/triggers/:id/calls`.\n- `ping` every 25 s, so proxies keep the connection.\n\nReconnect after a drop: you get the current state again.",
+        "x-codeSamples": [
+          {
+            "lang": "javascript",
+            "label": "JavaScript",
+            "source": "const ws = new WebSocket(\"wss://api.quak.party/v1/plays/watch\");\nws.onopen = () => ws.send(JSON.stringify({ type: \"auth\", ticket }));\nws.onmessage = (event) => {\n  const message = JSON.parse(event.data);\n  if (message.type === \"play\") console.log(message.data.id, message.data.status);\n};"
+          }
+        ],
         "operationId": "wsV1PlaysWatch",
         "responses": {
           "101": {
@@ -50733,7 +50739,7 @@
           "Plays"
         ],
         "summary": "Save a play as a clip",
-        "description": "Scope: `create`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with POST /v1/play/clip or use it as intro or outro. Works for text, talk, file and processed URL plays and for sounds and clips played with processing (process: true, e.g. with intro, outro or an effect), also previews, as long as their audio is still there (the audio cache time, at least 5 minutes after the play). Costs 2 credits and needs a key with scope create, like uploading a clip (both create a lasting clip). A sound or clip without processing is already in the library: 400 ERROR_UNABLE_TO_SAVE.",
+        "description": "Scope: `create`. Keeps the audio of a play as one of your clips, exactly as it played (intro, outro and effect included), to play it again with `POST /v1/play/clip` or use it as intro or outro.\n\n- Works for text, talk, file and processed URL plays and for sounds and clips played with `process: true`, previews too, as long as their audio is there (the audio cache time, at least 5 minutes).\n- A sound or clip without processing is already in the library: `400 ERROR_UNABLE_TO_SAVE`.\n- Costs 2 credits, like uploading a clip.",
         "parameters": [
           {
             "name": "uuid",
@@ -51617,7 +51623,7 @@
           "Plays"
         ],
         "summary": "Replay a play",
-        "description": "Scope: `play`. Plays the audio of a play once more, exactly as it played (intro, outro and effect included), e.g. what someone said into the mic, a preview on the speakers, or again in another room. Speakers, volume, volumes, priority and quiet hours are the ones of the play unless the body names others; the content cannot change (for another effect play it again, a text reuses its speech). A new play in the history with params.replayOf. Works for sounds and clips, and for text, talk, file and processed url plays while their audio is there (the audio cache time), else 409 ERROR_AUDIO_GONE. Not for talk live and url plays without processing (400 ERROR_NOT_REPLAYABLE). Credits: only the base fee, 1 for sounds and clips, 2 for the rest.",
+        "description": "Scope: `play`. Plays the audio of a play once more, exactly as it played (intro, outro and effect included): what someone said into the mic, a preview on the speakers, or again in another room.\n\n- Speakers, volume, volumes, priority and quiet hours are the ones of the play unless the body names others. The content cannot change: for another effect play it again (a text reuses its speech).\n- A new play in the history with `params.replayOf`.\n- Works for sounds and clips, and for text, talk, file and processed URL plays while their audio is there (the audio cache time), else `409 ERROR_AUDIO_GONE`. Not for talk live and URL plays without processing (`400 ERROR_NOT_REPLAYABLE`).\n- Credits: only the base fee, 1 for sounds and clips, 2 for the rest.",
         "parameters": [
           {
             "name": "uuid",
@@ -54327,7 +54333,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Your clips": {
@@ -56808,7 +56815,7 @@
           "Triggers"
         ],
         "summary": "Create a trigger",
-        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. A secret URL that plays a fixed announcement without an API key: a doorbell, a Stream Deck button, a shortcut. Call it with GET or POST; the answer and every read later have the URL. Free, each play costs like any play. How many a workspace may have depends on the plan (Home 3, Family 10, Team 30, Business 100, none without a plan): above it 403 ERROR_PLAN_LIMIT_REACHED with limit, used, allowed and requiredPlan in details.",
+        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. A secret URL that plays an announcement without an API key, for anything that can call a URL: a doorbell, a button, a shortcut, a webhook.\n\n- Call it with `GET` or `POST`. The answer and every later read have `url`.\n- It plays its own text, sound or clip, or one entry of a rule's pool (`rules`: if/then by event, values of the call, day and hour).\n- Each play costs credits like any play. Cooldown, daily limit and allowed websites limit what a leaked URL can do.\n- How many a workspace may have depends on the plan (Home 3, Family 10, Team 30, Business 100, none without a plan): above it `403 ERROR_PLAN_LIMIT_REACHED` with `limit`, `used`, `allowed` and `requiredPlan` in `details`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -64659,7 +64666,7 @@
           "Triggers"
         ],
         "summary": "List a trigger's calls",
-        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as {\"type\":\"trigger_call\",\"data\":{…}} (admins).",
+        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as `{\"type\":\"trigger_call\",\"data\":{…}}` (admins).",
         "parameters": [
           {
             "name": "id",
@@ -65933,7 +65940,7 @@
           "API Keys"
         ],
         "summary": "List API keys",
-        "description": "Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys (scope manage), with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.",
+        "description": "Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.",
         "parameters": [
           {
             "name": "limit",
@@ -66528,7 +66535,7 @@
           "API Keys"
         ],
         "summary": "Create API key",
-        "description": "Scope: `manage`. Admins of the workspace only. Creates a new API key for the workspace (scope manage). A non-empty name is required, names are unique among the workspace's keys (case-insensitive). The slug comes from the name (-2, -3 … when taken) unless you pass one, a given slug that is taken is a 409. The scope is play unless you ask for read or manage, never more than your own key (403 ERROR_INSUFFICIENT_SCOPE). The full key is in this answer only: store it now, it cannot be read again.",
+        "description": "Scope: `manage`. Admins of the workspace only. Creates a new API key for the workspace.\n\n- `name` is required and unique among the workspace's keys (case-insensitive). The slug comes from the name (`-2`, `-3` … when taken) unless you pass one; a given slug that is taken is `409`.\n- `scope`: `play` (default), `create` or `manage`, never more than your own key (`403 ERROR_INSUFFICIENT_SCOPE`).\n- The full key is in this answer only: store it now, it cannot be read again.",
         "requestBody": {
           "required": true,
           "content": {
@@ -67341,7 +67348,7 @@
           "API Keys"
         ],
         "summary": "Update API key",
-        "description": "Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug (scope manage): name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.",
+        "description": "Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug: name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.",
         "parameters": [
           {
             "name": "id",
@@ -68293,7 +68300,7 @@
           "API Keys"
         ],
         "summary": "Delete API key",
-        "description": "Scope: `manage`. Admins of the workspace only. Deletes one of the workspace's API keys by its id or slug (scope manage), so it no longer works and no longer appears in the list. Its slug is free again.",
+        "description": "Scope: `manage`. Admins of the workspace only. Deletes one of the workspace's API keys by its id or slug, so it no longer works and no longer appears in the list. Its slug is free again.",
         "parameters": [
           {
             "name": "id",
@@ -70812,7 +70819,7 @@
           "Integrations"
         ],
         "summary": "List integrations",
-        "description": "Scope: `play`. Every integration of Quak with its state in this workspace (scope play), also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.",
+        "description": "Scope: `play`. Every integration of Quak with its state in this workspace, also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.",
         "responses": {
           "200": {
             "description": "Response for status 200",
@@ -71043,7 +71050,7 @@
           "Integrations"
         ],
         "summary": "Connect integration",
-        "description": "Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace (scope manage, admins): open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it. Slack: “Add to Slack”, afterwards everyone in the Slack workspace plays with `/quak <text>` using this workspace's credits and defaults; a Slack workspace connected elsewhere moves here. IFTTT: `authUrl` is the service page on IFTTT (the link does not really expire), “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection. Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`. From the web app pass `returnTo` to get the browser back there.",
+        "description": "Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace: open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it.\n\n- **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here. From the web app pass `returnTo` to get the browser back there.\n- **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.\n- Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.",
         "parameters": [
           {
             "name": "provider",
@@ -71958,7 +71965,7 @@
           "Integrations"
         ],
         "summary": "Disconnect integration",
-        "description": "Scope: `manage`. Admins of the workspace only. Disconnects a provider from this workspace (scope manage, admins). Slack: the Slack workspace stops playing, its key stops working and the bot token is revoked; the app stays listed in Slack until someone removes it there. IFTTT: every IFTTT account connected to this workspace stops working, its applets fail until connected again. Not connected: `404 ERROR_NOT_CONNECTED`.",
+        "description": "Scope: `manage`. Admins of the workspace only. Disconnects a provider from this workspace. Slack: the Slack workspace stops playing, its key stops working and the bot token is revoked; the app stays listed in Slack until someone removes it there. IFTTT: every IFTTT account connected to this workspace stops working, its applets fail until connected again. Not connected: `404 ERROR_NOT_CONNECTED`.",
         "parameters": [
           {
             "name": "provider",
@@ -72906,7 +72913,7 @@
           "Play"
         ],
         "summary": "Upload ticket",
-        "description": "Scope: `play`. A one-time ticket for an upload from a browser that should not see the API key: your server gets the ticket with its key and hands it to the browser, which uploads straight to the API with \"Authorization: Bearer qk_upt_…\" (or ?ticket=). It only opens POST /v1/play/file, POST /v1/play/talk and POST /v1/clips, works once and for 5 minutes, in the workspace of this request (X-Quak-Workspace) and with the rights of this key: a clip upload still needs scope manage. From a browser only the origins of the website are accepted.",
+        "description": "Scope: `play`. A one-time ticket for an upload from a browser that should not see the API key.\n\n1. Your server gets the ticket with its key.\n2. It hands the ticket to the browser.\n3. The browser uploads straight to the API with `Authorization: Bearer qk_upt_…` (or `?ticket=`).\n\n- Opens only `POST /v1/play/file`, `POST /v1/play/talk` and `POST /v1/clips`.\n- Works once and for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key: a clip upload needs a key with scope `create`.",
         "responses": {
           "200": {
             "description": "Response for status 200",
