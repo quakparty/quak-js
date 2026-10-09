@@ -1754,7 +1754,96 @@ export interface components {
                 } | null) | null;
                 played: (unknown | null) | null;
                 text: (string | null) | null;
-                play: (unknown | null) | null;
+                play: ({
+                    id: string;
+                    /**
+                     * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
+                     * @enum {string}
+                     */
+                    type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
+                    /**
+                     * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
+                     * @enum {string}
+                     */
+                    status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
+                    /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
+                    skipReason: "QUIET_HOURS" | "BUSY" | null;
+                    preview: boolean;
+                    /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
+                    params: {
+                        [key: string]: unknown;
+                    };
+                    players: {
+                        id: string;
+                        slug: string;
+                        name: string;
+                        /**
+                         * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
+                         * @enum {string}
+                         */
+                        status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
+                        error: string | null;
+                        /** @description when Sonos started the clip (Sonos event), else null */
+                        startedAt: string | null;
+                        /** @description when the clip ended (Sonos event or stop), else null */
+                        endedAt: string | null;
+                    }[];
+                    /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
+                    audioUrl: string | null;
+                    /** @description seconds, rounded up */
+                    length: number | null;
+                    credits: number;
+                    /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
+                    fromCache: boolean;
+                    /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
+                    test: boolean;
+                    /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
+                    startsAt: string | null;
+                    /** @description who sent the play */
+                    client: {
+                        /**
+                         * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+                         * @enum {string}
+                         */
+                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                        /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+                        name: string | null;
+                        /** @description its version, e.g. "0.9.0" */
+                        version: string | null;
+                    };
+                    /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                    canReplay: boolean;
+                    /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                    canSave: boolean;
+                    /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
+                    user: {
+                        /** @example Mike */
+                        name: string | null;
+                        /** @example mike@example.com */
+                        email: string;
+                    } | null;
+                    /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
+                    key: {
+                        /**
+                         * @description the name of an own API key, null for other keys
+                         * @example Doorbell
+                         */
+                        name: string | null;
+                        /**
+                         * @description a login (web app, CLI), an own API key or an app connected with OAuth
+                         * @enum {string}
+                         */
+                        type: "LOGIN" | "API" | "OAUTH";
+                        /**
+                         * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+                         * @example Claude
+                         */
+                        app: string | null;
+                    } | null;
+                    /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
+                    requestId: string | null;
+                    createdAt: string;
+                } | null) | null;
                 callId: (string | null) | null;
                 /** @description tests only: every rule and whether it held */
                 rules?: {
@@ -16435,7 +16524,96 @@ export interface operations {
                             } | null) | null;
                             played: (unknown | null) | null;
                             text: (string | null) | null;
-                            play: (unknown | null) | null;
+                            play: ({
+                                id: string;
+                                /**
+                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
+                                 * @enum {string}
+                                 */
+                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
+                                /**
+                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
+                                 * @enum {string}
+                                 */
+                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
+                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
+                                skipReason: "QUIET_HOURS" | "BUSY" | null;
+                                preview: boolean;
+                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
+                                params: {
+                                    [key: string]: unknown;
+                                };
+                                players: {
+                                    id: string;
+                                    slug: string;
+                                    name: string;
+                                    /**
+                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
+                                     * @enum {string}
+                                     */
+                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
+                                    error: string | null;
+                                    /** @description when Sonos started the clip (Sonos event), else null */
+                                    startedAt: string | null;
+                                    /** @description when the clip ended (Sonos event or stop), else null */
+                                    endedAt: string | null;
+                                }[];
+                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
+                                audioUrl: string | null;
+                                /** @description seconds, rounded up */
+                                length: number | null;
+                                credits: number;
+                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
+                                fromCache: boolean;
+                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
+                                test: boolean;
+                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
+                                startsAt: string | null;
+                                /** @description who sent the play */
+                                client: {
+                                    /**
+                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+                                     * @enum {string}
+                                     */
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+                                    name: string | null;
+                                    /** @description its version, e.g. "0.9.0" */
+                                    version: string | null;
+                                };
+                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                canReplay: boolean;
+                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                canSave: boolean;
+                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
+                                user: {
+                                    /** @example Mike */
+                                    name: string | null;
+                                    /** @example mike@example.com */
+                                    email: string;
+                                } | null;
+                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
+                                key: {
+                                    /**
+                                     * @description the name of an own API key, null for other keys
+                                     * @example Doorbell
+                                     */
+                                    name: string | null;
+                                    /**
+                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
+                                     * @enum {string}
+                                     */
+                                    type: "LOGIN" | "API" | "OAUTH";
+                                    /**
+                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+                                     * @example Claude
+                                     */
+                                    app: string | null;
+                                } | null;
+                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
+                                requestId: string | null;
+                                createdAt: string;
+                            } | null) | null;
                             callId: (string | null) | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
@@ -16466,7 +16644,96 @@ export interface operations {
                             } | null) | null;
                             played: (unknown | null) | null;
                             text: (string | null) | null;
-                            play: (unknown | null) | null;
+                            play: ({
+                                id: string;
+                                /**
+                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
+                                 * @enum {string}
+                                 */
+                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
+                                /**
+                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
+                                 * @enum {string}
+                                 */
+                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
+                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
+                                skipReason: "QUIET_HOURS" | "BUSY" | null;
+                                preview: boolean;
+                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
+                                params: {
+                                    [key: string]: unknown;
+                                };
+                                players: {
+                                    id: string;
+                                    slug: string;
+                                    name: string;
+                                    /**
+                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
+                                     * @enum {string}
+                                     */
+                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
+                                    error: string | null;
+                                    /** @description when Sonos started the clip (Sonos event), else null */
+                                    startedAt: string | null;
+                                    /** @description when the clip ended (Sonos event or stop), else null */
+                                    endedAt: string | null;
+                                }[];
+                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
+                                audioUrl: string | null;
+                                /** @description seconds, rounded up */
+                                length: number | null;
+                                credits: number;
+                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
+                                fromCache: boolean;
+                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
+                                test: boolean;
+                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
+                                startsAt: string | null;
+                                /** @description who sent the play */
+                                client: {
+                                    /**
+                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+                                     * @enum {string}
+                                     */
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+                                    name: string | null;
+                                    /** @description its version, e.g. "0.9.0" */
+                                    version: string | null;
+                                };
+                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                canReplay: boolean;
+                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                canSave: boolean;
+                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
+                                user: {
+                                    /** @example Mike */
+                                    name: string | null;
+                                    /** @example mike@example.com */
+                                    email: string;
+                                } | null;
+                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
+                                key: {
+                                    /**
+                                     * @description the name of an own API key, null for other keys
+                                     * @example Doorbell
+                                     */
+                                    name: string | null;
+                                    /**
+                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
+                                     * @enum {string}
+                                     */
+                                    type: "LOGIN" | "API" | "OAUTH";
+                                    /**
+                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+                                     * @example Claude
+                                     */
+                                    app: string | null;
+                                } | null;
+                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
+                                requestId: string | null;
+                                createdAt: string;
+                            } | null) | null;
                             callId: (string | null) | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
@@ -16497,7 +16764,96 @@ export interface operations {
                             } | null) | null;
                             played: (unknown | null) | null;
                             text: (string | null) | null;
-                            play: (unknown | null) | null;
+                            play: ({
+                                id: string;
+                                /**
+                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
+                                 * @enum {string}
+                                 */
+                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
+                                /**
+                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
+                                 * @enum {string}
+                                 */
+                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
+                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
+                                skipReason: "QUIET_HOURS" | "BUSY" | null;
+                                preview: boolean;
+                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
+                                params: {
+                                    [key: string]: unknown;
+                                };
+                                players: {
+                                    id: string;
+                                    slug: string;
+                                    name: string;
+                                    /**
+                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
+                                     * @enum {string}
+                                     */
+                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
+                                    error: string | null;
+                                    /** @description when Sonos started the clip (Sonos event), else null */
+                                    startedAt: string | null;
+                                    /** @description when the clip ended (Sonos event or stop), else null */
+                                    endedAt: string | null;
+                                }[];
+                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
+                                audioUrl: string | null;
+                                /** @description seconds, rounded up */
+                                length: number | null;
+                                credits: number;
+                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
+                                fromCache: boolean;
+                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
+                                test: boolean;
+                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
+                                startsAt: string | null;
+                                /** @description who sent the play */
+                                client: {
+                                    /**
+                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+                                     * @enum {string}
+                                     */
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+                                    name: string | null;
+                                    /** @description its version, e.g. "0.9.0" */
+                                    version: string | null;
+                                };
+                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                canReplay: boolean;
+                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                canSave: boolean;
+                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
+                                user: {
+                                    /** @example Mike */
+                                    name: string | null;
+                                    /** @example mike@example.com */
+                                    email: string;
+                                } | null;
+                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
+                                key: {
+                                    /**
+                                     * @description the name of an own API key, null for other keys
+                                     * @example Doorbell
+                                     */
+                                    name: string | null;
+                                    /**
+                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
+                                     * @enum {string}
+                                     */
+                                    type: "LOGIN" | "API" | "OAUTH";
+                                    /**
+                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+                                     * @example Claude
+                                     */
+                                    app: string | null;
+                                } | null;
+                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
+                                requestId: string | null;
+                                createdAt: string;
+                            } | null) | null;
                             callId: (string | null) | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {

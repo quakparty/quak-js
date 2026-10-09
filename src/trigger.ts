@@ -2,13 +2,10 @@ import { clientHeader } from "./client-header.js";
 import { DEFAULT_BASE_URL } from "./client.js";
 import { QuakError } from "./errors.js";
 import type { components } from "./generated/schema.js";
-import type { Play } from "./types.js";
 
-type Result = components["schemas"]["TriggerCallResult"]["data"];
-
+export type TriggerResponse = components["schemas"]["TriggerCallResult"];
 /** What a trigger did: `played` with its play, or `skipped` with the `reason` (cooldown, quiet hours etc.). */
-export type TriggerResult = Omit<Result, "play"> & { play: Play | null };
-export type TriggerResponse = { data: TriggerResult };
+export type TriggerResult = TriggerResponse["data"];
 
 export type FireTriggerOptions = {
   /** Fields for the trigger's `{{variables}}` and `event`, sent as JSON; on the same name they win over `query`. */

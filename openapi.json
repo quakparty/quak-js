@@ -161,7 +161,367 @@
                 "nullable": true,
                 "anyOf": [
                   {
-                    "description": "the play, like GET /v1/plays/:id"
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "enum": [
+                          "TEXT",
+                          "FILE",
+                          "URL",
+                          "SOUND",
+                          "CLIP",
+                          "TALK"
+                        ],
+                        "description": "TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL",
+                        "type": "string"
+                      },
+                      "status": {
+                        "enum": [
+                          "FAILED",
+                          "SKIPPED",
+                          "PENDING",
+                          "ACTIVE",
+                          "PARTIALLY_DONE",
+                          "DONE",
+                          "STOPPED",
+                          "SCHEDULED"
+                        ],
+                        "description": "SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers",
+                        "type": "string"
+                      },
+                      "skipReason": {
+                        "description": "SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority",
+                        "anyOf": [
+                          {
+                            "const": "QUIET_HOURS",
+                            "type": "string"
+                          },
+                          {
+                            "const": "BUSY",
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "preview": {
+                        "type": "boolean"
+                      },
+                      "params": {
+                        "description": "the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity)",
+                        "type": "object",
+                        "patternProperties": {
+                          "^(.*)$": {}
+                        }
+                      },
+                      "players": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "slug": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "enum": [
+                                "PENDING",
+                                "ACTIVE",
+                                "DONE",
+                                "STOPPED",
+                                "FAILED",
+                                "SKIPPED"
+                              ],
+                              "description": "PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)",
+                              "type": "string"
+                            },
+                            "error": {
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "startedAt": {
+                              "description": "when Sonos started the clip (Sonos event), else null",
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            },
+                            "endedAt": {
+                              "description": "when the clip ended (Sonos event or stop), else null",
+                              "anyOf": [
+                                {
+                                  "type": "string"
+                                },
+                                {
+                                  "type": "null"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "slug",
+                            "name",
+                            "status",
+                            "error",
+                            "startedAt",
+                            "endedAt"
+                          ]
+                        }
+                      },
+                      "audioUrl": {
+                        "description": "the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes)",
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "length": {
+                        "description": "seconds, rounded up",
+                        "anyOf": [
+                          {
+                            "type": "number"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "credits": {
+                        "type": "number"
+                      },
+                      "fromCache": {
+                        "description": "true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file)",
+                        "type": "boolean"
+                      },
+                      "test": {
+                        "description": "a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list",
+                        "type": "boolean"
+                      },
+                      "startsAt": {
+                        "description": "startIn: when the play goes (or went) to Sonos, null for plays that start right away",
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "client": {
+                        "description": "who sent the play",
+                        "type": "object",
+                        "properties": {
+                          "platform": {
+                            "enum": [
+                              "API",
+                              "JS",
+                              "WEB",
+                              "CLI",
+                              "MACOS",
+                              "IOS",
+                              "IPADOS",
+                              "RAYCAST",
+                              "HOME_ASSISTANT",
+                              "GITHUB",
+                              "SLACK",
+                              "ZAPIER",
+                              "IFTTT",
+                              "MCP",
+                              "TRIGGER"
+                            ],
+                            "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
+                            "type": "string"
+                          },
+                          "name": {
+                            "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          },
+                          "version": {
+                            "description": "its version, e.g. \"0.9.0\"",
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "platform",
+                          "name",
+                          "version"
+                        ]
+                      },
+                      "canReplay": {
+                        "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                        "type": "boolean"
+                      },
+                      "canSave": {
+                        "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                        "type": "boolean"
+                      },
+                      "user": {
+                        "description": "Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone",
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "examples": [
+                                  "Mike"
+                                ],
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "email": {
+                                "examples": [
+                                  "mike@example.com"
+                                ],
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "email"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "key": {
+                        "description": "Beta, may change without notice. the key the play was made with, never its token; null when the key is gone",
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "name": {
+                                "description": "the name of an own API key, null for other keys",
+                                "examples": [
+                                  "Doorbell"
+                                ],
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              },
+                              "type": {
+                                "enum": [
+                                  "LOGIN",
+                                  "API",
+                                  "OAUTH"
+                                ],
+                                "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
+                                "type": "string"
+                              },
+                              "app": {
+                                "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
+                                "examples": [
+                                  "Claude"
+                                ],
+                                "anyOf": [
+                                  {
+                                    "type": "string"
+                                  },
+                                  {
+                                    "type": "null"
+                                  }
+                                ]
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "type",
+                              "app"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "requestId": {
+                        "description": "Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026",
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "type",
+                      "status",
+                      "skipReason",
+                      "preview",
+                      "params",
+                      "players",
+                      "audioUrl",
+                      "length",
+                      "credits",
+                      "fromCache",
+                      "test",
+                      "startsAt",
+                      "client",
+                      "canReplay",
+                      "canSave",
+                      "user",
+                      "key",
+                      "requestId",
+                      "createdAt"
+                    ]
                   },
                   {
                     "type": "null"
@@ -23608,8 +23968,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Everything you can play on": {
@@ -23785,8 +24144,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -23914,8 +24272,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -28461,8 +28818,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -48584,8 +48940,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Your history": {
@@ -63172,7 +63527,367 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "the play, like GET /v1/plays/:id"
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "TEXT",
+                                    "FILE",
+                                    "URL",
+                                    "SOUND",
+                                    "CLIP",
+                                    "TALK"
+                                  ],
+                                  "description": "TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL",
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "FAILED",
+                                    "SKIPPED",
+                                    "PENDING",
+                                    "ACTIVE",
+                                    "PARTIALLY_DONE",
+                                    "DONE",
+                                    "STOPPED",
+                                    "SCHEDULED"
+                                  ],
+                                  "description": "SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers",
+                                  "type": "string"
+                                },
+                                "skipReason": {
+                                  "description": "SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority",
+                                  "anyOf": [
+                                    {
+                                      "const": "QUIET_HOURS",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "BUSY",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "preview": {
+                                  "type": "boolean"
+                                },
+                                "params": {
+                                  "description": "the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity)",
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^(.*)$": {}
+                                  }
+                                },
+                                "players": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "slug": {
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "status": {
+                                        "enum": [
+                                          "PENDING",
+                                          "ACTIVE",
+                                          "DONE",
+                                          "STOPPED",
+                                          "FAILED",
+                                          "SKIPPED"
+                                        ],
+                                        "description": "PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)",
+                                        "type": "string"
+                                      },
+                                      "error": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "startedAt": {
+                                        "description": "when Sonos started the clip (Sonos event), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "endedAt": {
+                                        "description": "when the clip ended (Sonos event or stop), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "slug",
+                                      "name",
+                                      "status",
+                                      "error",
+                                      "startedAt",
+                                      "endedAt"
+                                    ]
+                                  }
+                                },
+                                "audioUrl": {
+                                  "description": "the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes)",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "length": {
+                                  "description": "seconds, rounded up",
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "credits": {
+                                  "type": "number"
+                                },
+                                "fromCache": {
+                                  "description": "true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file)",
+                                  "type": "boolean"
+                                },
+                                "test": {
+                                  "description": "a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list",
+                                  "type": "boolean"
+                                },
+                                "startsAt": {
+                                  "description": "startIn: when the play goes (or went) to Sonos, null for plays that start right away",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "client": {
+                                  "description": "who sent the play",
+                                  "type": "object",
+                                  "properties": {
+                                    "platform": {
+                                      "enum": [
+                                        "API",
+                                        "JS",
+                                        "WEB",
+                                        "CLI",
+                                        "MACOS",
+                                        "IOS",
+                                        "IPADOS",
+                                        "RAYCAST",
+                                        "HOME_ASSISTANT",
+                                        "GITHUB",
+                                        "SLACK",
+                                        "ZAPIER",
+                                        "IFTTT",
+                                        "MCP",
+                                        "TRIGGER"
+                                      ],
+                                      "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "version": {
+                                      "description": "its version, e.g. \"0.9.0\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "platform",
+                                    "name",
+                                    "version"
+                                  ]
+                                },
+                                "canReplay": {
+                                  "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                                  "type": "boolean"
+                                },
+                                "canSave": {
+                                  "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                                  "type": "boolean"
+                                },
+                                "user": {
+                                  "description": "Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "examples": [
+                                            "Mike"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "email": {
+                                          "examples": [
+                                            "mike@example.com"
+                                          ],
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "email"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "key": {
+                                  "description": "Beta, may change without notice. the key the play was made with, never its token; null when the key is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "description": "the name of an own API key, null for other keys",
+                                          "examples": [
+                                            "Doorbell"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "type": {
+                                          "enum": [
+                                            "LOGIN",
+                                            "API",
+                                            "OAUTH"
+                                          ],
+                                          "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
+                                          "type": "string"
+                                        },
+                                        "app": {
+                                          "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
+                                          "examples": [
+                                            "Claude"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "type",
+                                        "app"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "requestId": {
+                                  "description": "Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "type",
+                                "status",
+                                "skipReason",
+                                "preview",
+                                "params",
+                                "players",
+                                "audioUrl",
+                                "length",
+                                "credits",
+                                "fromCache",
+                                "test",
+                                "startsAt",
+                                "client",
+                                "canReplay",
+                                "canSave",
+                                "user",
+                                "key",
+                                "requestId",
+                                "createdAt"
+                              ]
                             },
                             {
                               "type": "null"
@@ -63390,7 +64105,367 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "the play, like GET /v1/plays/:id"
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "TEXT",
+                                    "FILE",
+                                    "URL",
+                                    "SOUND",
+                                    "CLIP",
+                                    "TALK"
+                                  ],
+                                  "description": "TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL",
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "FAILED",
+                                    "SKIPPED",
+                                    "PENDING",
+                                    "ACTIVE",
+                                    "PARTIALLY_DONE",
+                                    "DONE",
+                                    "STOPPED",
+                                    "SCHEDULED"
+                                  ],
+                                  "description": "SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers",
+                                  "type": "string"
+                                },
+                                "skipReason": {
+                                  "description": "SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority",
+                                  "anyOf": [
+                                    {
+                                      "const": "QUIET_HOURS",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "BUSY",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "preview": {
+                                  "type": "boolean"
+                                },
+                                "params": {
+                                  "description": "the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity)",
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^(.*)$": {}
+                                  }
+                                },
+                                "players": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "slug": {
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "status": {
+                                        "enum": [
+                                          "PENDING",
+                                          "ACTIVE",
+                                          "DONE",
+                                          "STOPPED",
+                                          "FAILED",
+                                          "SKIPPED"
+                                        ],
+                                        "description": "PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)",
+                                        "type": "string"
+                                      },
+                                      "error": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "startedAt": {
+                                        "description": "when Sonos started the clip (Sonos event), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "endedAt": {
+                                        "description": "when the clip ended (Sonos event or stop), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "slug",
+                                      "name",
+                                      "status",
+                                      "error",
+                                      "startedAt",
+                                      "endedAt"
+                                    ]
+                                  }
+                                },
+                                "audioUrl": {
+                                  "description": "the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes)",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "length": {
+                                  "description": "seconds, rounded up",
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "credits": {
+                                  "type": "number"
+                                },
+                                "fromCache": {
+                                  "description": "true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file)",
+                                  "type": "boolean"
+                                },
+                                "test": {
+                                  "description": "a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list",
+                                  "type": "boolean"
+                                },
+                                "startsAt": {
+                                  "description": "startIn: when the play goes (or went) to Sonos, null for plays that start right away",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "client": {
+                                  "description": "who sent the play",
+                                  "type": "object",
+                                  "properties": {
+                                    "platform": {
+                                      "enum": [
+                                        "API",
+                                        "JS",
+                                        "WEB",
+                                        "CLI",
+                                        "MACOS",
+                                        "IOS",
+                                        "IPADOS",
+                                        "RAYCAST",
+                                        "HOME_ASSISTANT",
+                                        "GITHUB",
+                                        "SLACK",
+                                        "ZAPIER",
+                                        "IFTTT",
+                                        "MCP",
+                                        "TRIGGER"
+                                      ],
+                                      "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "version": {
+                                      "description": "its version, e.g. \"0.9.0\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "platform",
+                                    "name",
+                                    "version"
+                                  ]
+                                },
+                                "canReplay": {
+                                  "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                                  "type": "boolean"
+                                },
+                                "canSave": {
+                                  "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                                  "type": "boolean"
+                                },
+                                "user": {
+                                  "description": "Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "examples": [
+                                            "Mike"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "email": {
+                                          "examples": [
+                                            "mike@example.com"
+                                          ],
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "email"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "key": {
+                                  "description": "Beta, may change without notice. the key the play was made with, never its token; null when the key is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "description": "the name of an own API key, null for other keys",
+                                          "examples": [
+                                            "Doorbell"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "type": {
+                                          "enum": [
+                                            "LOGIN",
+                                            "API",
+                                            "OAUTH"
+                                          ],
+                                          "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
+                                          "type": "string"
+                                        },
+                                        "app": {
+                                          "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
+                                          "examples": [
+                                            "Claude"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "type",
+                                        "app"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "requestId": {
+                                  "description": "Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "type",
+                                "status",
+                                "skipReason",
+                                "preview",
+                                "params",
+                                "players",
+                                "audioUrl",
+                                "length",
+                                "credits",
+                                "fromCache",
+                                "test",
+                                "startsAt",
+                                "client",
+                                "canReplay",
+                                "canSave",
+                                "user",
+                                "key",
+                                "requestId",
+                                "createdAt"
+                              ]
                             },
                             {
                               "type": "null"
@@ -63608,7 +64683,367 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "the play, like GET /v1/plays/:id"
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "TEXT",
+                                    "FILE",
+                                    "URL",
+                                    "SOUND",
+                                    "CLIP",
+                                    "TALK"
+                                  ],
+                                  "description": "TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL",
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "FAILED",
+                                    "SKIPPED",
+                                    "PENDING",
+                                    "ACTIVE",
+                                    "PARTIALLY_DONE",
+                                    "DONE",
+                                    "STOPPED",
+                                    "SCHEDULED"
+                                  ],
+                                  "description": "SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers",
+                                  "type": "string"
+                                },
+                                "skipReason": {
+                                  "description": "SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority",
+                                  "anyOf": [
+                                    {
+                                      "const": "QUIET_HOURS",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "const": "BUSY",
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "preview": {
+                                  "type": "boolean"
+                                },
+                                "params": {
+                                  "description": "the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity)",
+                                  "type": "object",
+                                  "patternProperties": {
+                                    "^(.*)$": {}
+                                  }
+                                },
+                                "players": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "slug": {
+                                        "type": "string"
+                                      },
+                                      "name": {
+                                        "type": "string"
+                                      },
+                                      "status": {
+                                        "enum": [
+                                          "PENDING",
+                                          "ACTIVE",
+                                          "DONE",
+                                          "STOPPED",
+                                          "FAILED",
+                                          "SKIPPED"
+                                        ],
+                                        "description": "PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)",
+                                        "type": "string"
+                                      },
+                                      "error": {
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "startedAt": {
+                                        "description": "when Sonos started the clip (Sonos event), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      },
+                                      "endedAt": {
+                                        "description": "when the clip ended (Sonos event or stop), else null",
+                                        "anyOf": [
+                                          {
+                                            "type": "string"
+                                          },
+                                          {
+                                            "type": "null"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "slug",
+                                      "name",
+                                      "status",
+                                      "error",
+                                      "startedAt",
+                                      "endedAt"
+                                    ]
+                                  }
+                                },
+                                "audioUrl": {
+                                  "description": "the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes)",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "length": {
+                                  "description": "seconds, rounded up",
+                                  "anyOf": [
+                                    {
+                                      "type": "number"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "credits": {
+                                  "type": "number"
+                                },
+                                "fromCache": {
+                                  "description": "true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file)",
+                                  "type": "boolean"
+                                },
+                                "test": {
+                                  "description": "a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list",
+                                  "type": "boolean"
+                                },
+                                "startsAt": {
+                                  "description": "startIn: when the play goes (or went) to Sonos, null for plays that start right away",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "client": {
+                                  "description": "who sent the play",
+                                  "type": "object",
+                                  "properties": {
+                                    "platform": {
+                                      "enum": [
+                                        "API",
+                                        "JS",
+                                        "WEB",
+                                        "CLI",
+                                        "MACOS",
+                                        "IOS",
+                                        "IPADOS",
+                                        "RAYCAST",
+                                        "HOME_ASSISTANT",
+                                        "GITHUB",
+                                        "SLACK",
+                                        "ZAPIER",
+                                        "IFTTT",
+                                        "MCP",
+                                        "TRIGGER"
+                                      ],
+                                      "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
+                                      "type": "string"
+                                    },
+                                    "name": {
+                                      "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    },
+                                    "version": {
+                                      "description": "its version, e.g. \"0.9.0\"",
+                                      "anyOf": [
+                                        {
+                                          "type": "string"
+                                        },
+                                        {
+                                          "type": "null"
+                                        }
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "platform",
+                                    "name",
+                                    "version"
+                                  ]
+                                },
+                                "canReplay": {
+                                  "description": "whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
+                                  "type": "boolean"
+                                },
+                                "canSave": {
+                                  "description": "whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys)",
+                                  "type": "boolean"
+                                },
+                                "user": {
+                                  "description": "Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "examples": [
+                                            "Mike"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "email": {
+                                          "examples": [
+                                            "mike@example.com"
+                                          ],
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "email"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "key": {
+                                  "description": "Beta, may change without notice. the key the play was made with, never its token; null when the key is gone",
+                                  "anyOf": [
+                                    {
+                                      "type": "object",
+                                      "properties": {
+                                        "name": {
+                                          "description": "the name of an own API key, null for other keys",
+                                          "examples": [
+                                            "Doorbell"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        },
+                                        "type": {
+                                          "enum": [
+                                            "LOGIN",
+                                            "API",
+                                            "OAUTH"
+                                          ],
+                                          "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
+                                          "type": "string"
+                                        },
+                                        "app": {
+                                          "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
+                                          "examples": [
+                                            "Claude"
+                                          ],
+                                          "anyOf": [
+                                            {
+                                              "type": "string"
+                                            },
+                                            {
+                                              "type": "null"
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "type",
+                                        "app"
+                                      ]
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "requestId": {
+                                  "description": "Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026",
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "null"
+                                    }
+                                  ]
+                                },
+                                "createdAt": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "type",
+                                "status",
+                                "skipReason",
+                                "preview",
+                                "params",
+                                "players",
+                                "audioUrl",
+                                "length",
+                                "credits",
+                                "fromCache",
+                                "test",
+                                "startsAt",
+                                "client",
+                                "canReplay",
+                                "canSave",
+                                "user",
+                                "key",
+                                "requestId",
+                                "createdAt"
+                              ]
                             },
                             {
                               "type": "null"
