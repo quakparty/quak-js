@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.9 - 2026-10-09
+
 - OpenAPI snapshot updated: `audioCacheMinutes` moves into `PATCH /v1/workspace`, `PATCH /v1/workspace/audio-cache` is gone
 - `fireTrigger(urlOrToken, { body?, query?, baseUrl?, fetch? })`: fire a trigger URL or token without an API key
 - Stricter types from the API: numbers and booleans in play params are `number` and `boolean` only, no longer also

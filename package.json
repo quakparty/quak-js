@@ -1,6 +1,6 @@
 {
   "name": "@quak/js",
-  "version": "0.9.8",
+  "version": "0.9.9",
   "description": "JavaScript/TypeScript client for the Quak API (quak.party): text-to-speech announcements, sounds and clips on Sonos speakers",
   "keywords": [
     "quak",
