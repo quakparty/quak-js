@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `fireTrigger(urlOrToken, { body?, query?, baseUrl?, fetch? })`: fire a trigger URL or token without an API key
+- Stricter types from the API: numbers and booleans in play params are `number` and `boolean` only, no longer also
+  `string` (`volume: "20"` is a type error now; uploads still send them as form text)
 - OpenAPI snapshot updated: plays carry `test` (trigger tests, hidden from the history); trigger fields (rules, limits,
   sound settings), `POST /v1/triggers/{id}/test`, `GET /v1/triggers/{id}/calls`, billing changes and their error codes
   for the raw client. `watch()` skips message types it does not know, like `trigger_call`

@@ -29,6 +29,10 @@ enters them there.
 - `src/watch.ts`: the live status (`GET /v1/plays/watch`) behind `quak.watch()`: auth message, reconnect with growing
   pauses, no reconnect after 4001/4401, a dead connection after 60 s of silence. Only the global `WebSocket` or the
   one passed in, never a dependency.
+- `src/trigger.ts`: `fireTrigger(urlOrToken, { body, query, baseUrl, fetch })`, a standalone function without a key
+  (POST to `/t/<token>`). Its answer type comes from `components.schemas.TriggerCallResult`; `/t/` itself stays out of
+  the API reference on purpose. Managing triggers is for the web app only (Mike, 09.10.2026): no helpers for
+  `/v1/triggers` beyond the generated types.
 - `src/types.ts`: all parameter and response types, **only derived** from `src/generated/schema.ts`, never rebuilt by
   hand. When the schema lacks a type, fix it in the API, not here.
 - `src/errors.ts`: `QuakError` and `unwrap`.

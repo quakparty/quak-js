@@ -227,7 +227,7 @@ follow the same Sonos rules.
 ## Parameters
 
 The tables are generated from the API's OpenAPI schema; the [API reference](https://quak.party/docs/api) has
-the full details, the answers and the errors. Numbers and booleans may also be passed as strings (`"20"`, `"true"`), which the API accepts from forms.
+the full details, the answers and the errors.
 
 ### Common parameters
 
@@ -244,7 +244,7 @@ Every play kind takes these. Missing ones come from the workspace defaults (`PAT
 | `effectIntensity`   | `"off"` \| `"weak"` \| `"medium"` \| `"strong"` |          | Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.                                                                                                                                                                                                                                                         |
 | `ambience`          | `string`                                        |          | Beta, may change without notice. place behind the voice, combinable with effect, default: the workspace default (sounds and clips only with process: true). One of `none`, `station`, `stadium`, `f1`, `airport`, `tennis`, `pool`, `cafe`, `rain`, `beach`, `forest`, `office`, `church`, `christmas`, `cabin`, `supermarket`, `spaceship`                                                                            |
 | `ambienceIntensity` | `"off"` \| `"weak"` \| `"medium"` \| `"strong"` |          | Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience                                                                                                                                                                                                                                                                                                          |
-| `volume`            | `number` 1-100                                  |          | 1-100, default: the user's default volume                                                                                                                                                                                                                                                                                                                                                                              |
+| `volume`            | `number` 1-100                                  |          | 1-100, default: the workspace's volume                                                                                                                                                                                                                                                                                                                                                                                 |
 | `volumes`           | `Record<string, number>`                        |          | volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.                                                                                                         |
 | `to`                | `string[]` \| `string`                          |          | speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers                                                                                                                                                                                                                                                                                         |
 | `quietHours`        | `string`                                        |          | when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"                                                                                                                                                                                                                                                                                                                 |
@@ -434,6 +434,25 @@ for (const ambience of ambiences) {
   console.log(`${ambience.id}: ${ambience.description}`);
 }
 ```
+
+## Triggers
+
+A trigger is a secret URL (`https://api.quak.party/t/qk_trg_…`) that plays a fixed announcement, made in the
+[web app](https://quak.party/app). `fireTrigger` calls it, with no API key, from servers and browsers alike:
+
+```ts
+import { fireTrigger } from "@quak/js";
+
+// the URL or just the token; body fields fill the trigger's {{variables}}
+const { data } = await fireTrigger(process.env.QUAK_TRIGGER_URL!, { body: { name: "Ben" } });
+if (data.status === "skipped") {
+  console.log(data.reason); // COOLDOWN, QUIET_HOURS, DAILY_LIMIT etc., not an error
+}
+```
+
+Options: `body` (sent as JSON, wins over `query` on the same name), `query`, `baseUrl` (for a bare token) and
+`fetch`. Errors are QuakErrors, e.g. `ERROR_TRIGGER_NOT_FOUND` or `ERROR_ORIGIN_NOT_ALLOWED`. Triggers are managed in
+the web app only.
 
 ## Credits and limits
 

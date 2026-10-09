@@ -20,6 +20,228 @@
     }
   },
   "components": {
+    "schemas": {
+      "TriggerCallResult": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "description": "played (201), skipped (200, see reason) or dry_run (tests only)",
+                "anyOf": [
+                  {
+                    "const": "played",
+                    "type": "string"
+                  },
+                  {
+                    "const": "skipped",
+                    "type": "string"
+                  },
+                  {
+                    "const": "dry_run",
+                    "type": "string"
+                  }
+                ]
+              },
+              "reason": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
+                    "anyOf": [
+                      {
+                        "const": "EVENT_IGNORED",
+                        "type": "string"
+                      },
+                      {
+                        "const": "EVENT_FILTERED",
+                        "type": "string"
+                      },
+                      {
+                        "const": "NO_RULE",
+                        "type": "string"
+                      },
+                      {
+                        "const": "RULE_SILENT",
+                        "type": "string"
+                      },
+                      {
+                        "const": "COOLDOWN",
+                        "type": "string"
+                      },
+                      {
+                        "const": "DAILY_LIMIT",
+                        "type": "string"
+                      },
+                      {
+                        "const": "EMPTY_TEXT",
+                        "type": "string"
+                      },
+                      {
+                        "const": "QUIET_HOURS",
+                        "type": "string"
+                      },
+                      {
+                        "const": "BUSY",
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "event": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "rule": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "index": {
+                        "type": "number"
+                      },
+                      "name": {
+                        "nullable": true,
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "index",
+                      "name"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "played": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "description": "{\"sound\": …}, {\"clip\": …} or {\"text\": …}, what it picked"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "text": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "play": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "description": "the play, like GET /v1/plays/:id"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "callId": {
+                "nullable": true,
+                "anyOf": [
+                  {
+                    "format": "uuid",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "rules": {
+                "description": "tests only: every rule and whether it held",
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "number"
+                    },
+                    "name": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "holds": {
+                      "type": "boolean"
+                    },
+                    "failed": {
+                      "nullable": true,
+                      "anyOf": [
+                        {
+                          "description": "the first condition that did not hold: \"events\", \"match.<variable>\" or \"time\"",
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "index",
+                    "name",
+                    "holds",
+                    "failed"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "status",
+              "reason",
+              "event",
+              "rule",
+              "played",
+              "text",
+              "play",
+              "callId"
+            ]
+          }
+        },
+        "required": [
+          "data"
+        ]
+      }
+    },
     "securitySchemes": {
       "bearerAuth": {
         "type": "http",
@@ -32,8 +254,7 @@
         "name": "apikey",
         "description": "API key as `?apikey=<API_KEY>`"
       }
-    },
-    "schemas": {}
+    }
   },
   "security": [
     {
@@ -209,38 +430,13 @@
                   "name": {
                     "type": "string",
                     "maxLength": 80,
-                    "description": "your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it (\"Mike's Space\"); changeable in PATCH /v1/user/profile",
+                    "description": "your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile",
                     "examples": [
                       "Mike"
                     ]
                   },
-                  "language": {
-                    "type": "string",
-                    "description": "language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US",
-                    "examples": [
-                      "en-GB"
-                    ]
-                  },
-                  "timeZone": {
-                    "type": "string",
-                    "description": "IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC",
-                    "examples": [
-                      "Europe/Berlin"
-                    ]
-                  },
                   "newsletter": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: the Quak newsletter, starts once the address is confirmed. Default false",
                     "examples": [
                       false
@@ -263,8 +459,7 @@
                   "summary": "Full: every field",
                   "value": {
                     "email": "you@example.com",
-                    "language": "de",
-                    "timeZone": "Europe/Berlin",
+                    "name": "Kim",
                     "newsletter": false
                   }
                 }
@@ -281,23 +476,9 @@
                   "name": {
                     "type": "string",
                     "maxLength": 80,
-                    "description": "your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it (\"Mike's Space\"); changeable in PATCH /v1/user/profile",
+                    "description": "your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile",
                     "examples": [
                       "Mike"
-                    ]
-                  },
-                  "language": {
-                    "type": "string",
-                    "description": "language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US",
-                    "examples": [
-                      "en-GB"
-                    ]
-                  },
-                  "timeZone": {
-                    "type": "string",
-                    "description": "IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC",
-                    "examples": [
-                      "Europe/Berlin"
                     ]
                   },
                   "newsletter": {
@@ -335,8 +516,7 @@
                   "summary": "Full: every field",
                   "value": {
                     "email": "you@example.com",
-                    "language": "de",
-                    "timeZone": "Europe/Berlin",
+                    "name": "Kim",
                     "newsletter": false
                   }
                 }
@@ -353,23 +533,9 @@
                   "name": {
                     "type": "string",
                     "maxLength": 80,
-                    "description": "your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it (\"Mike's Space\"); changeable in PATCH /v1/user/profile",
+                    "description": "your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile",
                     "examples": [
                       "Mike"
-                    ]
-                  },
-                  "language": {
-                    "type": "string",
-                    "description": "language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US",
-                    "examples": [
-                      "en-GB"
-                    ]
-                  },
-                  "timeZone": {
-                    "type": "string",
-                    "description": "IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC",
-                    "examples": [
-                      "Europe/Berlin"
                     ]
                   },
                   "newsletter": {
@@ -407,8 +573,7 @@
                   "summary": "Full: every field",
                   "value": {
                     "email": "you@example.com",
-                    "language": "de",
-                    "timeZone": "Europe/Berlin",
+                    "name": "Kim",
                     "newsletter": false
                   }
                 }
@@ -27908,8 +28073,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -28024,8 +28188,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -28298,7 +28461,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -30175,18 +30339,10 @@
                     ]
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000,
-                        "multipleOf": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "multipleOf": 100,
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default",
                     "examples": [
                       200
@@ -30277,70 +30433,32 @@
                     ]
                   },
                   "skipCache": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing"
                   },
                   "process": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "always processed: true changes nothing, false is an error (400)",
                     "examples": [
                       true
                     ]
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
-                    "description": "1-100, default: the user's default volume",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
                   },
                   "volumes": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 100
-                        }
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same as a JSON string (multipart)"
-                      }
-                    ],
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
@@ -30378,53 +30496,23 @@
                     ]
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.",
                     "examples": [
                       false
                     ]
                   },
                   "startIn": {
-                    "anyOf": [
-                      {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 60
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60,
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
                     "examples": [
                       4
                     ]
                   },
                   "preview": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: only produce the audio (audioUrl), nothing plays on Sonos",
                     "examples": [
                       false
@@ -30669,7 +30757,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -31017,7 +31105,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -33551,7 +33639,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -35845,18 +35933,7 @@
                     ]
                   },
                   "process": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored",
                     "examples": [
                       false
@@ -35878,18 +35955,10 @@
                     ]
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000,
-                        "multipleOf": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "multipleOf": 100,
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default",
                     "examples": [
                       200
@@ -35980,52 +36049,25 @@
                     ]
                   },
                   "skipCache": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing"
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
-                    "description": "1-100, default: the user's default volume",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
                   },
                   "volumes": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 100
-                        }
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same as a JSON string (multipart)"
-                      }
-                    ],
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
@@ -36063,53 +36105,23 @@
                     ]
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.",
                     "examples": [
                       false
                     ]
                   },
                   "startIn": {
-                    "anyOf": [
-                      {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 60
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60,
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
                     "examples": [
                       4
                     ]
                   },
                   "preview": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: only produce the audio (audioUrl), nothing plays on Sonos",
                     "examples": [
                       false
@@ -36336,7 +36348,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -36666,7 +36678,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -38949,18 +38961,7 @@
                     ]
                   },
                   "process": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored",
                     "examples": [
                       false
@@ -38982,18 +38983,10 @@
                     ]
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000,
-                        "multipleOf": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "multipleOf": 100,
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default",
                     "examples": [
                       200
@@ -39084,52 +39077,25 @@
                     ]
                   },
                   "skipCache": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing"
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
-                    "description": "1-100, default: the user's default volume",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
                   },
                   "volumes": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 100
-                        }
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same as a JSON string (multipart)"
-                      }
-                    ],
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
@@ -39167,53 +39133,23 @@
                     ]
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.",
                     "examples": [
                       false
                     ]
                   },
                   "startIn": {
-                    "anyOf": [
-                      {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 60
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60,
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
                     "examples": [
                       4
                     ]
                   },
                   "preview": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: only produce the audio (audioUrl), nothing plays on Sonos",
                     "examples": [
                       false
@@ -39440,7 +39376,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -39770,7 +39706,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -42213,7 +42149,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -44488,18 +44424,7 @@
                     ]
                   },
                   "process": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "false: Sonos fetches the URL itself, without intro, outro, effect and ambience (those fields are then ignored). Then it must be MP3 (or WAV) on a public HTTPS URL, use MP3: Sonos skips WAV files shorter than about 1 s",
                     "examples": [
                       true
@@ -44521,18 +44446,10 @@
                     ]
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000,
-                        "multipleOf": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
+                    "multipleOf": 100,
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default",
                     "examples": [
                       200
@@ -44623,52 +44540,25 @@
                     ]
                   },
                   "skipCache": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing"
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
-                    "description": "1-100, default: the user's default volume",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
                   },
                   "volumes": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 100
-                        }
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same as a JSON string (multipart)"
-                      }
-                    ],
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
@@ -44706,53 +44596,23 @@
                     ]
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.",
                     "examples": [
                       false
                     ]
                   },
                   "startIn": {
-                    "anyOf": [
-                      {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 60
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60,
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
                     "examples": [
                       4
                     ]
                   },
                   "preview": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: only produce the audio (audioUrl), nothing plays on Sonos",
                     "examples": [
                       false
@@ -44980,7 +44840,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -45311,7 +45171,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -48724,7 +48584,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Your history": {
@@ -51685,37 +51546,21 @@
                 "type": "object",
                 "properties": {
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
-                    "description": "1-100, default: the user's default volume",
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
                   },
                   "volumes": {
-                    "anyOf": [
-                      {
-                        "type": "object",
-                        "additionalProperties": {
-                          "type": "integer",
-                          "minimum": 1,
-                          "maximum": 100
-                        }
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same as a JSON string (multipart)"
-                      }
-                    ],
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 100
+                    },
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
@@ -51753,53 +51598,23 @@
                     ]
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.",
                     "examples": [
                       false
                     ]
                   },
                   "startIn": {
-                    "anyOf": [
-                      {
-                        "type": "number",
-                        "minimum": 0,
-                        "maximum": 60
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 60,
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
                     "examples": [
                       4
                     ]
                   },
                   "preview": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "not valid for a replay (400)"
                   }
                 }
@@ -51854,7 +51669,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -52012,7 +51827,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the user's default volume",
+                    "description": "1-100, default: the workspace's volume",
                     "examples": [
                       30
                     ]
@@ -54333,8 +54148,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Your clips": {
@@ -56909,46 +56723,19 @@
                     "description": "sound slug, clip:<slug> or none, null = the workspace's"
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
                     "description": "ms between intro, content and outro: 0, 100, …, 1000"
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
                     "description": "1-100, null = the workspace's volume"
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "may interrupt other announcements"
                   },
                   "quietHours": {
@@ -56974,45 +56761,21 @@
                     "description": "the secret the sender signs with (unifi_access: secret of the webhook endpoint)"
                   },
                   "cooldownSeconds": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 86400
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86400,
                     "description": "seconds, 0 = none, default 10"
                   },
                   "maxValueLength": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
                     "description": "a caller's value in a text is cut to this length, default 60; 1000 lets the caller say any text"
                   },
                   "dailyLimit": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 10000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000,
                     "description": "at most this many plays a day, null = no limit"
                   },
                   "allowedOrigins": {
@@ -57231,18 +56994,7 @@
                     "description": "if/then rules, null or [] = none"
                   },
                   "enabled": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "default true"
                   }
                 },
@@ -59965,46 +59717,19 @@
                     "description": "sound slug, clip:<slug> or none, null = the workspace's"
                   },
                   "gap": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 1000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000,
                     "description": "ms between intro, content and outro: 0, 100, …, 1000"
                   },
                   "volume": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 100
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
                     "description": "1-100, null = the workspace's volume"
                   },
                   "priority": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "may interrupt other announcements"
                   },
                   "quietHours": {
@@ -60030,45 +59755,21 @@
                     "description": "the secret the sender signs with (unifi_access: secret of the webhook endpoint)"
                   },
                   "cooldownSeconds": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 86400
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 86400,
                     "description": "seconds, 0 = none, default 10"
                   },
                   "maxValueLength": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 1000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 1000,
                     "description": "a caller's value in a text is cut to this length, default 60; 1000 lets the caller say any text"
                   },
                   "dailyLimit": {
-                    "anyOf": [
-                      {
-                        "type": "integer",
-                        "minimum": 1,
-                        "maximum": 10000
-                      },
-                      {
-                        "type": "string",
-                        "description": "the same number as a string (query, multipart)"
-                      }
-                    ],
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 10000,
                     "description": "at most this many plays a day, null = no limit"
                   },
                   "allowedOrigins": {
@@ -60287,18 +59988,7 @@
                     "description": "if/then rules, null or [] = none"
                   },
                   "enabled": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "default true"
                   }
                 }
@@ -63224,18 +62914,7 @@
                     "description": "the body of the call (JSON), as a sender would send it"
                   },
                   "dryRun": {
-                    "anyOf": [
-                      {
-                        "type": "boolean"
-                      },
-                      {
-                        "type": "string",
-                        "enum": [
-                          "true",
-                          "false"
-                        ]
-                      }
-                    ],
+                    "type": "boolean",
                     "description": "true: only decide (rule, entry, text), nothing plays"
                   },
                   "at": {
@@ -63369,14 +63048,56 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "description": "played, skipped or dry_run",
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "played",
+                            "skipped",
+                            "dry_run"
+                          ]
                         },
                         "reason": {
                           "nullable": true,
                           "anyOf": [
                             {
-                              "type": "string"
+                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
+                              "anyOf": [
+                                {
+                                  "const": "EVENT_IGNORED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EVENT_FILTERED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "NO_RULE",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "RULE_SILENT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "COOLDOWN",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "DAILY_LIMIT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EMPTY_TEXT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "QUIET_HOURS",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "BUSY",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             {
                               "type": "null"
@@ -63545,14 +63266,56 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "description": "played, skipped or dry_run",
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "played",
+                            "skipped",
+                            "dry_run"
+                          ]
                         },
                         "reason": {
                           "nullable": true,
                           "anyOf": [
                             {
-                              "type": "string"
+                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
+                              "anyOf": [
+                                {
+                                  "const": "EVENT_IGNORED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EVENT_FILTERED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "NO_RULE",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "RULE_SILENT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "COOLDOWN",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "DAILY_LIMIT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EMPTY_TEXT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "QUIET_HOURS",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "BUSY",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             {
                               "type": "null"
@@ -63721,14 +63484,56 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "description": "played, skipped or dry_run",
-                          "type": "string"
+                          "type": "string",
+                          "enum": [
+                            "played",
+                            "skipped",
+                            "dry_run"
+                          ]
                         },
                         "reason": {
                           "nullable": true,
                           "anyOf": [
                             {
-                              "type": "string"
+                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
+                              "anyOf": [
+                                {
+                                  "const": "EVENT_IGNORED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EVENT_FILTERED",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "NO_RULE",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "RULE_SILENT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "COOLDOWN",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "DAILY_LIMIT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "EMPTY_TEXT",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "QUIET_HOURS",
+                                  "type": "string"
+                                },
+                                {
+                                  "const": "BUSY",
+                                  "type": "string"
+                                }
+                              ]
                             },
                             {
                               "type": "null"
@@ -64766,7 +64571,27 @@
                             ]
                           },
                           "input": {
-                            "description": "query and body as they came in, cut to 4 KB"
+                            "description": "query and body as they came in, cut to 4 KB; null after the audio cache time (inputExpiresAt)"
+                          },
+                          "inputFields": {
+                            "description": "the names of the fields that came in, e.g. data.actor.name",
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "inputExpiresAt": {
+                            "nullable": true,
+                            "anyOf": [
+                              {
+                                "format": "date-time",
+                                "description": "until when input is kept",
+                                "type": "string"
+                              },
+                              {
+                                "type": "null"
+                              }
+                            ]
                           },
                           "rule": {
                             "nullable": true,
@@ -64814,7 +64639,7 @@
                             "nullable": true,
                             "anyOf": [
                               {
-                                "description": "what was said",
+                                "description": "what was said, from the play while its audio is cached",
                                 "type": "string"
                               },
                               {
@@ -64861,6 +64686,8 @@
                           "httpStatus",
                           "event",
                           "input",
+                          "inputFields",
+                          "inputExpiresAt",
                           "rule",
                           "played",
                           "text",

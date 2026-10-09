@@ -1741,7 +1741,31 @@ export interface paths {
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        TriggerCallResult: {
+            data: {
+                /** @description played (201), skipped (200, see reason) or dry_run (tests only) */
+                status: "played" | "skipped" | "dry_run";
+                reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
+                event: (string | null) | null;
+                rule: ({
+                    index: number;
+                    name: (string | null) | null;
+                } | null) | null;
+                played: (unknown | null) | null;
+                text: (string | null) | null;
+                play: (unknown | null) | null;
+                callId: (string | null) | null;
+                /** @description tests only: every rule and whether it held */
+                rules?: {
+                    index: number;
+                    name: (string | null) | null;
+                    holds: boolean;
+                    failed: (string | null) | null;
+                }[];
+            };
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -1798,44 +1822,24 @@ export interface operations {
                     /** Format: email */
                     email: string;
                     /**
-                     * @description your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it ("Mike's Space"); changeable in PATCH /v1/user/profile
+                     * @description your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile
                      * @example Mike
                      */
                     name: string;
                     /**
-                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example en-GB
-                     */
-                    language?: string;
-                    /**
-                     * @description IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC
-                     * @example Europe/Berlin
-                     */
-                    timeZone?: string;
-                    /**
                      * @description true: the Quak newsletter, starts once the address is confirmed. Default false
                      * @example false
                      */
-                    newsletter?: boolean | ("true" | "false");
+                    newsletter?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /** Format: email */
                     email: string;
                     /**
-                     * @description your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it ("Mike's Space"); changeable in PATCH /v1/user/profile
+                     * @description your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile
                      * @example Mike
                      */
                     name: string;
-                    /**
-                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example en-GB
-                     */
-                    language?: string;
-                    /**
-                     * @description IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC
-                     * @example Europe/Berlin
-                     */
-                    timeZone?: string;
                     /**
                      * @description true: the Quak newsletter, starts once the address is confirmed. Default false
                      * @example false
@@ -1846,20 +1850,10 @@ export interface operations {
                     /** Format: email */
                     email: string;
                     /**
-                     * @description your display name, required, 1-80 characters (members list, invitations, greeting in mails); your own workspace is named after it ("Mike's Space"); changeable in PATCH /v1/user/profile
+                     * @description your display name, 1-80 characters; your own workspace is named after it. Change it later with PATCH /v1/user/profile
                      * @example Mike
                      */
                     name: string;
-                    /**
-                     * @description language of the client (system or browser), e.g. en-GB, en or en_GB. Default for multi-language voices, changeable in PATCH /v1/workspace/defaults. Without it: Accept-Language, else en-US
-                     * @example en-GB
-                     */
-                    language?: string;
-                    /**
-                     * @description IANA time zone of the client, e.g. Europe/Berlin, for quiet hours. Without it: from the IP, else UTC
-                     * @example Europe/Berlin
-                     */
-                    timeZone?: string;
                     /**
                      * @description true: the Quak newsletter, starts once the address is confirmed. Default false
                      * @example false
@@ -8974,7 +8968,7 @@ export interface operations {
                      * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
                      * @example 200
                      */
-                    gap?: number | string;
+                    gap?: number;
                     /**
                      * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
@@ -9006,17 +9000,17 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
-                    skipCache?: boolean | ("true" | "false");
+                    skipCache?: boolean;
                     /**
                      * @description always processed: true changes nothing, false is an error (400)
                      * @example true
                      */
-                    process?: boolean | ("true" | "false");
+                    process?: boolean;
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
-                    volume?: number | string;
+                    volume?: number;
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
@@ -9026,7 +9020,7 @@ export interface operations {
                      */
                     volumes?: {
                         [key: string]: number;
-                    } | string;
+                    };
                     /**
                      * @description speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers
                      * @example [
@@ -9045,17 +9039,17 @@ export interface operations {
                      * @description Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.
                      * @example false
                      */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /**
                      * @description seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.
                      * @example 4
                      */
-                    startIn?: number | string;
+                    startIn?: number;
                     /**
                      * @description true: only produce the audio (audioUrl), nothing plays on Sonos
                      * @example false
                      */
-                    preview?: boolean | ("true" | "false");
+                    preview?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -9124,7 +9118,7 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -9235,7 +9229,7 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -9800,7 +9794,7 @@ export interface operations {
                         ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     }[] | string;
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -10318,7 +10312,7 @@ export interface operations {
                      * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
-                    process?: boolean | ("true" | "false");
+                    process?: boolean;
                     /**
                      * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
                      * @example quakquak
@@ -10334,7 +10328,7 @@ export interface operations {
                      * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
                      * @example 200
                      */
-                    gap?: number | string;
+                    gap?: number;
                     /**
                      * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
@@ -10366,12 +10360,12 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
-                    skipCache?: boolean | ("true" | "false");
+                    skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
-                    volume?: number | string;
+                    volume?: number;
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
@@ -10381,7 +10375,7 @@ export interface operations {
                      */
                     volumes?: {
                         [key: string]: number;
-                    } | string;
+                    };
                     /**
                      * @description speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers
                      * @example [
@@ -10400,17 +10394,17 @@ export interface operations {
                      * @description Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.
                      * @example false
                      */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /**
                      * @description seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.
                      * @example 4
                      */
-                    startIn?: number | string;
+                    startIn?: number;
                     /**
                      * @description true: only produce the audio (audioUrl), nothing plays on Sonos
                      * @example false
                      */
-                    preview?: boolean | ("true" | "false");
+                    preview?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -10472,7 +10466,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -10576,7 +10570,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -11076,7 +11070,7 @@ export interface operations {
                      * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
-                    process?: boolean | ("true" | "false");
+                    process?: boolean;
                     /**
                      * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
                      * @example quakquak
@@ -11092,7 +11086,7 @@ export interface operations {
                      * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
                      * @example 200
                      */
-                    gap?: number | string;
+                    gap?: number;
                     /**
                      * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
@@ -11124,12 +11118,12 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
-                    skipCache?: boolean | ("true" | "false");
+                    skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
-                    volume?: number | string;
+                    volume?: number;
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
@@ -11139,7 +11133,7 @@ export interface operations {
                      */
                     volumes?: {
                         [key: string]: number;
-                    } | string;
+                    };
                     /**
                      * @description speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers
                      * @example [
@@ -11158,17 +11152,17 @@ export interface operations {
                      * @description Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.
                      * @example false
                      */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /**
                      * @description seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.
                      * @example 4
                      */
-                    startIn?: number | string;
+                    startIn?: number;
                     /**
                      * @description true: only produce the audio (audioUrl), nothing plays on Sonos
                      * @example false
                      */
-                    preview?: boolean | ("true" | "false");
+                    preview?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -11230,7 +11224,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -11334,7 +11328,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -11885,7 +11879,7 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -12386,7 +12380,7 @@ export interface operations {
                      * @description false: Sonos fetches the URL itself, without intro, outro, effect and ambience (those fields are then ignored). Then it must be MP3 (or WAV) on a public HTTPS URL, use MP3: Sonos skips WAV files shorter than about 1 s
                      * @example true
                      */
-                    process?: boolean | ("true" | "false");
+                    process?: boolean;
                     /**
                      * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
                      * @example quakquak
@@ -12402,7 +12396,7 @@ export interface operations {
                      * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
                      * @example 200
                      */
-                    gap?: number | string;
+                    gap?: number;
                     /**
                      * @description Beta, may change without notice. voice effect, default: the workspace default (sounds and clips only with process: true)
                      * @example none
@@ -12434,12 +12428,12 @@ export interface operations {
                      */
                     ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
-                    skipCache?: boolean | ("true" | "false");
+                    skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
-                    volume?: number | string;
+                    volume?: number;
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
@@ -12449,7 +12443,7 @@ export interface operations {
                      */
                     volumes?: {
                         [key: string]: number;
-                    } | string;
+                    };
                     /**
                      * @description speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers
                      * @example [
@@ -12468,17 +12462,17 @@ export interface operations {
                      * @description Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.
                      * @example false
                      */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /**
                      * @description seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.
                      * @example 4
                      */
-                    startIn?: number | string;
+                    startIn?: number;
                     /**
                      * @description true: only produce the audio (audioUrl), nothing plays on Sonos
                      * @example false
                      */
-                    preview?: boolean | ("true" | "false");
+                    preview?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -12541,7 +12535,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -12646,7 +12640,7 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -13983,10 +13977,10 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
-                    volume?: number | string;
+                    volume?: number;
                     /**
                      * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
@@ -13996,7 +13990,7 @@ export interface operations {
                      */
                     volumes?: {
                         [key: string]: number;
-                    } | string;
+                    };
                     /**
                      * @description speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers
                      * @example [
@@ -14015,18 +14009,18 @@ export interface operations {
                      * @description Default false (Sonos priority LOW): replaces a running LOW clip, of Quak or another app, but a speaker playing a HIGH clip refuses it and is skipped (all speakers busy: status SKIPPED, skipReason BUSY, 200, no credits). true (HIGH): replaces every running clip at once, also HIGH clips of other apps such as a doorbell, and new LOW plays are refused while it plays. Use sparingly, for urgent announcements.
                      * @example false
                      */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /**
                      * @description seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.
                      * @example 4
                      */
-                    startIn?: number | string;
+                    startIn?: number;
                     /** @description not valid for a replay (400) */
-                    preview?: boolean | ("true" | "false");
+                    preview?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -14069,7 +14063,7 @@ export interface operations {
                 };
                 "multipart/form-data": {
                     /**
-                     * @description 1-100, default: the user's default volume
+                     * @description 1-100, default: the workspace's volume
                      * @example 30
                      */
                     volume?: number | string;
@@ -15133,11 +15127,11 @@ export interface operations {
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
-                    gap?: number | string;
+                    gap?: number;
                     /** @description 1-100, null = the workspace's volume */
-                    volume?: number | string;
+                    volume?: number;
                     /** @description may interrupt other announcements */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /** @description e.g. "22-7", or "none" to play at any time; null = the workspace's */
                     quietHours?: string;
                     /** @description only these events play, e.g. access.doorbell.incoming */
@@ -15145,11 +15139,11 @@ export interface operations {
                     /** @description the secret the sender signs with (unifi_access: secret of the webhook endpoint) */
                     signingSecret?: string;
                     /** @description seconds, 0 = none, default 10 */
-                    cooldownSeconds?: number | string;
+                    cooldownSeconds?: number;
                     /** @description a caller's value in a text is cut to this length, default 60; 1000 lets the caller say any text */
-                    maxValueLength?: number | string;
+                    maxValueLength?: number;
                     /** @description at most this many plays a day, null = no limit */
-                    dailyLimit?: number | string;
+                    dailyLimit?: number;
                     /**
                      * @description websites a browser may call it from (example.com, https://shop.example.com, *.example.com), [] = any. Does not stop curl: add a cooldown and a daily limit
                      * @example [
@@ -15183,7 +15177,7 @@ export interface operations {
                         volume: (number | null) | null;
                     }[];
                     /** @description default true */
-                    enabled?: boolean | ("true" | "false");
+                    enabled?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -15791,11 +15785,11 @@ export interface operations {
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
-                    gap?: number | string;
+                    gap?: number;
                     /** @description 1-100, null = the workspace's volume */
-                    volume?: number | string;
+                    volume?: number;
                     /** @description may interrupt other announcements */
-                    priority?: boolean | ("true" | "false");
+                    priority?: boolean;
                     /** @description e.g. "22-7", or "none" to play at any time; null = the workspace's */
                     quietHours?: string;
                     /** @description only these events play, e.g. access.doorbell.incoming */
@@ -15803,11 +15797,11 @@ export interface operations {
                     /** @description the secret the sender signs with (unifi_access: secret of the webhook endpoint) */
                     signingSecret?: string;
                     /** @description seconds, 0 = none, default 10 */
-                    cooldownSeconds?: number | string;
+                    cooldownSeconds?: number;
                     /** @description a caller's value in a text is cut to this length, default 60; 1000 lets the caller say any text */
-                    maxValueLength?: number | string;
+                    maxValueLength?: number;
                     /** @description at most this many plays a day, null = no limit */
-                    dailyLimit?: number | string;
+                    dailyLimit?: number;
                     /**
                      * @description websites a browser may call it from (example.com, https://shop.example.com, *.example.com), [] = any. Does not stop curl: add a cooldown and a daily limit
                      * @example [
@@ -15841,7 +15835,7 @@ export interface operations {
                         volume: (number | null) | null;
                     }[];
                     /** @description default true */
-                    enabled?: boolean | ("true" | "false");
+                    enabled?: boolean;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -16364,7 +16358,7 @@ export interface operations {
                         [key: string]: unknown;
                     } | unknown[];
                     /** @description true: only decide (rule, entry, text), nothing plays */
-                    dryRun?: boolean | ("true" | "false");
+                    dryRun?: boolean;
                     /**
                      * Format: date-time
                      * @description what if: check the rules' days and hours as if it were this time (ISO 8601)
@@ -16431,9 +16425,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            /** @description played, skipped or dry_run */
-                            status: string;
-                            reason: (string | null) | null;
+                            /** @enum {string} */
+                            status: "played" | "skipped" | "dry_run";
+                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
                             event: (string | null) | null;
                             rule: ({
                                 index: number;
@@ -16462,9 +16456,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            /** @description played, skipped or dry_run */
-                            status: string;
-                            reason: (string | null) | null;
+                            /** @enum {string} */
+                            status: "played" | "skipped" | "dry_run";
+                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
                             event: (string | null) | null;
                             rule: ({
                                 index: number;
@@ -16493,9 +16487,9 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            /** @description played, skipped or dry_run */
-                            status: string;
-                            reason: (string | null) | null;
+                            /** @enum {string} */
+                            status: "played" | "skipped" | "dry_run";
+                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
                             event: (string | null) | null;
                             rule: ({
                                 index: number;
@@ -16686,8 +16680,11 @@ export interface operations {
                             /** @description what the caller got */
                             httpStatus: number;
                             event: (string | null) | null;
-                            /** @description query and body as they came in, cut to 4 KB */
+                            /** @description query and body as they came in, cut to 4 KB; null after the audio cache time (inputExpiresAt) */
                             input: unknown;
+                            /** @description the names of the fields that came in, e.g. data.actor.name */
+                            inputFields: string[];
+                            inputExpiresAt: (string | null) | null;
                             rule: ({
                                 index: number;
                                 name: (string | null) | null;
