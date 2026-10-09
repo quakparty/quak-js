@@ -299,7 +299,7 @@ export interface paths {
         head?: never;
         /**
          * Update workspace
-         * @description Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug or its time zone. Quiet hours run in the workspace time zone.
+         * @description Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug, its time zone (quiet hours run in it) or the audio cache time. Only the fields you send change.
          */
         patch: operations["patchV1Workspace"];
         trace?: never;
@@ -322,30 +322,6 @@ export interface paths {
          * @description Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace, for everyone in it. Intro and outro accept a sound slug, "clip:<slug>" for one of your clips, or "none" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, "none" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none".
          */
         patch: operations["patchV1WorkspaceDefaults"];
-        trace?: never;
-    };
-    "/v1/workspace/audio-cache": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Update audio cache
-         * @description Scope: `manage`. Admins of the workspace only. How long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes.
-         *
-         *     - Within that time the same play reuses its audio (no new TTS credits), and a play can be replayed or saved as a clip. Afterwards the audio is deleted.
-         *     - The speech of a text play is kept just as long: another effect, intro or outro needs no new synthesis, and the text stays visible in the history (`params.text`).
-         *     - A shorter time also applies to audio already in the cache.
-         */
-        patch: operations["patchV1WorkspaceAudio-cache"];
         trace?: never;
     };
     "/v1/workspace/members": {
@@ -3608,6 +3584,12 @@ export interface operations {
                      * @example Europe/Berlin
                      */
                     timeZone?: string;
+                    /**
+                     * @description how long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes. Within it a play can be replayed or saved as a clip and a repeat needs no new TTS; a shorter time also shortens what is cached already
+                     * @example 60
+                     * @enum {integer}
+                     */
+                    audioCacheMinutes?: 1440 | 720 | 180 | 60 | 5;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -3625,6 +3607,12 @@ export interface operations {
                      * @example Europe/Berlin
                      */
                     timeZone?: string;
+                    /**
+                     * @description how long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes. Within it a play can be replayed or saved as a clip and a repeat needs no new TTS; a shorter time also shortens what is cached already
+                     * @example 60
+                     * @enum {integer}
+                     */
+                    audioCacheMinutes?: 1440 | 720 | 180 | 60 | 5;
                 };
                 "multipart/form-data": {
                     /**
@@ -3642,6 +3630,12 @@ export interface operations {
                      * @example Europe/Berlin
                      */
                     timeZone?: string;
+                    /**
+                     * @description how long generated audio (text, talk, file, processed URL) stays on the server after its last use: 1440 (a day, default), 720, 180, 60 or 5 minutes. Within it a play can be replayed or saved as a clip and a repeat needs no new TTS; a shorter time also shortens what is cached already
+                     * @example 60
+                     * @enum {integer}
+                     */
+                    audioCacheMinutes?: 1440 | 720 | 180 | 60 | 5;
                 };
             };
         };
@@ -4303,264 +4297,6 @@ export interface operations {
             };
             /** @description Response for status 503 */
             503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
-        };
-    };
-    "patchV1WorkspaceAudio-cache": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": {
-                    /**
-                     * @description 1440, 720, 180, 60 or 5 minutes
-                     * @enum {integer}
-                     */
-                    audioCacheMinutes: 1440 | 720 | 180 | 60 | 5;
-                };
-                "application/x-www-form-urlencoded": {
-                    /**
-                     * @description 1440, 720, 180, 60 or 5 minutes
-                     * @enum {integer}
-                     */
-                    audioCacheMinutes: 1440 | 720 | 180 | 60 | 5;
-                };
-                "multipart/form-data": {
-                    /**
-                     * @description 1440, 720, 180, 60 or 5 minutes
-                     * @enum {integer}
-                     */
-                    audioCacheMinutes: 1440 | 720 | 180 | 60 | 5;
-                };
-            };
-        };
-        responses: {
-            /** @description Response for status 200 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description unique, from the owner's email at sign-up
-                             * @example mike
-                             */
-                            slug: string;
-                            /** @example Mike's Space */
-                            name: string;
-                            /**
-                             * @description quiet hours (and later schedules) run in this time zone
-                             * @example Europe/Berlin
-                             */
-                            timeZone: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            credits: {
-                                total: number;
-                                /** @description one time, free and promo credits, never expire */
-                                wallet: number;
-                                /** @description credits of the current subscription period */
-                                subscription: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
-                                lowThreshold: number;
-                            };
-                            subscription: {
-                                id: string | null;
-                                /** @description none, trialing, active, past_due, canceled or inactive */
-                                state: string;
-                                /**
-                                 * @description the plan, details for admins in GET /v1/workspace/billing
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
-                            };
-                            defaults: {
-                                voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                language: string;
-                                volume: number;
-                                intro: (string | null) | null;
-                                outro: (string | null) | null;
-                                /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                speakers: string[];
-                                gap: number;
-                                /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                effect: string;
-                                /**
-                                 * @description strength of the voice effect: off, weak, medium or strong
-                                 * @default off
-                                 * @enum {string}
-                                 */
-                                effectIntensity: "off" | "weak" | "medium" | "strong";
-                                /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                ambience: string;
-                                /**
-                                 * @description strength of the ambience: off, weak, medium or strong
-                                 * @default off
-                                 * @enum {string}
-                                 */
-                                ambienceIntensity: "off" | "weak" | "medium" | "strong";
-                                /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                quietHours: string;
-                            };
-                            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                            audioCacheMinutes: number;
-                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                            limits: {
-                                /**
-                                 * @description max. characters of a text play
-                                 * @example 1000
-                                 */
-                                textCharacters: number;
-                                /**
-                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                 * @example 180
-                                 */
-                                talkSeconds: number;
-                                /**
-                                 * @description max. seconds of talk live, a warning comes 30 s before
-                                 * @example 180
-                                 */
-                                liveSeconds: number;
-                                /**
-                                 * @description max. seconds of a file, a processed url and an own clip
-                                 * @example 180
-                                 */
-                                audioSeconds: number;
-                                /**
-                                 * @description max. bytes of an upload (file, talk, clip) and a url download
-                                 * @example 10485760
-                                 */
-                                uploadBytes: number;
-                            };
-                            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                            planLimits?: {
-                                /** @description active Sonos households (locations) */
-                                locations: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description members and open invitations */
-                                users: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description trigger URLs */
-                                triggers: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                            };
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
-                    };
-                };
-            };
-            /** @description Response for status 400 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
-            /** @description Response for status 401 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
-            /** @description Response for status 403 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
-                };
-            };
-            /** @description Response for status 404 */
-            404: {
                 headers: {
                     [name: string]: unknown;
                 };
