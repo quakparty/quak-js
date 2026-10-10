@@ -450,7 +450,7 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * Update billing
+         * Update billing email
          * @description Scope: `manage`. Admins of the workspace only. The billing email of the workspace: where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.
          */
         patch: operations["patchV1WorkspaceBilling"];
@@ -538,7 +538,7 @@ export interface paths {
         };
         /**
          * List credit grants
-         * @description Scope: `play`. Where the credits of the workspace came from, newest first: starting credits, plan credits (they expire with the period), bought packs, credits given by Quak, SLA service credits, and what a refund took back. The balance is in GET /v1/workspace (credits).
+         * @description Scope: `manage`. Admins of the workspace only. Where the credits of the workspace came from, newest first: starting credits, plan credits (they expire with the period), bought packs, credits given by Quak, SLA service credits, and what a refund took back. The balance is in GET /v1/workspace (credits).
          */
         get: operations["getV1WorkspaceCreditsGrants"];
         put?: never;
@@ -1576,7 +1576,7 @@ export interface paths {
          * Connect integration
          * @description Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace: open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it.
          *
-         *     - **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here. From the web app pass `returnTo` to get the browser back there.
+         *     - **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here.
          *     - **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.
          *     - Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.
          */
@@ -1718,9 +1718,13 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description The answer of a trigger URL (GET or POST /t/qk_trg_…, the URL from POST /v1/triggers), for clients that call it, e.g. fireTrigger in @quak/js */
         TriggerCallResult: {
             data: {
-                /** @description played (201), skipped (200, see reason) or dry_run (tests only) */
+                /**
+                 * @description played (201), skipped (200, see reason) or dry_run (tests only)
+                 * @enum {string}
+                 */
                 status: "played" | "skipped" | "dry_run";
                 reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
                 event: (string | null) | null;
@@ -1781,7 +1785,7 @@ export interface components {
                          * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                          * @enum {string}
                          */
-                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                         /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                         name: string | null;
                         /** @description its version, e.g. "0.9.0" */
@@ -3323,7 +3327,7 @@ export interface operations {
                                 wallet: number;
                                 /** @description credits of the current subscription period */
                                 subscription: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
+                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
                             subscription: {
@@ -3331,7 +3335,7 @@ export interface operations {
                                 /** @description none, trialing, active, past_due, canceled or inactive */
                                 state: string;
                                 /**
-                                 * @description the plan, details for admins in GET /v1/workspace/billing
+                                 * @description the plan; plans are bought and changed in the Quak web app
                                  * @default none
                                  * @enum {string}
                                  */
@@ -3351,19 +3355,19 @@ export interface operations {
                                 /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
                                 effect: string;
                                 /**
-                                 * @description strength of the voice effect: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the voice effect: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                effectIntensity: "off" | "weak" | "medium" | "strong";
+                                effectIntensity: "weak" | "medium" | "strong";
                                 /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
                                 ambience: string;
                                 /**
-                                 * @description strength of the ambience: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the ambience: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                ambienceIntensity: "weak" | "medium" | "strong";
                                 /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
                                 quietHours: string;
                             };
@@ -3674,7 +3678,7 @@ export interface operations {
                                 wallet: number;
                                 /** @description credits of the current subscription period */
                                 subscription: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
+                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
                             subscription: {
@@ -3682,7 +3686,7 @@ export interface operations {
                                 /** @description none, trialing, active, past_due, canceled or inactive */
                                 state: string;
                                 /**
-                                 * @description the plan, details for admins in GET /v1/workspace/billing
+                                 * @description the plan; plans are bought and changed in the Quak web app
                                  * @default none
                                  * @enum {string}
                                  */
@@ -3702,19 +3706,19 @@ export interface operations {
                                 /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
                                 effect: string;
                                 /**
-                                 * @description strength of the voice effect: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the voice effect: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                effectIntensity: "off" | "weak" | "medium" | "strong";
+                                effectIntensity: "weak" | "medium" | "strong";
                                 /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
                                 ambience: string;
                                 /**
-                                 * @description strength of the ambience: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the ambience: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                ambienceIntensity: "weak" | "medium" | "strong";
                                 /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
                                 quietHours: string;
                             };
@@ -3911,11 +3915,11 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description strength of the voice effect: off, weak, medium or strong, default medium
+                     * @description strength of the voice effect: weak, medium or strong, default medium. No effect is effect none
                      * @example medium
                      * @enum {string}
                      */
-                    effectIntensity?: "off" | "weak" | "medium" | "strong";
+                    effectIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
@@ -3923,11 +3927,11 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description strength of the ambience: off, weak, medium or strong, default medium
+                     * @description strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none
                      * @example medium
                      * @enum {string}
                      */
-                    ambienceIntensity?: "off" | "weak" | "medium" | "strong";
+                    ambienceIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
                      * @example en-GB
@@ -3976,11 +3980,11 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description strength of the voice effect: off, weak, medium or strong, default medium
+                     * @description strength of the voice effect: weak, medium or strong, default medium. No effect is effect none
                      * @example medium
                      * @enum {string}
                      */
-                    effectIntensity?: "off" | "weak" | "medium" | "strong";
+                    effectIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
@@ -3988,11 +3992,11 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description strength of the ambience: off, weak, medium or strong, default medium
+                     * @description strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none
                      * @example medium
                      * @enum {string}
                      */
-                    ambienceIntensity?: "off" | "weak" | "medium" | "strong";
+                    ambienceIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
                      * @example en-GB
@@ -4041,11 +4045,11 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description strength of the voice effect: off, weak, medium or strong, default medium
+                     * @description strength of the voice effect: weak, medium or strong, default medium. No effect is effect none
                      * @example medium
                      * @enum {string}
                      */
-                    effectIntensity?: "off" | "weak" | "medium" | "strong";
+                    effectIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description Beta, may change without notice. ambience for text, talk, files, processed URLs and sounds and clips with process: true, none = off
                      * @example stadium
@@ -4053,11 +4057,11 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description strength of the ambience: off, weak, medium or strong, default medium
+                     * @description strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none
                      * @example medium
                      * @enum {string}
                      */
-                    ambienceIntensity?: "off" | "weak" | "medium" | "strong";
+                    ambienceIntensity?: "weak" | "medium" | "strong";
                     /**
                      * @description TTS language of multi-language voices when a play names none, e.g. en-GB or en
                      * @example en-GB
@@ -4106,7 +4110,7 @@ export interface operations {
                                 wallet: number;
                                 /** @description credits of the current subscription period */
                                 subscription: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
+                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
                             subscription: {
@@ -4114,7 +4118,7 @@ export interface operations {
                                 /** @description none, trialing, active, past_due, canceled or inactive */
                                 state: string;
                                 /**
-                                 * @description the plan, details for admins in GET /v1/workspace/billing
+                                 * @description the plan; plans are bought and changed in the Quak web app
                                  * @default none
                                  * @enum {string}
                                  */
@@ -4134,19 +4138,19 @@ export interface operations {
                                 /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
                                 effect: string;
                                 /**
-                                 * @description strength of the voice effect: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the voice effect: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                effectIntensity: "off" | "weak" | "medium" | "strong";
+                                effectIntensity: "weak" | "medium" | "strong";
                                 /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
                                 ambience: string;
                                 /**
-                                 * @description strength of the ambience: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the ambience: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                ambienceIntensity: "weak" | "medium" | "strong";
                                 /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
                                 quietHours: string;
                             };
@@ -6762,7 +6766,7 @@ export interface operations {
                                 wallet: number;
                                 /** @description credits of the current subscription period */
                                 subscription: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
+                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
                             subscription: {
@@ -6770,7 +6774,7 @@ export interface operations {
                                 /** @description none, trialing, active, past_due, canceled or inactive */
                                 state: string;
                                 /**
-                                 * @description the plan, details for admins in GET /v1/workspace/billing
+                                 * @description the plan; plans are bought and changed in the Quak web app
                                  * @default none
                                  * @enum {string}
                                  */
@@ -6790,19 +6794,19 @@ export interface operations {
                                 /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
                                 effect: string;
                                 /**
-                                 * @description strength of the voice effect: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the voice effect: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                effectIntensity: "off" | "weak" | "medium" | "strong";
+                                effectIntensity: "weak" | "medium" | "strong";
                                 /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
                                 ambience: string;
                                 /**
-                                 * @description strength of the ambience: off, weak, medium or strong
-                                 * @default off
+                                 * @description strength of the ambience: weak, medium or strong
+                                 * @default weak
                                  * @enum {string}
                                  */
-                                ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                ambienceIntensity: "weak" | "medium" | "strong";
                                 /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
                                 quietHours: string;
                             };
@@ -8077,7 +8081,7 @@ export interface operations {
                      *       "living-room"
                      *     ]
                      */
-                    speakers?: string[] | string;
+                    speakers: string[] | string;
                 };
                 "application/x-www-form-urlencoded": {
                     /**
@@ -8087,7 +8091,7 @@ export interface operations {
                      *       "living-room"
                      *     ]
                      */
-                    speakers?: string[] | string;
+                    speakers: string[] | string;
                 };
                 "multipart/form-data": {
                     /**
@@ -8097,7 +8101,7 @@ export interface operations {
                      *       "living-room"
                      *     ]
                      */
-                    speakers?: string[] | string;
+                    speakers: string[] | string;
                 };
             };
         };
@@ -8803,7 +8807,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -8818,7 +8822,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -8914,7 +8918,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -8929,7 +8933,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -9025,7 +9029,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -9040,7 +9044,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -9159,7 +9163,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9259,7 +9263,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9359,7 +9363,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9576,7 +9580,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -9591,7 +9595,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -9724,7 +9728,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9824,7 +9828,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9924,7 +9928,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10163,7 +10167,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -10178,7 +10182,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -10267,7 +10271,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -10282,7 +10286,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -10371,7 +10375,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -10386,7 +10390,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -10500,7 +10504,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10600,7 +10604,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10700,7 +10704,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10921,7 +10925,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -10936,7 +10940,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -11025,7 +11029,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -11040,7 +11044,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -11129,7 +11133,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -11144,7 +11148,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -11258,7 +11262,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11358,7 +11362,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11458,7 +11462,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11675,7 +11679,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -11690,7 +11694,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -11809,7 +11813,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11909,7 +11913,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12009,7 +12013,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12231,7 +12235,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -12246,7 +12250,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -12336,7 +12340,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -12351,7 +12355,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -12441,7 +12445,7 @@ export interface operations {
                      */
                     effect?: "none" | "vibrato" | "megaphone" | "bitcrush" | "radiodj" | "robot" | "helium" | "monster" | "lofi" | "echo" | "telephone" | "chorus" | "underwater" | "announcement" | "faster" | "slower" | "reverse";
                     /**
-                     * @description Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.
+                     * @description Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.
                      * @example medium
                      * @example strong
                      * @enum {string}
@@ -12456,7 +12460,7 @@ export interface operations {
                      */
                     ambience?: "none" | "station" | "stadium" | "f1" | "airport" | "tennis" | "pool" | "cafe" | "rain" | "beach" | "forest" | "office" | "church" | "christmas" | "cabin" | "supermarket" | "spaceship";
                     /**
-                     * @description Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience
+                     * @description Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)
                      * @example medium
                      * @example weak
                      * @enum {string}
@@ -12570,7 +12574,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12670,7 +12674,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12770,7 +12774,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -13174,7 +13178,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -13341,7 +13345,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -13502,7 +13506,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -13990,7 +13994,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -14090,7 +14094,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -14190,7 +14194,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -14941,11 +14945,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -15037,11 +15041,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -15133,11 +15137,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -15599,11 +15603,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -15695,11 +15699,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -15791,11 +15795,11 @@ export interface operations {
                     voice?: string;
                     /** @description voice effect or none, null = the workspace's effect */
                     effect?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     effectIntensity?: string;
                     /** @description ambience or none, null = the workspace's */
                     ambience?: string;
-                    /** @description off, weak, medium or strong, null = the workspace's */
+                    /** @description weak, medium or strong, null = the workspace's */
                     ambienceIntensity?: string;
                     /** @description sound slug, clip:<slug> or none, null = the workspace's */
                     intro?: string;
@@ -16311,7 +16315,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -16431,7 +16435,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -16551,7 +16555,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -16906,7 +16910,7 @@ export interface operations {
                                     wallet: number;
                                     /** @description credits of the current subscription period */
                                     subscription: number;
-                                    /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing */
+                                    /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                     lowThreshold: number;
                                 };
                                 subscription: {
@@ -16914,7 +16918,7 @@ export interface operations {
                                     /** @description none, trialing, active, past_due, canceled or inactive */
                                     state: string;
                                     /**
-                                     * @description the plan, details for admins in GET /v1/workspace/billing
+                                     * @description the plan; plans are bought and changed in the Quak web app
                                      * @default none
                                      * @enum {string}
                                      */
@@ -16934,19 +16938,19 @@ export interface operations {
                                     /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
                                     effect: string;
                                     /**
-                                     * @description strength of the voice effect: off, weak, medium or strong
-                                     * @default off
+                                     * @description strength of the voice effect: weak, medium or strong
+                                     * @default weak
                                      * @enum {string}
                                      */
-                                    effectIntensity: "off" | "weak" | "medium" | "strong";
+                                    effectIntensity: "weak" | "medium" | "strong";
                                     /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
                                     ambience: string;
                                     /**
-                                     * @description strength of the ambience: off, weak, medium or strong
-                                     * @default off
+                                     * @description strength of the ambience: weak, medium or strong
+                                     * @default weak
                                      * @enum {string}
                                      */
-                                    ambienceIntensity: "off" | "weak" | "medium" | "strong";
+                                    ambienceIntensity: "weak" | "medium" | "strong";
                                     /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
                                     quietHours: string;
                                 };
@@ -18266,29 +18270,14 @@ export interface operations {
                 "application/json": ({
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                    /**
-                     * @description Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.
-                     * @example https://quak.party/app/workspace
-                     */
-                    returnTo?: string;
                 } | null) | null;
                 "application/x-www-form-urlencoded": ({
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                    /**
-                     * @description Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.
-                     * @example https://quak.party/app/workspace
-                     */
-                    returnTo?: string;
                 } | null) | null;
                 "multipart/form-data": ({
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                    /**
-                     * @description Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.
-                     * @example https://quak.party/app/workspace
-                     */
-                    returnTo?: string;
                 } | null) | null;
             };
         };

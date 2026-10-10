@@ -4,6 +4,11 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: stored `effectIntensity` and `ambienceIntensity` (workspace defaults, triggers) are
+  `weak`, `medium` or `strong` only, no effect is `none`; plays keep `off` as a bypass for that one play. Platform
+  `STREAM_DECK`; credit grants need scope `manage`; `returnTo` for connecting Slack is gone; `speakers` is required when
+  changing a group's speakers
+
 ## 0.9.9 - 2026-10-09
 
 - OpenAPI snapshot updated: `audioCacheMinutes` moves into `PATCH /v1/workspace`, `PATCH /v1/workspace/audio-cache` is gone

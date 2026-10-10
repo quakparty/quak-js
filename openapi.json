@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Quak API",
-    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n2. Confirm the request via the email link.\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `audioCacheMinutes` in `PATCH /v1/workspace`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n- `201 Created`: a resource was created (for example an API key).\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n- `400 Bad Request`: invalid query/body/path parameters.\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n- `402 Payment Required`: not enough credits for the play.\n- `403 Forbidden`: the API key is valid but may not do this.\n- `404 Not Found`: requested resource does not exist in your scope.\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n- `422 Unprocessable Content`: request body failed schema validation.\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
+    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Requests\n\nSend bodies as JSON with the header `Content-Type: application/json` (curl's `--json` sets it, in other tools such as Shortcuts, Postman or Zapier set it yourself). Uploads (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`) go as `multipart/form-data` (curl `-F`). Simple GET parameters also work in the query string.\n\n```sh\ncurl -X POST https://api.quak.party/v1/play/sound \\\n  -H \"Authorization: Bearer $QUAK_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"sound\":\"quakquak\"}'\n```\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n2. Confirm the request via the email link.\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `audioCacheMinutes` in `PATCH /v1/workspace`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n- `201 Created`: a resource was created (for example an API key).\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n- `400 Bad Request`: invalid query/body/path parameters.\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n- `402 Payment Required`: not enough credits for the play.\n- `403 Forbidden`: the API key is valid but may not do this.\n- `404 Not Found`: requested resource does not exist in your scope.\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n- `422 Unprocessable Content`: request body failed schema validation.\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.",
     "version": "1.0.0",
     "contact": {
       "name": "Quak",
@@ -29,63 +29,29 @@
             "properties": {
               "status": {
                 "description": "played (201), skipped (200, see reason) or dry_run (tests only)",
-                "anyOf": [
-                  {
-                    "const": "played",
-                    "type": "string"
-                  },
-                  {
-                    "const": "skipped",
-                    "type": "string"
-                  },
-                  {
-                    "const": "dry_run",
-                    "type": "string"
-                  }
+                "type": "string",
+                "enum": [
+                  "played",
+                  "skipped",
+                  "dry_run"
                 ]
               },
               "reason": {
                 "nullable": true,
                 "anyOf": [
                   {
-                    "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
-                    "anyOf": [
-                      {
-                        "const": "EVENT_IGNORED",
-                        "type": "string"
-                      },
-                      {
-                        "const": "EVENT_FILTERED",
-                        "type": "string"
-                      },
-                      {
-                        "const": "NO_RULE",
-                        "type": "string"
-                      },
-                      {
-                        "const": "RULE_SILENT",
-                        "type": "string"
-                      },
-                      {
-                        "const": "COOLDOWN",
-                        "type": "string"
-                      },
-                      {
-                        "const": "DAILY_LIMIT",
-                        "type": "string"
-                      },
-                      {
-                        "const": "EMPTY_TEXT",
-                        "type": "string"
-                      },
-                      {
-                        "const": "QUIET_HOURS",
-                        "type": "string"
-                      },
-                      {
-                        "const": "BUSY",
-                        "type": "string"
-                      }
+                    "description": "why it was skipped",
+                    "type": "string",
+                    "enum": [
+                      "EVENT_IGNORED",
+                      "EVENT_FILTERED",
+                      "NO_RULE",
+                      "RULE_SILENT",
+                      "COOLDOWN",
+                      "DAILY_LIMIT",
+                      "EMPTY_TEXT",
+                      "QUIET_HOURS",
+                      "BUSY"
                     ]
                   },
                   {
@@ -346,6 +312,7 @@
                               "IOS",
                               "IPADOS",
                               "RAYCAST",
+                              "STREAM_DECK",
                               "HOME_ASSISTANT",
                               "GITHUB",
                               "SLACK",
@@ -599,7 +566,8 @@
         },
         "required": [
           "data"
-        ]
+        ],
+        "description": "The answer of a trigger URL (GET or POST /t/qk_trg_…, the URL from POST /v1/triggers), for clients that call it, e.g. fireTrigger in @quak/js"
       }
     },
     "securitySchemes": {
@@ -689,7 +657,7 @@
     },
     {
       "name": "Integrations",
-      "description": "Connect other services to the workspace, e.g. Slack (“Add to Slack”): then everyone there plays with `/quak <text>` using the credits and defaults of the workspace"
+      "description": "Services connected to the workspace that play through Quak, with its credits and defaults:\n\n- **Slack** (`slack`): “Add to Slack”, then everyone in the Slack workspace plays with `/quak <text>`.\n- **IFTTT** (`ifttt`): the Quak service on IFTTT, applets play text, sounds and clips.\n\nSonos is not one of them, it has its own routes (Sonos)."
     }
   ],
   "externalDocs": {
@@ -1079,8 +1047,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -2001,8 +1968,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -2324,8 +2290,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -2453,8 +2418,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -2581,8 +2545,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -2754,8 +2717,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -3082,8 +3044,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -3211,8 +3172,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -3339,8 +3299,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -3664,8 +3623,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -3793,8 +3751,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -3921,8 +3878,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -4255,8 +4211,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -4384,8 +4339,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -4512,8 +4466,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -4863,8 +4816,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -4991,8 +4943,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -5172,8 +5123,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -5301,8 +5251,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -5429,8 +5378,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -5589,8 +5537,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -5717,8 +5664,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -5848,8 +5794,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not one of your logins": {
@@ -5989,8 +5934,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -6117,8 +6061,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -6385,8 +6328,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -6513,8 +6455,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -6644,8 +6585,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "The only admin of a workspace with members": {
@@ -6737,7 +6677,7 @@
                               "type": "number"
                             },
                             "lowThreshold": {
-                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing",
+                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan)",
                               "type": "number"
                             }
                           },
@@ -6767,7 +6707,7 @@
                             },
                             "plan": {
                               "default": "none",
-                              "description": "the plan, details for admins in GET /v1/workspace/billing",
+                              "description": "the plan; plans are bought and changed in the Quak web app",
                               "type": "string",
                               "enum": [
                                 "none",
@@ -6853,11 +6793,10 @@
                               "type": "string"
                             },
                             "effectIntensity": {
-                              "default": "off",
-                              "description": "strength of the voice effect: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the voice effect: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -6868,11 +6807,10 @@
                               "type": "string"
                             },
                             "ambienceIntensity": {
-                              "default": "off",
-                              "description": "strength of the ambience: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the ambience: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -7034,8 +6972,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -7150,8 +7087,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -7436,7 +7372,7 @@
                               "type": "number"
                             },
                             "lowThreshold": {
-                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing",
+                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan)",
                               "type": "number"
                             }
                           },
@@ -7466,7 +7402,7 @@
                             },
                             "plan": {
                               "default": "none",
-                              "description": "the plan, details for admins in GET /v1/workspace/billing",
+                              "description": "the plan; plans are bought and changed in the Quak web app",
                               "type": "string",
                               "enum": [
                                 "none",
@@ -7552,11 +7488,10 @@
                               "type": "string"
                             },
                             "effectIntensity": {
-                              "default": "off",
-                              "description": "strength of the voice effect: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the voice effect: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -7567,11 +7502,10 @@
                               "type": "string"
                             },
                             "ambienceIntensity": {
-                              "default": "off",
-                              "description": "strength of the ambience: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the ambience: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -7733,8 +7667,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -7849,8 +7782,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -7978,8 +7910,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -8106,8 +8037,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Members cannot": {
@@ -8237,8 +8167,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Slug taken": {
@@ -8492,8 +8421,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -8620,8 +8548,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -8751,8 +8678,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -8872,12 +8798,11 @@
                   "effectIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the voice effect: off, weak, medium or strong, default medium",
+                    "description": "strength of the voice effect: weak, medium or strong, default medium. No effect is effect none",
                     "examples": [
                       "medium"
                     ]
@@ -8911,12 +8836,11 @@
                   "ambienceIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the ambience: off, weak, medium or strong, default medium",
+                    "description": "strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none",
                     "examples": [
                       "medium"
                     ]
@@ -9065,12 +8989,11 @@
                   "effectIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the voice effect: off, weak, medium or strong, default medium",
+                    "description": "strength of the voice effect: weak, medium or strong, default medium. No effect is effect none",
                     "examples": [
                       "medium"
                     ]
@@ -9104,12 +9027,11 @@
                   "ambienceIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the ambience: off, weak, medium or strong, default medium",
+                    "description": "strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none",
                     "examples": [
                       "medium"
                     ]
@@ -9258,12 +9180,11 @@
                   "effectIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the voice effect: off, weak, medium or strong, default medium",
+                    "description": "strength of the voice effect: weak, medium or strong, default medium. No effect is effect none",
                     "examples": [
                       "medium"
                     ]
@@ -9297,12 +9218,11 @@
                   "ambienceIntensity": {
                     "type": "string",
                     "enum": [
-                      "off",
                       "weak",
                       "medium",
                       "strong"
                     ],
-                    "description": "strength of the ambience: off, weak, medium or strong, default medium",
+                    "description": "strength of the ambience: weak, medium or strong, default medium. No ambience is ambience none",
                     "examples": [
                       "medium"
                     ]
@@ -9423,7 +9343,7 @@
                               "type": "number"
                             },
                             "lowThreshold": {
-                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing",
+                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan)",
                               "type": "number"
                             }
                           },
@@ -9453,7 +9373,7 @@
                             },
                             "plan": {
                               "default": "none",
-                              "description": "the plan, details for admins in GET /v1/workspace/billing",
+                              "description": "the plan; plans are bought and changed in the Quak web app",
                               "type": "string",
                               "enum": [
                                 "none",
@@ -9539,11 +9459,10 @@
                               "type": "string"
                             },
                             "effectIntensity": {
-                              "default": "off",
-                              "description": "strength of the voice effect: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the voice effect: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -9554,11 +9473,10 @@
                               "type": "string"
                             },
                             "ambienceIntensity": {
-                              "default": "off",
-                              "description": "strength of the ambience: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the ambience: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -9720,8 +9638,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -9836,8 +9753,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -9965,8 +9881,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -10093,8 +10008,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -10224,8 +10138,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -10352,8 +10265,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -10608,8 +10520,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -10928,8 +10839,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -11057,8 +10967,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -11185,8 +11094,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -11316,8 +11224,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -11444,8 +11351,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "The last admin": {
@@ -11599,8 +11505,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -11727,8 +11632,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -11858,8 +11762,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -11986,8 +11889,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "The last admin": {
@@ -12328,8 +12230,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -12457,8 +12358,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -12585,8 +12485,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -12716,8 +12615,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Already a member": {
@@ -12921,8 +12819,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -13049,8 +12946,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -13209,8 +13105,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -13337,8 +13232,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -13468,8 +13362,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -13670,8 +13563,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -13798,8 +13690,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -13929,8 +13820,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -14057,8 +13947,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -14192,8 +14081,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -14204,6 +14092,7 @@
     },
     "/v1/workspace/billing": {
       "get": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -14689,8 +14578,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -14817,8 +14705,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -14842,10 +14729,11 @@
         "operationId": "getV1WorkspaceBilling"
       },
       "patch": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
-        "summary": "Update billing",
+        "summary": "Update billing email",
         "description": "Scope: `manage`. Admins of the workspace only. The billing email of the workspace: where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.",
         "requestBody": {
           "required": true,
@@ -15383,8 +15271,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -15512,8 +15399,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -15640,8 +15526,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -15771,8 +15656,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -15795,6 +15679,7 @@
     },
     "/v1/workspace/billing/checkout": {
       "post": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -16148,8 +16033,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -16277,8 +16161,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -16405,8 +16288,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -16536,8 +16418,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -16671,8 +16552,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -16695,6 +16575,7 @@
     },
     "/v1/workspace/billing/change": {
       "get": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -17118,8 +16999,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -17247,8 +17127,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -17375,8 +17254,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -17506,8 +17384,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -17641,8 +17518,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -17663,6 +17539,7 @@
         "operationId": "getV1WorkspaceBillingChange"
       },
       "post": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -17927,8 +17804,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -18056,8 +17932,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -18184,8 +18059,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -18315,8 +18189,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -18450,8 +18323,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -18472,6 +18344,7 @@
         "operationId": "postV1WorkspaceBillingChange"
       },
       "delete": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -18957,8 +18830,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -19085,8 +18957,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -19216,8 +19087,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -19351,8 +19221,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -19375,6 +19244,7 @@
     },
     "/v1/workspace/billing/portal": {
       "post": {
+        "x-scalar-ignore": true,
         "tags": [
           "Workspace"
         ],
@@ -19625,8 +19495,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -19753,8 +19622,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -19884,8 +19752,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -20019,8 +19886,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Audio processing failed": {
@@ -20047,7 +19913,7 @@
           "Workspace"
         ],
         "summary": "List credit grants",
-        "description": "Scope: `play`. Where the credits of the workspace came from, newest first: starting credits, plan credits (they expire with the period), bought packs, credits given by Quak, SLA service credits, and what a refund took back. The balance is in GET /v1/workspace (credits).",
+        "description": "Scope: `manage`. Admins of the workspace only. Where the credits of the workspace came from, newest first: starting credits, plan credits (they expire with the period), bought packs, credits given by Quak, SLA service credits, and what a refund took back. The balance is in GET /v1/workspace (credits).",
         "parameters": [
           {
             "name": "limit",
@@ -20309,8 +20175,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -20438,8 +20303,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -20676,8 +20540,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -20842,7 +20705,7 @@
                               "type": "number"
                             },
                             "lowThreshold": {
-                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing",
+                              "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan)",
                               "type": "number"
                             }
                           },
@@ -20872,7 +20735,7 @@
                             },
                             "plan": {
                               "default": "none",
-                              "description": "the plan, details for admins in GET /v1/workspace/billing",
+                              "description": "the plan; plans are bought and changed in the Quak web app",
                               "type": "string",
                               "enum": [
                                 "none",
@@ -20958,11 +20821,10 @@
                               "type": "string"
                             },
                             "effectIntensity": {
-                              "default": "off",
-                              "description": "strength of the voice effect: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the voice effect: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -20973,11 +20835,10 @@
                               "type": "string"
                             },
                             "ambienceIntensity": {
-                              "default": "off",
-                              "description": "strength of the ambience: off, weak, medium or strong",
+                              "default": "weak",
+                              "description": "strength of the ambience: weak, medium or strong",
                               "type": "string",
                               "enum": [
-                                "off",
                                 "weak",
                                 "medium",
                                 "strong"
@@ -21139,8 +21000,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -21255,8 +21115,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid name": {
@@ -21384,8 +21243,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -21512,8 +21370,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not a login key": {
@@ -21643,8 +21500,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -21885,8 +21741,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -22013,8 +21868,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -22148,8 +22002,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -22410,8 +22263,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -22539,8 +22391,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Not found": {
@@ -22667,8 +22518,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sonos account needs a reconnect": {
@@ -22802,8 +22652,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -22929,27 +22778,13 @@
                                     "anyOf": [
                                       {
                                         "description": "a kind of device for an icon, from the model; null for a model we do not know",
-                                        "anyOf": [
-                                          {
-                                            "const": "speaker",
-                                            "type": "string"
-                                          },
-                                          {
-                                            "const": "soundbar",
-                                            "type": "string"
-                                          },
-                                          {
-                                            "const": "sub",
-                                            "type": "string"
-                                          },
-                                          {
-                                            "const": "amp",
-                                            "type": "string"
-                                          },
-                                          {
-                                            "const": "portable",
-                                            "type": "string"
-                                          }
+                                        "type": "string",
+                                        "enum": [
+                                          "speaker",
+                                          "soundbar",
+                                          "sub",
+                                          "amp",
+                                          "portable"
                                         ]
                                       },
                                       {
@@ -23167,8 +23002,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Everything you can play on": {
@@ -23344,8 +23178,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Invalid volume": {
@@ -23473,8 +23306,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -26821,7 +26653,10 @@
                       ]
                     ]
                   }
-                }
+                },
+                "required": [
+                  "speakers"
+                ]
               },
               "examples": {
                 "simple": {
@@ -26858,7 +26693,10 @@
                       ]
                     ]
                   }
-                }
+                },
+                "required": [
+                  "speakers"
+                ]
               },
               "examples": {
                 "simple": {
@@ -26895,7 +26733,10 @@
                       ]
                     ]
                   }
-                }
+                },
+                "required": [
+                  "speakers"
+                ]
               },
               "examples": {
                 "simple": {
@@ -29583,8 +29424,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             }
@@ -29943,7 +29783,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -29985,7 +29825,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -30223,7 +30063,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -30265,7 +30105,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -30571,7 +30411,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -30613,7 +30453,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -31024,6 +30864,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -31462,6 +31303,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -31910,6 +31752,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -33030,7 +32873,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -33072,7 +32915,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -33541,6 +33384,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -33975,6 +33819,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -34419,6 +34264,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -35559,7 +35405,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -35601,7 +35447,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -35832,7 +35678,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -35874,7 +35720,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -36162,7 +36008,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -36204,7 +36050,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -36590,6 +36436,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -37025,6 +36872,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -37470,6 +37318,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -38587,7 +38436,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -38629,7 +38478,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -38860,7 +38709,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -38902,7 +38751,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -39190,7 +39039,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -39232,7 +39081,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -39618,6 +39467,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -40053,6 +39903,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -40498,6 +40349,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -41615,7 +41467,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -41657,7 +41509,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -42055,6 +41907,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -42489,6 +42342,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -42933,6 +42787,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -44050,7 +43905,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -44092,7 +43947,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -44324,7 +44179,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -44366,7 +44221,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -44655,7 +44510,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. strength of the voice effect, default: the user default (medium), off = no effect. What each level means is tuned per effect.",
+                    "description": "Beta, may change without notice. strength of the voice effect, default: the workspace default (medium). off = no effect for this play, the effect stays chosen (a bypass, only per play). What each level means is tuned per effect.",
                     "examples": [
                       "medium",
                       "strong"
@@ -44697,7 +44552,7 @@
                       "medium",
                       "strong"
                     ],
-                    "description": "Beta, may change without notice. level of the ambience, default: the user default (medium), off = no ambience",
+                    "description": "Beta, may change without notice. level of the ambience, default: the workspace default (medium). off = no ambience for this play, the ambience stays chosen (only per play)",
                     "examples": [
                       "medium",
                       "weak"
@@ -45083,6 +44938,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -45517,6 +45373,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -45961,6 +45818,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -47717,7 +47575,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, STREAM_DECK, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -47938,6 +47796,7 @@
                                   "IOS",
                                   "IPADOS",
                                   "RAYCAST",
+                                  "STREAM_DECK",
                                   "HOME_ASSISTANT",
                                   "GITHUB",
                                   "SLACK",
@@ -48143,8 +48002,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Your history": {
@@ -48522,7 +48380,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, STREAM_DECK, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -48741,6 +48599,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -49291,7 +49150,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, STREAM_DECK, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -49510,6 +49369,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -50188,7 +50048,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, STREAM_DECK, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -51072,7 +50932,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
+              "description": "only plays sent from these platforms (client.platform), CSV: API, JS, WEB, CLI, MACOS, IOS, IPADOS, RAYCAST, STREAM_DECK, HOME_ASSISTANT, GITHUB, SLACK, ZAPIER, IFTTT, MCP, TRIGGER",
               "examples": [
                 "CLI",
                 "CLI,WEB"
@@ -51724,6 +51584,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -52162,6 +52023,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -52610,6 +52472,7 @@
                                 "IOS",
                                 "IPADOS",
                                 "RAYCAST",
+                                "STREAM_DECK",
                                 "HOME_ASSISTANT",
                                 "GITHUB",
                                 "SLACK",
@@ -56263,7 +56126,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -56271,7 +56134,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -56633,7 +56496,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -56641,7 +56504,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -57065,7 +56928,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -57073,7 +56936,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -59257,7 +59120,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -59265,7 +59128,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -59624,7 +59487,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -59632,7 +59495,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -60053,7 +59916,7 @@
                   },
                   "effectIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "ambience": {
                     "type": "string",
@@ -60061,7 +59924,7 @@
                   },
                   "ambienceIntensity": {
                     "type": "string",
-                    "description": "off, weak, medium or strong, null = the workspace's"
+                    "description": "weak, medium or strong, null = the workspace's"
                   },
                   "intro": {
                     "type": "string",
@@ -62618,44 +62481,18 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
-                              "anyOf": [
-                                {
-                                  "const": "EVENT_IGNORED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EVENT_FILTERED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "NO_RULE",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "RULE_SILENT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "COOLDOWN",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "DAILY_LIMIT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EMPTY_TEXT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "QUIET_HOURS",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "BUSY",
-                                  "type": "string"
-                                }
+                              "description": "why it was skipped",
+                              "type": "string",
+                              "enum": [
+                                "EVENT_IGNORED",
+                                "EVENT_FILTERED",
+                                "NO_RULE",
+                                "RULE_SILENT",
+                                "COOLDOWN",
+                                "DAILY_LIMIT",
+                                "EMPTY_TEXT",
+                                "QUIET_HOURS",
+                                "BUSY"
                               ]
                             },
                             {
@@ -62916,6 +62753,7 @@
                                         "IOS",
                                         "IPADOS",
                                         "RAYCAST",
+                                        "STREAM_DECK",
                                         "HOME_ASSISTANT",
                                         "GITHUB",
                                         "SLACK",
@@ -63196,44 +63034,18 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
-                              "anyOf": [
-                                {
-                                  "const": "EVENT_IGNORED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EVENT_FILTERED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "NO_RULE",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "RULE_SILENT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "COOLDOWN",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "DAILY_LIMIT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EMPTY_TEXT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "QUIET_HOURS",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "BUSY",
-                                  "type": "string"
-                                }
+                              "description": "why it was skipped",
+                              "type": "string",
+                              "enum": [
+                                "EVENT_IGNORED",
+                                "EVENT_FILTERED",
+                                "NO_RULE",
+                                "RULE_SILENT",
+                                "COOLDOWN",
+                                "DAILY_LIMIT",
+                                "EMPTY_TEXT",
+                                "QUIET_HOURS",
+                                "BUSY"
                               ]
                             },
                             {
@@ -63494,6 +63306,7 @@
                                         "IOS",
                                         "IPADOS",
                                         "RAYCAST",
+                                        "STREAM_DECK",
                                         "HOME_ASSISTANT",
                                         "GITHUB",
                                         "SLACK",
@@ -63774,44 +63587,18 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "why it was skipped (TriggerSkipReason in src/services/triggers/fire.ts)",
-                              "anyOf": [
-                                {
-                                  "const": "EVENT_IGNORED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EVENT_FILTERED",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "NO_RULE",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "RULE_SILENT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "COOLDOWN",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "DAILY_LIMIT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "EMPTY_TEXT",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "QUIET_HOURS",
-                                  "type": "string"
-                                },
-                                {
-                                  "const": "BUSY",
-                                  "type": "string"
-                                }
+                              "description": "why it was skipped",
+                              "type": "string",
+                              "enum": [
+                                "EVENT_IGNORED",
+                                "EVENT_FILTERED",
+                                "NO_RULE",
+                                "RULE_SILENT",
+                                "COOLDOWN",
+                                "DAILY_LIMIT",
+                                "EMPTY_TEXT",
+                                "QUIET_HOURS",
+                                "BUSY"
                               ]
                             },
                             {
@@ -64072,6 +63859,7 @@
                                         "IOS",
                                         "IPADOS",
                                         "RAYCAST",
+                                        "STREAM_DECK",
                                         "HOME_ASSISTANT",
                                         "GITHUB",
                                         "SLACK",
@@ -65779,7 +65567,7 @@
                                   "type": "number"
                                 },
                                 "lowThreshold": {
-                                  "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan), the same as in GET /v1/workspace/billing",
+                                  "description": "below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan)",
                                   "type": "number"
                                 }
                               },
@@ -65809,7 +65597,7 @@
                                 },
                                 "plan": {
                                   "default": "none",
-                                  "description": "the plan, details for admins in GET /v1/workspace/billing",
+                                  "description": "the plan; plans are bought and changed in the Quak web app",
                                   "type": "string",
                                   "enum": [
                                     "none",
@@ -65895,11 +65683,10 @@
                                   "type": "string"
                                 },
                                 "effectIntensity": {
-                                  "default": "off",
-                                  "description": "strength of the voice effect: off, weak, medium or strong",
+                                  "default": "weak",
+                                  "description": "strength of the voice effect: weak, medium or strong",
                                   "type": "string",
                                   "enum": [
-                                    "off",
                                     "weak",
                                     "medium",
                                     "strong"
@@ -65910,11 +65697,10 @@
                                   "type": "string"
                                 },
                                 "ambienceIntensity": {
-                                  "default": "off",
-                                  "description": "strength of the ambience: off, weak, medium or strong",
+                                  "default": "weak",
+                                  "description": "strength of the ambience: weak, medium or strong",
                                   "type": "string",
                                   "enum": [
-                                    "off",
                                     "weak",
                                     "medium",
                                     "strong"
@@ -71337,11 +71123,10 @@
                             "nullable": true,
                             "anyOf": [
                               {
+                                "additionalProperties": true,
                                 "description": "per provider, null when not connected. Slack: `teamId`, `teamName`, `connectedBy` {`userId`, `email`, `slackUserId`} and `defaults` {`speakers`, `voice`, `volume`} (null = the workspace default). IFTTT: `connections` (number of connected IFTTT accounts) and `lastUsedAt` (last action, or null). Never a token.",
                                 "type": "object",
-                                "patternProperties": {
-                                  "^(.*)$": {}
-                                }
+                                "properties": {}
                               },
                               {
                                 "type": "null"
@@ -71516,14 +71301,14 @@
           "Integrations"
         ],
         "summary": "Connect integration",
-        "description": "Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace: open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it.\n\n- **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here. From the web app pass `returnTo` to get the browser back there.\n- **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.\n- Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.",
+        "description": "Scope: `manage`. Admins of the workspace only. Starts connecting a provider to this workspace: open `authUrl` in a browser before `expiresAt` (30 minutes) and approve there, a page confirms it.\n\n- **Slack:** “Add to Slack”. Afterwards everyone in the Slack workspace plays with `/quak <text>`, with this workspace's credits and defaults. A Slack workspace connected elsewhere moves here.\n- **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.\n- Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.",
         "parameters": [
           {
             "name": "provider",
             "in": "path",
             "required": true,
             "schema": {
-              "description": "the provider from GET /v1/integrations",
+              "description": "the provider from GET /v1/integrations: slack or ifttt",
               "examples": [
                 "slack",
                 "ifttt"
@@ -71545,13 +71330,6 @@
                       "reconnect": {
                         "description": "connect again although connected, e.g. for new permissions. Default: false",
                         "type": "boolean"
-                      },
-                      "returnTo": {
-                        "description": "Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.",
-                        "examples": [
-                          "https://quak.party/app/workspace"
-                        ],
-                        "type": "string"
                       }
                     }
                   },
@@ -71571,13 +71349,6 @@
                       "reconnect": {
                         "description": "connect again although connected, e.g. for new permissions. Default: false",
                         "type": "boolean"
-                      },
-                      "returnTo": {
-                        "description": "Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.",
-                        "examples": [
-                          "https://quak.party/app/workspace"
-                        ],
-                        "type": "string"
                       }
                     }
                   },
@@ -71597,13 +71368,6 @@
                       "reconnect": {
                         "description": "connect again although connected, e.g. for new permissions. Default: false",
                         "type": "boolean"
-                      },
-                      "returnTo": {
-                        "description": "Slack only: an absolute URL of the Quak web app (its origin must be WEB_URL's or an allowed browser origin, else `400 ERROR_INVALID_RETURN_TO`). After Slack the browser is redirected there with `integration=slack&status=connected|denied|expired|failed` (and `team=<Slack team name>` when connected) instead of a status page.",
-                        "examples": [
-                          "https://quak.party/app/workspace"
-                        ],
-                        "type": "string"
                       }
                     }
                   },
@@ -72438,7 +72202,7 @@
             "in": "path",
             "required": true,
             "schema": {
-              "description": "the provider from GET /v1/integrations",
+              "description": "the provider from GET /v1/integrations: slack or ifttt",
               "examples": [
                 "slack",
                 "ifttt"
@@ -73094,8 +72858,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Unknown purpose": {
@@ -73223,8 +72986,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -73351,8 +73113,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "talk-live with a read key": {
@@ -73542,8 +73303,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "No API key": {
@@ -73670,8 +73430,7 @@
                   },
                   "required": [
                     "error"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scope too low": {
@@ -73697,6 +73456,7 @@
     },
     "/v1/oauth/requests/{id}": {
       "get": {
+        "x-scalar-ignore": true,
         "tags": [
           "OAuth"
         ],
@@ -74203,6 +73963,7 @@
     },
     "/v1/oauth/requests/{id}/approve": {
       "post": {
+        "x-scalar-ignore": true,
         "tags": [
           "OAuth"
         ],
@@ -74678,6 +74439,7 @@
     },
     "/v1/oauth/requests/{id}/deny": {
       "post": {
+        "x-scalar-ignore": true,
         "tags": [
           "OAuth"
         ],
