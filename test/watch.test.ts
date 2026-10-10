@@ -70,6 +70,20 @@ describe("watch", () => {
     expect(plays).toEqual(["ACTIVE", "DONE"]);
   });
 
+  test("names the workspace in the auth message: the option, else X-Quak-Workspace from headers", () => {
+    mockQuak({ headers: { "x-quak-workspace": "home" } }).quak.watch({ WebSocket, onPlay: () => {} });
+    last().open();
+    expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test", workspace: "home" }]);
+
+    mockQuak({ headers: { "X-Quak-Workspace": "home" } }).quak.watch({
+      WebSocket,
+      onPlay: () => {},
+      workspace: "office",
+    });
+    last().open();
+    expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test", workspace: "office" }]);
+  });
+
   test("reconnects after a drop, with growing pauses, and starts over after ready", () => {
     const { quak } = mockQuak();
     const closes: boolean[] = [];

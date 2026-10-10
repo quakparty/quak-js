@@ -397,7 +397,8 @@ watch.close();
 
 A WebSocket to `GET /v1/plays/watch`. After a drop it connects again by itself (pauses from 1 to 30 s) and gets the
 running plays again. It needs the global `WebSocket` (Node 22 or newer, Bun, Deno, browsers); on Node 20 pass one,
-e.g. `quak.watch({ WebSocket: (await import("ws")).WebSocket, onPlay })`.
+e.g. `quak.watch({ WebSocket: (await import("ws")).WebSocket, onPlay })`. It watches the workspace from
+`X-Quak-Workspace` in `headers`, like every other request, or the one in the option `workspace` (slug or id).
 
 ### Lookups
 

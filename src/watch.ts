@@ -20,6 +20,11 @@ export type WatchOptions = {
   onError?: ((error: QuakError) => void) | undefined;
   /** Connect again after a drop, with growing pauses up to 30 s. Default: true. */
   reconnect?: boolean | undefined;
+  /**
+   * The workspace to watch (slug or id), for a login key that can reach several. Defaults to `X-Quak-Workspace` from
+   * the client's `headers`, else the key's own workspace or, for a login key, the last used one.
+   */
+  workspace?: string | undefined;
   /** Defaults to the global WebSocket. */
   WebSocket?: WebSocketConstructor | undefined;
 };
@@ -69,7 +74,9 @@ export function watchPlays(url: string, apiKey: string, options: WatchOptions): 
     const current = new Socket(url);
     socket = current;
     current.onopen = () => {
-      current.send(JSON.stringify({ type: "auth", apiKey }));
+      current.send(
+        JSON.stringify({ type: "auth", apiKey, ...(options.workspace ? { workspace: options.workspace } : {}) }),
+      );
       listen();
     };
     current.onmessage = (event) => {

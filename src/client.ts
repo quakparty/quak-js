@@ -177,10 +177,15 @@ export class Quak {
 
   private readonly baseUrl: string;
   private readonly apiKey: string | undefined;
+  private readonly workspaceHeader: string | undefined;
 
   constructor(options: QuakOptions = {}) {
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
     this.apiKey = options.apiKey;
+    // headers are case-insensitive, and a WebSocket cannot send them: watch() puts it into the auth message
+    this.workspaceHeader = Object.entries(options.headers ?? {}).find(
+      ([name]) => name.toLowerCase() === "x-quak-workspace",
+    )?.[1];
     const headers: Record<string, string> = {
       ...options.headers,
       "X-Quak-Client": clientHeader(undefined, options.client),
@@ -274,7 +279,7 @@ export class Quak {
       throw new QuakError({ status: 0, code: "ERROR_MISSING_API_KEY", message: "watch() needs an apiKey" });
     }
     const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/plays/watch`;
-    return watchPlays(url, this.apiKey, options);
+    return watchPlays(url, this.apiKey, { ...options, workspace: options.workspace ?? this.workspaceHeader });
   }
 }
 
