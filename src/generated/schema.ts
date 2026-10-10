@@ -3882,7 +3882,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices */
                     voice?: string;
                     /**
-                     * @description 1-100
+                     * @description 10-100, 10 is the quietest Sonos plays an announcement
                      * @example 30
                      */
                     volume?: number;
@@ -3947,7 +3947,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices */
                     voice?: string;
                     /**
-                     * @description 1-100
+                     * @description 10-100, 10 is the quietest Sonos plays an announcement
                      * @example 30
                      */
                     volume?: number;
@@ -4012,7 +4012,7 @@ export interface operations {
                     /** @description voice slug from /v1/voices */
                     voice?: string;
                     /**
-                     * @description 1-100
+                     * @description 10-100, 10 is the quietest Sonos plays an announcement
                      * @example 30
                      */
                     volume?: number;
@@ -8836,15 +8836,15 @@ export interface operations {
                      */
                     process?: boolean;
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -8947,15 +8947,15 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -9058,15 +9058,15 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -9623,15 +9623,15 @@ export interface operations {
                         ambienceIntensity?: "off" | "weak" | "medium" | "strong";
                     }[] | string;
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -10191,15 +10191,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -10295,15 +10295,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -10399,15 +10399,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -10949,15 +10949,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -11053,15 +11053,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -11157,15 +11157,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -11708,15 +11708,15 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -12259,15 +12259,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean;
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -12364,15 +12364,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -12469,15 +12469,15 @@ export interface operations {
                     /** @description true: produce the audio again instead of using the cache, for text also a new synthesis. Ignored without processing */
                     skipCache?: boolean | ("true" | "false");
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -13806,15 +13806,15 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -13849,15 +13849,15 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -13892,15 +13892,15 @@ export interface operations {
                 };
                 "multipart/form-data": {
                     /**
-                     * @description 1-100, default: the workspace's volume
+                     * @description 10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.
                      * @example 30
                      */
                     volume?: number | string;
                     /**
-                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
+                     * @description volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, "all"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.
                      * @example {
                      *       "kitchen": 40,
-                     *       "bedroom": 10
+                     *       "bedroom": 15
                      *     }
                      */
                     volumes?: {
@@ -14957,7 +14957,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number;
                     /** @description may interrupt other announcements */
                     priority?: boolean;
@@ -15053,7 +15053,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number | string;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number | string;
                     /** @description may interrupt other announcements */
                     priority?: boolean | ("true" | "false");
@@ -15149,7 +15149,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number | string;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number | string;
                     /** @description may interrupt other announcements */
                     priority?: boolean | ("true" | "false");
@@ -15615,7 +15615,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number;
                     /** @description may interrupt other announcements */
                     priority?: boolean;
@@ -15711,7 +15711,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number | string;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number | string;
                     /** @description may interrupt other announcements */
                     priority?: boolean | ("true" | "false");
@@ -15807,7 +15807,7 @@ export interface operations {
                     outro?: string;
                     /** @description ms between intro, content and outro: 0, 100, …, 1000 */
                     gap?: number | string;
-                    /** @description 1-100, null = the workspace's volume */
+                    /** @description 10-100, null = the workspace's volume */
                     volume?: number | string;
                     /** @description may interrupt other announcements */
                     priority?: boolean | ("true" | "false");

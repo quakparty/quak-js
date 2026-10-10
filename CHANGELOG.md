@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: `volume` and `volumes` take 10-100 (was 1-100), in plays, workspace defaults and
+  triggers; below 10 the API answers 400
+
 ## 0.9.10 - 2026-10-10
 
 - `watch({ workspace })`: the workspace to watch (slug or id), sent in the auth message; defaults to

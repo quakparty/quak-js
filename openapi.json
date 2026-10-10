@@ -1055,7 +1055,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -2298,7 +2298,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -3052,7 +3052,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -3631,7 +3631,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -4219,7 +4219,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -5131,7 +5131,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -7790,7 +7790,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -8719,9 +8719,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100",
+                    "description": "10-100, 10 is the quietest Sonos plays an announcement",
                     "examples": [
                       30
                     ]
@@ -8910,9 +8910,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100",
+                    "description": "10-100, 10 is the quietest Sonos plays an announcement",
                     "examples": [
                       30
                     ]
@@ -9101,9 +9101,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100",
+                    "description": "10-100, 10 is the quietest Sonos plays an announcement",
                     "examples": [
                       30
                     ]
@@ -9761,7 +9761,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -10847,7 +10847,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -12238,7 +12238,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -15279,7 +15279,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -16041,7 +16041,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -17007,7 +17007,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -17812,7 +17812,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -20183,7 +20183,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -22271,7 +22271,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -23186,7 +23186,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -27596,7 +27596,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -27985,7 +27985,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -29548,7 +29548,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -29844,9 +29844,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -29855,14 +29855,14 @@
                     "type": "object",
                     "additionalProperties": {
                       "type": "integer",
-                      "minimum": 1,
+                      "minimum": 10,
                       "maximum": 100
                     },
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -30148,7 +30148,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -30156,7 +30156,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -30167,7 +30167,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -30176,11 +30176,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -30496,7 +30496,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -30504,7 +30504,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -30515,7 +30515,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -30524,11 +30524,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -33033,7 +33033,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -33041,7 +33041,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -33052,7 +33052,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -33061,11 +33061,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -35459,9 +35459,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -35470,14 +35470,14 @@
                     "type": "object",
                     "additionalProperties": {
                       "type": "integer",
-                      "minimum": 1,
+                      "minimum": 10,
                       "maximum": 100
                     },
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -35745,7 +35745,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -35753,7 +35753,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -35764,7 +35764,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -35773,11 +35773,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -36075,7 +36075,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -36083,7 +36083,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -36094,7 +36094,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -36103,11 +36103,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -38490,9 +38490,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -38501,14 +38501,14 @@
                     "type": "object",
                     "additionalProperties": {
                       "type": "integer",
-                      "minimum": 1,
+                      "minimum": 10,
                       "maximum": 100
                     },
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -38776,7 +38776,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -38784,7 +38784,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -38795,7 +38795,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -38804,11 +38804,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -39106,7 +39106,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -39114,7 +39114,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -39125,7 +39125,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -39134,11 +39134,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -41552,7 +41552,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -41560,7 +41560,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -41571,7 +41571,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -41580,11 +41580,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -43959,9 +43959,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -43970,14 +43970,14 @@
                     "type": "object",
                     "additionalProperties": {
                       "type": "integer",
-                      "minimum": 1,
+                      "minimum": 10,
                       "maximum": 100
                     },
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -44246,7 +44246,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -44254,7 +44254,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -44265,7 +44265,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -44274,11 +44274,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -44577,7 +44577,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -44585,7 +44585,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -44596,7 +44596,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -44605,11 +44605,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -47214,7 +47214,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -48203,7 +48203,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -50966,9 +50966,9 @@
                 "properties": {
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -50977,14 +50977,14 @@
                     "type": "object",
                     "additionalProperties": {
                       "type": "integer",
-                      "minimum": 1,
+                      "minimum": 10,
                       "maximum": 100
                     },
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -51080,7 +51080,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -51088,7 +51088,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -51099,7 +51099,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -51108,11 +51108,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -51238,7 +51238,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -51246,7 +51246,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, default: the workspace's volume",
+                    "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
                     "examples": [
                       30
                     ]
@@ -51257,7 +51257,7 @@
                         "type": "object",
                         "additionalProperties": {
                           "type": "integer",
-                          "minimum": 1,
+                          "minimum": 10,
                           "maximum": 100
                         }
                       },
@@ -51266,11 +51266,11 @@
                         "description": "the same as a JSON string (multipart)"
                       }
                     ],
-                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 1-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
+                    "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
                     "examples": [
                       {
                         "kitchen": 40,
-                        "bedroom": 10
+                        "bedroom": 15
                       }
                     ]
                   },
@@ -55797,7 +55797,7 @@
                                   "nullable": true,
                                   "anyOf": [
                                     {
-                                      "description": "1-100 for this rule, null = the trigger's",
+                                      "description": "10-100 for this rule, null = the trigger's",
                                       "type": "number"
                                     },
                                     {
@@ -56152,9 +56152,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "type": "boolean",
@@ -56396,7 +56396,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -56532,7 +56532,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -56540,7 +56540,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "anyOf": [
@@ -56817,7 +56817,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -56964,7 +56964,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -56972,7 +56972,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "anyOf": [
@@ -57249,7 +57249,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -57722,7 +57722,7 @@
                                 "nullable": true,
                                 "anyOf": [
                                   {
-                                    "description": "1-100 for this rule, null = the trigger's",
+                                    "description": "10-100 for this rule, null = the trigger's",
                                     "type": "number"
                                   },
                                   {
@@ -57946,7 +57946,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -58666,7 +58666,7 @@
                                 "nullable": true,
                                 "anyOf": [
                                   {
-                                    "description": "1-100 for this rule, null = the trigger's",
+                                    "description": "10-100 for this rule, null = the trigger's",
                                     "type": "number"
                                   },
                                   {
@@ -59146,9 +59146,9 @@
                   },
                   "volume": {
                     "type": "integer",
-                    "minimum": 1,
+                    "minimum": 10,
                     "maximum": 100,
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "type": "boolean",
@@ -59390,7 +59390,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -59523,7 +59523,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -59531,7 +59531,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "anyOf": [
@@ -59808,7 +59808,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -59952,7 +59952,7 @@
                     "anyOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
+                        "minimum": 10,
                         "maximum": 100
                       },
                       {
@@ -59960,7 +59960,7 @@
                         "description": "the same number as a string (query, multipart)"
                       }
                     ],
-                    "description": "1-100, null = the workspace's volume"
+                    "description": "10-100, null = the workspace's volume"
                   },
                   "priority": {
                     "anyOf": [
@@ -60237,7 +60237,7 @@
                           "nullable": true,
                           "anyOf": [
                             {
-                              "description": "1-100 for this rule, null = the trigger's",
+                              "description": "10-100 for this rule, null = the trigger's",
                               "type": "number"
                             },
                             {
@@ -60707,7 +60707,7 @@
                                 "nullable": true,
                                 "anyOf": [
                                   {
-                                    "description": "1-100 for this rule, null = the trigger's",
+                                    "description": "10-100 for this rule, null = the trigger's",
                                     "type": "number"
                                   },
                                   {
@@ -60931,7 +60931,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -61923,7 +61923,7 @@
                                 "nullable": true,
                                 "anyOf": [
                                   {
-                                    "description": "1-100 for this rule, null = the trigger's",
+                                    "description": "10-100 for this rule, null = the trigger's",
                                     "type": "number"
                                   },
                                   {
@@ -64236,7 +64236,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -66512,7 +66512,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -69267,7 +69267,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -71530,7 +71530,7 @@
                     "value": {
                       "error": {
                         "code": "ERROR_INVALID_PARAMS",
-                        "message": "volume not valid. must be a number between 1 and 100.",
+                        "message": "volume not valid. must be a whole number between 10 and 100 (10 is the quietest Sonos plays an announcement).",
                         "field": "volume",
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }

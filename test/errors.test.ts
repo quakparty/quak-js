@@ -34,7 +34,7 @@ describe("errors", () => {
 
   test("keeps the field of a validation error", async () => {
     const { quak } = mockQuak({}, () =>
-      json({ error: { code: "ERROR_INVALID_PARAMS", message: "volume must be 1-100", field: "volume" } }, 400),
+      json({ error: { code: "ERROR_INVALID_PARAMS", message: "volume must be 10-100", field: "volume" } }, 400),
     );
     const error = (await quak.play.text({ text: "Hi", volume: 500 }).catch((error: unknown) => error)) as QuakError;
     expect(error.field).toBe("volume");
