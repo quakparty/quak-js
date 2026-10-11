@@ -4,6 +4,11 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `quak.talkLive({ ticket?, to, effect, …, source?, format?, onReady, onDone, onError, … })`: talk live over
+  `GET /v1/play/talk/live` (beta), with `send(frame)`, `update({ effect, ambience, muted, … })`, `end()` and `close()`
+- `microphone({ encoding?, onLevel?, stream? })`: the browser's microphone as the source of a talk live, Opus in 20 ms
+  packets with WebCodecs, 16-bit PCM where the browser cannot encode Opus
+
 - OpenAPI snapshot updated: the plan limits effects and ambiences. `effects.list()` has `plan` (the smallest plan with
   it) and `available` per entry; a play with one the plan lacks is a 403 `ERROR_PLAN_REQUIRED` with
   `details.requiredPlan`. `workspace.get()` has `features` (`talkLive`, `slack`)

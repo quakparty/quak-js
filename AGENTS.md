@@ -20,7 +20,7 @@ enters them there.
   or the release change.
 - `src/index.ts`: public exports.
 - `src/client.ts`: the `Quak` class, the thin hand-written layer over `openapi-fetch`: headers, `play.*`, `stop`,
-  `plays.*` (with `replay` and `save`), `workspace.get()` (scope `play`, for credits and `limits`), `keys.current()` (any key, the setup check), `credits`,
+  `plays.*` (with `replay` and `save`), `talkLive()`, `workspace.get()` (scope `play`, for credits and `limits`), `keys.current()` (any key, the setup check), `credits`,
   `watch()`
   and the lookups for everything a play can name (`speakers`, `voices`, `sounds`, `clips`, `effects`, each an object
   with `list()` etc.). The workspace's own groups are part of `speakers`, `/v1/groups` is management. Management (keys,
@@ -29,6 +29,12 @@ enters them there.
 - `src/watch.ts`: the live status (`GET /v1/plays/watch`) behind `quak.watch()`: auth message, reconnect with growing
   pauses, no reconnect after 4001/4401, a dead connection after 60 s of silence. Only the global `WebSocket` or the
   one passed in, never a dependency.
+- `src/talk-live.ts`: talk live (`GET /v1/play/talk/live`) behind `quak.talkLive()`: start message with the key or a
+  ticket, binary frames, `update`, `end`, `done`. No reconnect: a dropped talk is over. The messages are typed here,
+  the route has no schema beyond its description.
+- `src/microphone.ts`: `microphone()`, browsers only: an inline AudioWorklet, Opus through WebCodecs `AudioEncoder`
+  (20 ms, 32 kbit/s), 16-bit PCM without it. Its public types never name DOM types (`MicrophoneStream`), so the
+  declarations build on Node without the DOM library.
 - `src/trigger.ts`: `fireTrigger(urlOrToken, { body, query, baseUrl, fetch })`, a standalone function without a key
   (POST to `/t/<token>`). Its answer type comes from `components.schemas.TriggerCallResult`; `/t/` itself stays out of
   the API reference on purpose. Managing triggers is for the web app only (Mike, 09.10.2026): no helpers for

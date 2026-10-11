@@ -1,6 +1,7 @@
 import createClient, { type Client } from "openapi-fetch";
 import { clientHeader } from "./client-header.js";
 import { QuakError, unwrap } from "./errors.js";
+import { startTalkLive, type TalkLive, type TalkLiveOptions } from "./talk-live.js";
 import { watchPlays, type Watch, type WatchOptions } from "./watch.js";
 import type {
   Paths,
@@ -285,6 +286,21 @@ export class Quak {
     const query = options.keys ? `?keys=${options.keys}` : "";
     const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/plays/watch${query}`;
     return watchPlays(url, this.apiKey, { ...options, workspace: options.workspace ?? this.workspaceHeader });
+  }
+
+  /**
+   * Talk live (`GET /v1/play/talk/live`, beta): the speakers play while someone speaks. With the client's key, or
+   * from a browser with a one-time `ticket` that a server fetched (`POST /v1/ws/tickets`, purpose `talk-live`).
+   * Needs the Family plan or higher, else `onError` gets `ERROR_PLAN_REQUIRED`.
+   *
+   * ```ts
+   * const live = quak.talkLive({ ticket, to: ["kitchen"], source: await microphone(), onDone: (done) => {} });
+   * await live.end();
+   * ```
+   */
+  talkLive(options: TalkLiveOptions): TalkLive {
+    const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/play/talk/live`;
+    return startTalkLive(url, this.apiKey, { ...options, workspace: options.workspace ?? this.workspaceHeader });
   }
 }
 

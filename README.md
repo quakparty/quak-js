@@ -117,6 +117,36 @@ await quak.play.talk({
 });
 ```
 
+### Talk live
+
+The speakers play while someone speaks (beta, from the Family plan). `microphone()` records in the browser and sends
+Opus in 20 ms packets (16-bit PCM where the browser has no Opus encoder). Call it from a click, browsers ask for the
+microphone only after a user gesture:
+
+```ts
+import { Quak, microphone } from "@quak/js";
+
+// In a browser, without the key: a one-time ticket your server fetched (POST /v1/ws/tickets, purpose talk-live)
+const quak = new Quak();
+const live = quak.talkLive({
+  ticket,
+  to: ["kitchen"],
+  effect: "megaphone",
+  source: await microphone({ onLevel: (level) => meter(level) }),
+  onReady: ({ maxSeconds }) => console.log(`live, ${maxSeconds} s at most`),
+  onDone: ({ credits, balance }) => console.log(`${credits} credits, ${balance} left`),
+  onError: (error) => console.error(error.code), // e.g. ERROR_PLAN_REQUIRED
+});
+
+live.update({ ambience: "stadium" }); // while talking: effect, ambience, their intensities, muted
+await live.end(); // reverb and outro run out, then onDone
+```
+
+Other sources (Node, a file, a stream) send frames themselves: name the `format`
+(`{ encoding: "opus" | "pcm_s16le" | "pcm_f32le", sampleRate }`, one raw 20 ms Opus packet or mono PCM per frame) and
+call `live.send(frame)`; frames before `onReady` are kept. With an API key instead of a ticket, `talkLive()` uses the
+client's key. At most 3 minutes, `onWarning` comes 30 s before the end.
+
 ### sound
 
 Play a built-in sound from `quak.sounds.list()`.
@@ -544,10 +574,8 @@ history. Extra `headers` cannot replace it.
 Node 20 or newer, Bun, Deno (`npm:@quak/js`) and current browsers: anything with `fetch`, `FormData` and `Blob`. CI
 runs the built package on Node 20, 22, 24 and Deno.
 
-`quak.watch()` also needs a WebSocket, see [Live status](#live-status).
-
-**Not yet:** talk live (`GET /v1/play/talk/live`, a WebSocket). Use the raw WebSocket of your runtime for now, see the
-API reference.
+`quak.watch()` and `quak.talkLive()` also need a WebSocket, see [Live status](#live-status). `microphone()` needs a
+browser with `AudioWorklet`.
 
 ## License
 
