@@ -25,6 +25,8 @@ export type WatchOptions = {
    * the client's `headers`, else the key's own workspace or, for a login key, the last used one.
    */
   workspace?: string | undefined;
+  /** `"current"`: only the plays of this key. Default: the whole workspace. */
+  keys?: "current" | "all" | undefined;
   /** Defaults to the global WebSocket. */
   WebSocket?: WebSocketConstructor | undefined;
 };

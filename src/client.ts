@@ -281,7 +281,9 @@ export class Quak {
     if (!this.apiKey) {
       throw new QuakError({ status: 0, code: "ERROR_MISSING_API_KEY", message: "watch() needs an apiKey" });
     }
-    const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/plays/watch`;
+    // the API reads keys from the URL only, not from the auth message
+    const query = options.keys ? `?keys=${options.keys}` : "";
+    const url = `${this.baseUrl.replace(/^http/, "ws")}/v1/plays/watch${query}`;
     return watchPlays(url, this.apiKey, { ...options, workspace: options.workspace ?? this.workspaceHeader });
   }
 }

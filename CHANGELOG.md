@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `watch({ keys: "current" })`: only the plays of the client's key, also the running ones on connect; without it the
+  whole workspace as before
+
 ## 0.9.12 - 2026-10-11
 
 - **Behaviour change in the API:** `plays.list()` and `plays.last()` without a parameter now return only the plays of

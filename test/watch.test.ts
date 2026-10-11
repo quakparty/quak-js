@@ -84,6 +84,11 @@ describe("watch", () => {
     expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test", workspace: "office" }]);
   });
 
+  test("keys goes on the URL", () => {
+    mockQuak().quak.watch({ WebSocket, onPlay: () => {}, keys: "current" });
+    expect(last().url).toBe("wss://api.test/v1/plays/watch?keys=current");
+  });
+
   test("reconnects after a drop, with growing pauses, and starts over after ready", () => {
     const { quak } = mockQuak();
     const closes: boolean[] = [];
