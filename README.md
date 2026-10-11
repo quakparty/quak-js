@@ -433,12 +433,15 @@ const { data: speakers } = await quak.speakers.list();
 const office = speakers.find((speaker) => speaker.name === "Office");
 await quak.play.text({ text: "Coffee is ready.", to: office?.slug ?? "all" });
 
-// Show the ambiences with what they sound like
+// Show the ambiences with what they sound like, the ones the plan lacks with the plan they need
 const { data: ambiences } = await quak.effects.list({ kind: "ambience" });
 for (const ambience of ambiences) {
-  console.log(`${ambience.id}: ${ambience.description}`);
+  console.log(`${ambience.id}: ${ambience.description}${ambience.available ? "" : ` (from ${ambience.plan})`}`);
 }
 ```
+
+The plan of the workspace decides which effects and ambiences a play may use: `available` tells, `plan` names the
+smallest plan with it. A play with one the plan lacks fails with `ERROR_PLAN_REQUIRED` (`details.requiredPlan`).
 
 ## Triggers
 

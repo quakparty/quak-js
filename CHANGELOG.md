@@ -4,6 +4,10 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: the plan limits effects and ambiences. `effects.list()` has `plan` (the smallest plan with
+  it) and `available` per entry; a play with one the plan lacks is a 403 `ERROR_PLAN_REQUIRED` with
+  `details.requiredPlan`. `workspace.get()` has `features` (`talkLive`, `slack`)
+
 - `watch({ keys: "current" })`: only the plays of the client's key, also the running ones on connect; without it the
   whole workspace as before
 
