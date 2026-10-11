@@ -99,11 +99,14 @@ export class Quak {
 
   /** The history. */
   readonly plays: {
-    /** List plays, newest first (`GET /v1/plays`). */
+    /** List the plays of this key, newest first (`GET /v1/plays`); `keys: "all"` for the whole workspace. */
     list(query?: PlaysQuery): Promise<PlaysResponse>;
     /** One play (`GET /v1/plays/{uuid}`). */
     get(uuid: string, query?: PlayQuery): Promise<PlayItemResponse>;
-    /** Your newest play (`GET /v1/plays/last`), a 404 QuakError when there is none. */
+    /**
+     * The newest play of this key (`GET /v1/plays/last`), `keys: "all"` for the workspace's; a 404 QuakError when there
+     * is none.
+     */
     last(query?: PlayQuery): Promise<PlayItemResponse>;
     /** Stop one play while it runs (`POST /v1/plays/{uuid}/stop`). */
     stop(uuid: string): Promise<PlayStopResponse>;

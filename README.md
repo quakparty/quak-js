@@ -366,7 +366,10 @@ normal plays. `quak.plays.stop(id)` stops with the play's own priority.
 const { data: plays, meta } = await quak.plays.list({ limit: 20, type: "TEXT" });
 const { data: one } = await quak.plays.get(plays[0]!.id);
 const { data: last } = await quak.plays.last(); // your newest play
+const { data: everyone } = await quak.plays.list({ keys: "all" });
 ```
+
+The history shows the plays of the client's key; `keys: "all"` shows the whole workspace's, for `list()` and `last()`.
 
 ### Replay and save
 

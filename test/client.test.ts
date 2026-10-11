@@ -116,7 +116,7 @@ describe("plays", () => {
     await quak.speakers.list({ type: "ALL" });
     await quak.plays.list({ limit: 5, type: "TEXT" });
     await quak.plays.get("abc");
-    await quak.plays.last({ scope: "key" });
+    await quak.plays.last({ keys: "all" });
     await quak.plays.stop("abc");
 
     expect(calls.map(({ request, url }) => `${request.method} ${url.pathname}${url.search}`)).toEqual([
@@ -125,7 +125,7 @@ describe("plays", () => {
       "GET /v1/speakers?type=ALL",
       "GET /v1/plays?limit=5&type=TEXT",
       "GET /v1/plays/abc",
-      "GET /v1/plays/last?scope=key",
+      "GET /v1/plays/last?keys=all",
       "POST /v1/plays/abc/stop",
     ]);
     expect(await calls[0]!.request.json()).toEqual({ to: "kitchen" });

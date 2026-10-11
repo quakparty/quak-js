@@ -1118,7 +1118,7 @@ export interface paths {
         };
         /**
          * List plays
-         * @description Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. type, platform and scope narrow it, scope=key shows only the plays of this API key.
+         * @description Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. By default only the plays of this API key, keys=all shows all of your workspace; type and platform narrow it.
          */
         get: operations["getV1Plays"];
         put?: never;
@@ -13112,7 +13112,8 @@ export interface operations {
                 offset?: number;
                 type?: string;
                 platform?: string;
-                scope?: "all" | "key";
+                keys?: "current" | "all";
+                scope?: "key" | "all";
             };
             header?: never;
             path?: never;
@@ -13277,7 +13278,8 @@ export interface operations {
             query?: {
                 type?: string;
                 platform?: string;
-                scope?: "all" | "key";
+                keys?: "current" | "all";
+                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -13438,7 +13440,8 @@ export interface operations {
             query?: {
                 type?: string;
                 platform?: string;
-                scope?: "all" | "key";
+                keys?: "current" | "all";
+                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -13621,7 +13624,8 @@ export interface operations {
             query?: {
                 type?: string;
                 platform?: string;
-                scope?: "all" | "key";
+                keys?: "current" | "all";
+                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -13794,7 +13798,8 @@ export interface operations {
             query?: {
                 type?: string;
                 platform?: string;
-                scope?: "all" | "key";
+                keys?: "current" | "all";
+                scope?: "key" | "all";
             };
             header?: never;
             path: {

@@ -47527,7 +47527,7 @@
           "Plays"
         ],
         "summary": "List plays",
-        "description": "Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. type, platform and scope narrow it, scope=key shows only the plays of this API key.",
+        "description": "Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. By default only the plays of this API key, keys=all shows all of your workspace; type and platform narrow it.",
         "parameters": [
           {
             "name": "limit",
@@ -47584,18 +47584,31 @@
             }
           },
           {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current",
+                "all"
+              ],
+              "description": "current (default): only plays sent with the API key of this request, e.g. this CLI on this machine or this browser. all: every play you may see, today all plays of your workspace",
+              "examples": [
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "scope",
             "in": "query",
             "required": false,
             "schema": {
               "enum": [
-                "all",
-                "key"
+                "key",
+                "all"
               ],
-              "description": "all (default): every play you may see, today all plays of your account. key: only plays sent with the API key of this request, e.g. this CLI on this machine",
-              "examples": [
-                "key"
-              ],
+              "description": "deprecated, use keys: key = current, all = all",
               "type": "string"
             }
           }
@@ -48389,18 +48402,31 @@
             }
           },
           {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current",
+                "all"
+              ],
+              "description": "current (default): only plays sent with the API key of this request, e.g. this CLI on this machine or this browser. all: every play you may see, today all plays of your workspace",
+              "examples": [
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "scope",
             "in": "query",
             "required": false,
             "schema": {
               "enum": [
-                "all",
-                "key"
+                "key",
+                "all"
               ],
-              "description": "all (default): every play you may see, today all plays of your account. key: only plays sent with the API key of this request, e.g. this CLI on this machine",
-              "examples": [
-                "key"
-              ],
+              "description": "deprecated, use keys: key = current, all = all",
               "type": "string"
             }
           }
@@ -49159,18 +49185,31 @@
             }
           },
           {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current",
+                "all"
+              ],
+              "description": "current (default): only plays sent with the API key of this request, e.g. this CLI on this machine or this browser. all: every play you may see, today all plays of your workspace",
+              "examples": [
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "scope",
             "in": "query",
             "required": false,
             "schema": {
               "enum": [
-                "all",
-                "key"
+                "key",
+                "all"
               ],
-              "description": "all (default): every play you may see, today all plays of your account. key: only plays sent with the API key of this request, e.g. this CLI on this machine",
-              "examples": [
-                "key"
-              ],
+              "description": "deprecated, use keys: key = current, all = all",
               "type": "string"
             }
           }
@@ -50057,18 +50096,31 @@
             }
           },
           {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current",
+                "all"
+              ],
+              "description": "current (default): only plays sent with the API key of this request, e.g. this CLI on this machine or this browser. all: every play you may see, today all plays of your workspace",
+              "examples": [
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "scope",
             "in": "query",
             "required": false,
             "schema": {
               "enum": [
-                "all",
-                "key"
+                "key",
+                "all"
               ],
-              "description": "all (default): every play you may see, today all plays of your account. key: only plays sent with the API key of this request, e.g. this CLI on this machine",
-              "examples": [
-                "key"
-              ],
+              "description": "deprecated, use keys: key = current, all = all",
               "type": "string"
             }
           }
@@ -50941,18 +50993,31 @@
             }
           },
           {
+            "name": "keys",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "current",
+                "all"
+              ],
+              "description": "current (default): only plays sent with the API key of this request, e.g. this CLI on this machine or this browser. all: every play you may see, today all plays of your workspace",
+              "examples": [
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
             "name": "scope",
             "in": "query",
             "required": false,
             "schema": {
               "enum": [
-                "all",
-                "key"
+                "key",
+                "all"
               ],
-              "description": "all (default): every play you may see, today all plays of your account. key: only plays sent with the API key of this request, e.g. this CLI on this machine",
-              "examples": [
-                "key"
-              ],
+              "description": "deprecated, use keys: key = current, all = all",
               "type": "string"
             }
           }
