@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.12 - 2026-10-11
+
 - **Behaviour change in the API:** `plays.list()` and `plays.last()` without a parameter now return only the plays of
   the request's key; `{ keys: "all" }` returns the whole workspace's. `keys=current|all` replaces `scope=key|all`
   (still accepted, deprecated); the same for the `"last"` routes of stop, replay and save
