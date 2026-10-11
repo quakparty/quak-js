@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.13 - 2026-10-11
+
 - `quak.talkLive({ ticket?, to, effect, …, source?, format?, onReady, onDone, onError, … })`: talk live over
   `GET /v1/play/talk/live` (beta), with `send(frame)`, `update({ effect, ambience, muted, … })`, `end()` and `close()`
 - `microphone({ encoding?, onLevel?, stream? })`: the browser's microphone as the source of a talk live, Opus in 20 ms
