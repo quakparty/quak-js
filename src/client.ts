@@ -46,7 +46,10 @@ import type {
 export const DEFAULT_BASE_URL = "https://api.quak.party";
 
 export type QuakOptions = {
-  /** An API key (`qk_key_…`), sent as `Authorization: Bearer <key>`. Optional only for the public routes. */
+  /**
+   * An API key (`qk_key_…`) or, in a browser, a play token (`qk_ptk_…`, `POST /v1/play-tokens`), sent as
+   * `Authorization: Bearer <key>`. Optional only for the public routes.
+   */
   apiKey?: string | undefined;
   /** Defaults to the production API, `https://api.quak.party`. */
   baseUrl?: string | undefined;
@@ -289,12 +292,11 @@ export class Quak {
   }
 
   /**
-   * Talk live (`GET /v1/play/talk/live`, beta): the speakers play while someone speaks. With the client's key, or
-   * from a browser with a one-time `ticket` that a server fetched (`POST /v1/ws/tickets`, purpose `talk-live`).
-   * Needs the Family plan or higher, else `onError` gets `ERROR_PLAN_REQUIRED`.
+   * Talk live (`GET /v1/play/talk/live`, beta): the speakers play while someone speaks. With the client's key, in
+   * a browser a play token. Needs the Family plan or higher, else `onError` gets `ERROR_PLAN_REQUIRED`.
    *
    * ```ts
-   * const live = quak.talkLive({ ticket, to: ["kitchen"], source: await microphone(), onDone: (done) => {} });
+   * const live = quak.talkLive({ to: ["kitchen"], source: await microphone(), onDone: (done) => {} });
    * await live.end();
    * ```
    */

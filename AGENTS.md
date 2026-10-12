@@ -30,7 +30,7 @@ enters them there.
   pauses, no reconnect after 4001/4401, a dead connection after 60 s of silence. Only the global `WebSocket` or the
   one passed in, never a dependency.
 - `src/talk-live.ts`: talk live (`GET /v1/play/talk/live`) behind `quak.talkLive()`: start message with the key or a
-  ticket, binary frames, `update`, `end`, `done`. No reconnect: a dropped talk is over. The messages are typed here,
+  play token, binary frames, `update`, `end`, `done`. No reconnect: a dropped talk is over. The messages are typed here,
   the route has no schema beyond its description.
 - `src/microphone.ts`: `microphone()`, browsers only: an inline AudioWorklet, Opus through WebCodecs `AudioEncoder`
   (20 ms, 32 kbit/s), 16-bit PCM without it. Its public types never name DOM types (`MicrophoneStream`), so the

@@ -4,6 +4,11 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- **Breaking for talk live:** the `ticket` option of `talkLive()` is gone, the API no longer has WebSocket tickets
+  (`POST /v1/ws/tickets`). In a browser use a play token as the key: `new Quak({ apiKey: token })`
+  (`POST /v1/play-tokens`, 5 minutes, plays, `watch()` and `talkLive()`), see "In a browser" in the README
+- `onReady` of `talkLive()` has `balance`; OpenAPI snapshot updated (play tokens, `ERROR_INVALID_TOKEN`)
+
 ## 0.9.13 - 2026-10-11
 
 - `quak.talkLive({ ticket?, to, effect, …, source?, format?, onReady, onDone, onError, … })`: talk live over

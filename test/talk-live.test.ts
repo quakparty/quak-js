@@ -78,12 +78,11 @@ describe("talkLive", () => {
     expect(live.state).toBe("connecting");
   });
 
-  test("a ticket instead of the key, also without a key", () => {
-    const { quak } = mockQuak({ apiKey: undefined });
-    quak.talkLive({ WebSocket, ticket: "qk_wst_1" });
+  test("a play token goes in like a key, without one it throws", () => {
+    mockQuak({ apiKey: "qk_ptk_1" }).quak.talkLive({ WebSocket });
     last().open();
-    expect(last().sent).toEqual([{ type: "start", ticket: "qk_wst_1" }]);
-    expect(() => quak.talkLive({ WebSocket })).toThrow("talkLive() needs an apiKey or a ticket");
+    expect(last().sent).toEqual([{ type: "start", apiKey: "qk_ptk_1" }]);
+    expect(() => mockQuak({ apiKey: undefined }).quak.talkLive({ WebSocket })).toThrow("talkLive() needs an apiKey");
   });
 
   test("a source sends from ready on, mutes with the update and gets its last packets out before end", async () => {
@@ -114,7 +113,7 @@ describe("talkLive", () => {
     expect(last().sent[0]).toMatchObject({ type: "start", format: { encoding: "opus", sampleRate: 48000 } });
     expect(events).toEqual([]);
 
-    last().message({ type: "ready", play: play(), credits: 2, maxSeconds: 180 });
+    last().message({ type: "ready", play: play(), credits: 2, balance: 98, maxSeconds: 180 });
     expect(live.state).toBe("live");
     send!(new Uint8Array([1]).buffer);
     live.update({ muted: true });

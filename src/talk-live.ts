@@ -2,7 +2,7 @@ import { QuakError } from "./errors.js";
 import type { PlayTextParams, Play } from "./types.js";
 import type { WebSocketConstructor } from "./watch.js";
 
-// Talk live over the API's WebSocket `GET /v1/play/talk/live`: a start message with the key or a ticket, the
+// Talk live over the API's WebSocket `GET /v1/play/talk/live`: a start message with the key or a play token, the
 // audio as binary frames, `update` while talking, `end`, then `done` and close 1000. The protocol is in the
 // description of the route in the OpenAPI; it has no schema of its own, so the messages are typed here.
 
@@ -40,7 +40,14 @@ export type TalkLiveUpdate = Pick<TalkLiveParams, "effect" | "effectIntensity" |
   muted?: boolean;
 };
 
-export type TalkLiveReady = { play: Play; credits: number; maxSeconds: number };
+export type TalkLiveReady = {
+  play: Play;
+  /** Charged so far. */
+  credits: number;
+  /** The workspace's credits. */
+  balance: number;
+  maxSeconds: number;
+};
 export type TalkLiveDone = {
   play: Play;
   credits: number;
@@ -61,8 +68,6 @@ export type TalkLiveSource = {
 };
 
 export type TalkLiveOptions = TalkLiveParams & {
-  /** A one-time ticket (`qk_wst_…`, `POST /v1/ws/tickets` with purpose `talk-live`) instead of the client's key. */
-  ticket?: string | undefined;
   /** For a login key: the workspace (slug or id). Defaults to `X-Quak-Workspace` from the client's `headers`. */
   workspace?: string | undefined;
   /** The audio: a source such as `microphone()`, which sends by itself, or a format for frames sent with `send()`. */
@@ -119,16 +124,15 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
       message: "talkLive() needs a WebSocket: Node 22 or newer, Bun, Deno or a browser, or pass one as `WebSocket`",
     });
   }
-  if (!options.ticket && !apiKey) {
+  if (!apiKey) {
     throw new QuakError({
       status: 0,
       code: "ERROR_MISSING_API_KEY",
-      message: "talkLive() needs an apiKey or a ticket",
+      message: "talkLive() needs an apiKey (a key or a play token)",
     });
   }
 
   const {
-    ticket,
     workspace,
     source,
     format,
@@ -172,7 +176,7 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
     socket.send(
       JSON.stringify({
         type: "start",
-        ...(ticket ? { ticket } : { apiKey }),
+        apiKey,
         ...(workspace ? { workspace } : {}),
         ...params,
         ...(source ? { format: source.format } : format ? { format } : {}),

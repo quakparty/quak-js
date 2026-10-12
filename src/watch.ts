@@ -40,7 +40,7 @@ export type Watch = {
 
 type Message = { type: "ready" } | { type: "play"; data: Play } | { type: "ping" } | { type: "error"; code: string };
 
-// 4001: key missing or rejected, 4401: ticket rejected. Trying again cannot help.
+// 4001: key missing or rejected, 4401: play token rejected. Trying again cannot help.
 const FINAL_CODES = new Set([4001, 4401]);
 const FIRST_RETRY_MS = 1000;
 const MAX_RETRY_MS = 30_000;

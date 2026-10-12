@@ -126,10 +126,9 @@ microphone only after a user gesture:
 ```ts
 import { Quak, microphone } from "@quak/js";
 
-// In a browser, without the key: a one-time ticket your server fetched (POST /v1/ws/tickets, purpose talk-live)
-const quak = new Quak();
+// In a browser with a play token, see "In a browser"
+const quak = new Quak({ apiKey: token });
 const live = quak.talkLive({
-  ticket,
   to: ["kitchen"],
   effect: "megaphone",
   source: await microphone({ onLevel: (level) => meter(level) }),
@@ -144,8 +143,7 @@ await live.end(); // reverb and outro run out, then onDone
 
 Other sources (Node, a file, a stream) send frames themselves: name the `format`
 (`{ encoding: "opus" | "pcm_s16le" | "pcm_f32le", sampleRate }`, one raw 20 ms Opus packet or mono PCM per frame) and
-call `live.send(frame)`; frames before `onReady` are kept. With an API key instead of a ticket, `talkLive()` uses the
-client's key. At most 3 minutes, `onWarning` comes 30 s before the end.
+call `live.send(frame)`; frames before `onReady` are kept. At most 3 minutes, `onWarning` comes 30 s before the end.
 
 ### sound
 
@@ -472,6 +470,24 @@ for (const ambience of ambiences) {
 
 The plan of the workspace decides which effects and ambiences a play may use: `available` tells, `plan` names the
 smallest plan with it. A play with one the plan lacks fails with `ERROR_PLAN_REQUIRED` (`details.requiredPlan`).
+
+## In a browser
+
+An API key is permanent and secret, it never goes to a browser. Your server gets a play token with its key instead
+(`POST /v1/play-tokens`, `{ data: { token: "qk_ptk_…", expiresAt } }`) and hands it over. The browser uses it like a
+key, for 5 minutes and as often as it likes: plays, stop and replay, `watch()` and `talkLive()`. Plays count as plays
+of the server's key.
+
+```ts
+// on your server
+const { data } = await unwrap(quak.api.POST("/v1/play-tokens"));
+// in the browser
+const browser = new Quak({ apiKey: data.token });
+await browser.play.text({ text: "Dinner is ready." });
+```
+
+An expired token fails with `ERROR_INVALID_TOKEN` (401, on the WebSockets close code 4401): get a new one and try once
+more.
 
 ## Triggers
 
