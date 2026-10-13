@@ -8,6 +8,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
   (`POST /v1/ws/tickets`). In a browser use a play token as the key: `new Quak({ apiKey: token })`
   (`POST /v1/play-tokens`, 5 minutes, plays, `watch()` and `talkLive()`), see "In a browser" in the README
 - `onReady` of `talkLive()` has `balance`; OpenAPI snapshot updated (play tokens, `ERROR_INVALID_TOKEN`)
+- OpenAPI snapshot updated: `speakers.list()` comes in the workspace's order (`PUT /v1/speakers/order`), renaming
+  locations (`PATCH /v1/locations/{id}`) and the user's display name, both on the raw client `quak.api`
 
 ## 0.9.13 - 2026-10-11
 
