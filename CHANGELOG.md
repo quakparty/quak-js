@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.15 - 2026-10-14
+
 - `QuakError.retryAfter`: the seconds from `Retry-After`, on 429 `ERROR_RATE_LIMITED` (the API's new rate limits)
 - OpenAPI snapshot updated: one `Error` schema for every error answer (`ErrorBody` now derives from it), validation
   errors of the framework in the same shape (422 `ERROR_INVALID_PARAMS` with `field`), `ERROR_RATE_LIMITED` for every
