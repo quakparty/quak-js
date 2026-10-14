@@ -1698,7 +1698,7 @@ export interface paths {
          *     3. The browser plays straight at the API with `Authorization: Bearer qk_ptk_…`, and on the WebSockets (talk live, live status) with `"token": "qk_ptk_…"` in the first message.
          *
          *     - Opens only `POST /v1/play/text`, `/v1/play/sound`, `/v1/play/clip`, `/v1/play/url`, `/v1/play/file`, `/v1/play/talk`, `/v1/play/stop`, `/v1/plays/{uuid}/stop` and `/v1/plays/{uuid}/replay`. `GET /v1/play/talk/live` and `GET /v1/plays/watch` take it too. Any other route: `403 ERROR_INSUFFICIENT_SCOPE`.
-         *     - Works any number of times for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key. Plays count as plays of this key.
+         *     - Works any number of times for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key. Plays count as plays of this key and, unless they name a client themselves, as plays of the client of this request (`User-Agent: quak-<name>/<version>` or `X-Quak-Client`): a browser behind the Home Assistant integration plays as `HOME_ASSISTANT`.
          *     - Expired, unknown, or the key was signed out: `401 ERROR_INVALID_TOKEN` (on a WebSocket: closes with `4401`). Get a new token and try once more.
          *     - Send it in the header or the first message, not in a URL: it works more than once, so it stays out of addresses and logs.
          */
@@ -1889,6 +1889,21 @@ export interface components {
                 }[];
             };
         };
+        /** @description Every error of the API: a stable `code` for code to check, a `message` for people, `field` for the parameter it is about. */
+        Error: {
+            error: {
+                /**
+                 * @description what went wrong, stable for code to check; message is for people
+                 * @enum {string}
+                 */
+                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_RATE_LIMITED" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                message: string;
+                field?: string;
+                details?: unknown;
+                /** @description the X-Request-Id of the answer, to find the request in our log */
+                requestId?: string;
+            };
+        };
     };
     responses: never;
     parameters: never;
@@ -2007,20 +2022,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 422 */
@@ -2029,7 +2031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2078,7 +2080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2146,7 +2148,7 @@ export interface operations {
                              * @description what went wrong, stable for code to check; message is for people
                              * @enum {string}
                              */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_RATE_LIMITED" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
                             message: string;
                             field?: string;
                             details?: unknown;
@@ -2162,20 +2164,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -2184,20 +2173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 422 */
@@ -2206,7 +2182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2265,20 +2241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2361,20 +2324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -2383,20 +2333,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -2405,20 +2342,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2452,20 +2376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2548,20 +2459,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -2570,20 +2468,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -2592,20 +2477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2679,20 +2551,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -2701,20 +2560,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -2723,20 +2569,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2819,20 +2652,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -2841,20 +2661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -2863,20 +2670,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2955,20 +2749,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -2977,20 +2758,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3023,20 +2791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -3045,20 +2800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3067,20 +2809,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3111,20 +2840,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3133,20 +2849,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -3155,20 +2858,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3188,20 +2878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3210,20 +2887,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3277,20 +2941,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3299,20 +2950,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -3321,20 +2959,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3496,20 +3121,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3563,20 +3175,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3585,20 +3184,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -3607,20 +3193,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -3854,20 +3427,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -3876,20 +3436,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -3898,20 +3445,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -3920,20 +3454,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4293,20 +3814,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -4315,20 +3823,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -4337,20 +3832,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -4359,20 +3841,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -4381,20 +3850,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4447,20 +3903,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4491,20 +3934,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -4513,20 +3943,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -4535,20 +3952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -4557,20 +3961,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4649,20 +4040,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -4671,20 +4049,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -4693,20 +4058,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -4715,20 +4067,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -4737,20 +4076,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4798,20 +4124,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -4820,20 +4133,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -4923,20 +4223,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -4945,20 +4232,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -4967,20 +4241,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -4989,20 +4250,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5033,20 +4281,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -5055,20 +4290,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -5077,20 +4299,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5137,20 +4346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -5159,20 +4355,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -5181,20 +4364,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -5203,20 +4373,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 429 */
@@ -5225,20 +4382,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5348,20 +4492,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -5370,20 +4501,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5517,20 +4635,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -5539,20 +4644,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -5561,20 +4653,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -5583,20 +4662,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5732,20 +4798,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -5754,20 +4807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -5776,20 +4816,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -5798,20 +4825,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -5820,20 +4834,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -5967,20 +4968,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -5989,20 +4977,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -6011,20 +4986,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -6033,20 +4995,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -6055,20 +5004,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6153,20 +5089,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -6175,20 +5098,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -6197,20 +5107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -6219,20 +5116,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -6241,20 +5125,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6364,20 +5235,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -6386,20 +5244,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -6408,20 +5253,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -6430,20 +5262,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6531,20 +5350,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -6553,20 +5359,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -6575,20 +5368,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -6597,20 +5377,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6670,20 +5437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -6692,20 +5446,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6757,20 +5498,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -6956,20 +5684,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -6978,20 +5693,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -7000,20 +5702,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -7022,20 +5711,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7085,20 +5761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -7107,20 +5770,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 410 */
@@ -7129,20 +5779,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7212,20 +5849,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -7234,20 +5858,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -7256,20 +5867,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 410 */
@@ -7278,20 +5876,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7381,20 +5966,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -7403,20 +5975,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7575,20 +6134,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -7597,20 +6143,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -7619,20 +6152,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7711,20 +6231,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -7733,20 +6240,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -7755,20 +6249,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -7777,20 +6258,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7850,20 +6318,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -7974,20 +6429,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -7996,20 +6438,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -8018,20 +6447,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8090,20 +6506,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -8112,20 +6515,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8147,20 +6537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -8169,20 +6546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8286,20 +6650,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -8308,20 +6659,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -8330,20 +6668,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -8352,20 +6677,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8457,20 +6769,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -8479,20 +6778,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -8501,20 +6787,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8606,20 +6879,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -8628,20 +6888,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -8650,20 +6897,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8728,20 +6962,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8827,20 +7048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -8849,20 +7057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -8871,20 +7066,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8925,20 +7107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -8947,20 +7116,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -8998,20 +7154,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -9020,20 +7163,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -9080,20 +7210,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -9102,20 +7219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -9181,20 +7285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -9203,20 +7294,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -9872,20 +7950,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -9894,20 +7959,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -9916,20 +7968,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -9938,20 +7977,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -9960,20 +7986,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -9982,20 +7995,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -10437,20 +8437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -10459,20 +8446,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -10481,20 +8455,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -10503,20 +8464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -10525,20 +8473,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -10547,20 +8482,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -11213,20 +9135,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -11235,20 +9144,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -11257,20 +9153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -11279,20 +9162,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -11301,20 +9171,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -11323,20 +9180,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -11971,20 +9815,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -11993,20 +9824,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -12015,20 +9833,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -12037,20 +9842,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -12059,20 +9851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -12081,20 +9860,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -12522,20 +10288,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -12544,20 +10297,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -12566,20 +10306,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -12588,20 +10315,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -12610,20 +10324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -12632,20 +10333,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -13283,20 +10971,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -13305,20 +10980,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -13327,20 +10989,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -13349,20 +10998,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -13371,20 +11007,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -13393,20 +11016,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -13486,20 +11096,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -13508,20 +11105,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -13530,20 +11114,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -13694,20 +11265,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -13716,20 +11274,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -13856,20 +11401,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -13878,20 +11410,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14018,20 +11537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -14040,20 +11546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -14062,20 +11555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14148,20 +11628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -14170,20 +11637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -14192,20 +11646,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -14214,20 +11655,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -14236,20 +11664,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14708,20 +12123,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -14730,20 +12132,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -14752,20 +12141,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -14774,20 +12150,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -14796,20 +12159,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 424 */
@@ -14818,20 +12168,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14879,20 +12216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -14958,20 +12282,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -14980,20 +12291,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -15002,20 +12300,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -15024,20 +12309,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15059,20 +12331,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -15081,20 +12340,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15162,20 +12408,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -15184,20 +12417,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -15206,20 +12426,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -15228,20 +12435,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15351,20 +12545,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15762,20 +12943,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -15784,20 +12952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -15806,20 +12961,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15928,20 +13070,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -15950,20 +13079,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -15985,20 +13101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -16007,20 +13110,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -16420,20 +13510,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -16442,20 +13519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -16464,20 +13528,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -16586,20 +13637,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -16608,20 +13646,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17078,20 +14103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -17100,20 +14112,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 402 */
@@ -17122,20 +14121,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -17144,20 +14130,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -17166,20 +14139,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -17188,20 +14148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17270,20 +14217,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -17292,20 +14226,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17497,20 +14418,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17539,20 +14447,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17626,20 +14521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -17648,20 +14530,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -17670,20 +14539,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17795,20 +14651,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -17817,20 +14660,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -17839,20 +14669,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -17861,20 +14678,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -17905,20 +14709,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -17927,20 +14718,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -17949,20 +14727,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18074,20 +14839,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -18096,20 +14848,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -18118,20 +14857,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -18140,20 +14866,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -18162,20 +14875,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18234,20 +14934,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -18256,20 +14943,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18325,20 +14999,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -18347,20 +15008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18407,20 +15055,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18451,20 +15086,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -18473,20 +15095,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18580,20 +15189,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -18602,20 +15198,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -18624,20 +15207,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -18646,20 +15216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18711,20 +15268,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18777,20 +15321,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 401 */
@@ -18799,20 +15330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -18821,20 +15339,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -18843,20 +15348,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 409 */
@@ -18865,20 +15357,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 503 */
@@ -18887,20 +15366,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -18931,20 +15397,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -18953,20 +15406,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -18975,20 +15415,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -19034,20 +15461,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -19056,20 +15470,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -19123,20 +15524,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -19145,20 +15533,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -19211,20 +15586,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -19233,20 +15595,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -19255,20 +15604,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -19319,20 +15655,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -19341,20 +15664,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -19363,20 +15673,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -19412,20 +15709,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 403 */
@@ -19434,20 +15718,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description Response for status 404 */
@@ -19456,20 +15727,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_ENOUGH_CREDITS" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TOO_MANY_REQUESTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
-                            message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
-                        };
-                    };
+                    "application/json": components["schemas"]["Error"];
                 };
             };
         };

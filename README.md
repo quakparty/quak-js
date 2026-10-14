@@ -563,6 +563,7 @@ try {
     error.details; // { required: "play" }
     error.field; // the parameter, for validation errors
     error.requestId; // X-Request-Id, quote it in a bug report
+    error.retryAfter; // seconds until it is worth trying again, on 429
   }
 }
 ```
@@ -570,6 +571,9 @@ try {
 When no answer arrives at all (offline, DNS, CORS, aborted), the error is a `QuakError` with `status` 0 and `code`
 `ERROR_NETWORK`, the original error in `cause`. A play during quiet hours is not an error: it answers with status
 `SKIPPED`.
+
+Too many requests in a short time answer with 429 `ERROR_RATE_LIMITED` and `retryAfter` in seconds. The request was
+not carried out, so it is safe to send it again after that; the client does not retry by itself.
 
 ## Client name
 

@@ -40,6 +40,22 @@ describe("errors", () => {
     expect(error.field).toBe("volume");
   });
 
+  test("a rate limit has retryAfter from Retry-After, in seconds or as a date", async () => {
+    const limited = (retryAfter: string) =>
+      json({ error: { code: "ERROR_RATE_LIMITED", message: "too many plays" } }, 429, { "Retry-After": retryAfter });
+    const seconds = (await mockQuak({}, () => limited("42"))
+      .quak.play.text({ text: "Hi" })
+      .catch((error: unknown) => error)) as QuakError;
+    expect([seconds.status, seconds.code, seconds.retryAfter]).toEqual([429, "ERROR_RATE_LIMITED", 42]);
+
+    const date = new Date(Date.now() + 30_000).toUTCString();
+    const byDate = (await mockQuak({}, () => limited(date))
+      .quak.play.text({ text: "Hi" })
+      .catch((error: unknown) => error)) as QuakError;
+    expect(byDate.retryAfter).toBeGreaterThanOrEqual(29);
+    expect(byDate.retryAfter).toBeLessThanOrEqual(30);
+  });
+
   test("falls back to the status and the X-Request-Id header without an error body", async () => {
     const { quak } = mockQuak(
       {},

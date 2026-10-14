@@ -1,7 +1,7 @@
 // Types for the wrapper, all derived from the generated schema (src/generated/schema.ts). Nothing here copies a
 // shape by hand: when the API changes, `bun generate` changes these too.
 
-import type { operations, paths } from "./generated/schema.js";
+import type { components, operations, paths } from "./generated/schema.js";
 
 export type { components, operations, paths } from "./generated/schema.js";
 
@@ -99,7 +99,7 @@ export type Workspace = WorkspaceResponse["data"];
 export type CurrentKeyResponse = Success<"getV1KeysCurrent">;
 
 /** The error body every route answers with on 4xx and 5xx. */
-export type ErrorBody = JsonOf<Responses<"postV1PlayText">[400]>;
+export type ErrorBody = components["schemas"]["Error"];
 
 /**
  * The code of a QuakError: one of the API's codes, `ERROR_NETWORK` when no answer came, or a newer code the API added

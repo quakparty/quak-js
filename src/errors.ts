@@ -7,6 +7,7 @@ export type QuakErrorInit = {
   field?: string | undefined;
   details?: unknown;
   requestId?: string | undefined;
+  retryAfter?: number | undefined;
   response?: Response | undefined;
   cause?: unknown;
 };
@@ -16,6 +17,7 @@ export type QuakErrorInit = {
  *
  * - API errors: `status` is the HTTP status, `code` the API's code (e.g. `ERROR_INSUFFICIENT_SCOPE`), `details` its
  *   details (e.g. `{ required: "manage" }`), `requestId` the `X-Request-Id` to quote in a bug report.
+ * - Rate limits: 429 `ERROR_RATE_LIMITED`, `retryAfter` the seconds from `Retry-After` until it is worth trying again.
  * - Network failures (no answer at all): `status` 0, `code` `ERROR_NETWORK`, the original error in `cause`.
  */
 export class QuakError extends Error {
@@ -25,6 +27,8 @@ export class QuakError extends Error {
   readonly field: string | undefined;
   readonly details: unknown;
   readonly requestId: string | undefined;
+  /** Seconds to wait before trying again, from the `Retry-After` header (429, sometimes 503). */
+  readonly retryAfter: number | undefined;
   readonly response: Response | undefined;
 
   constructor(init: QuakErrorInit) {
@@ -34,6 +38,7 @@ export class QuakError extends Error {
     this.field = init.field;
     this.details = init.details;
     this.requestId = init.requestId;
+    this.retryAfter = init.retryAfter;
     this.response = init.response;
   }
 
@@ -47,6 +52,7 @@ export class QuakError extends Error {
       field: error?.field,
       details: error?.details,
       requestId: error?.requestId ?? response.headers.get("x-request-id") ?? undefined,
+      retryAfter: parseRetryAfter(response.headers.get("retry-after")),
       response,
     });
   }
@@ -56,6 +62,14 @@ export class QuakError extends Error {
     const message = cause instanceof Error ? cause.message : String(cause);
     return new QuakError({ status: 0, code: "ERROR_NETWORK", message: `network error: ${message}`, cause });
   }
+}
+
+// seconds or an HTTP date
+function parseRetryAfter(value: string | null): number | undefined {
+  if (!value) return undefined;
+  if (/^\d+$/.test(value.trim())) return Number(value.trim());
+  const date = Date.parse(value);
+  return Number.isNaN(date) ? undefined : Math.max(0, Math.ceil((date - Date.now()) / 1000));
 }
 
 function isErrorBody(body: unknown): body is ErrorBody {

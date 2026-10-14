@@ -4,6 +4,10 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `QuakError.retryAfter`: the seconds from `Retry-After`, on 429 `ERROR_RATE_LIMITED` (the API's new rate limits)
+- OpenAPI snapshot updated: one `Error` schema for every error answer (`ErrorBody` now derives from it), validation
+  errors of the framework in the same shape (422 `ERROR_INVALID_PARAMS` with `field`), `ERROR_RATE_LIMITED`
+
 ## 0.9.14 - 2026-10-13
 
 - **Breaking for talk live:** the `ticket` option of `talkLive()` is gone, the API no longer has WebSocket tickets
