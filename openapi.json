@@ -644,7 +644,6 @@
                   "ERROR_SUBSCRIPTION_CANCELLED",
                   "ERROR_SUBSCRIPTION_EXISTS",
                   "ERROR_TEST_CLOCK",
-                  "ERROR_TOO_MANY_REQUESTS",
                   "ERROR_TRIGGER_BROKEN",
                   "ERROR_TRIGGER_DISABLED",
                   "ERROR_TRIGGER_NOT_FOUND",
@@ -1458,7 +1457,6 @@
                             "ERROR_SUBSCRIPTION_CANCELLED",
                             "ERROR_SUBSCRIPTION_EXISTS",
                             "ERROR_TEST_CLOCK",
-                            "ERROR_TOO_MANY_REQUESTS",
                             "ERROR_TRIGGER_BROKEN",
                             "ERROR_TRIGGER_DISABLED",
                             "ERROR_TRIGGER_NOT_FOUND",
@@ -7009,7 +7007,7 @@
           "Members"
         ],
         "summary": "Send an invitation again",
-        "description": "Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again. Also brings an expired invitation back, not an accepted (`409 ERROR_INVITE_ACCEPTED`) or withdrawn one (404). At most every 5 minutes per invitation (`429 ERROR_TOO_MANY_REQUESTS`). An expired invitation takes a seat again: `403 ERROR_PLAN_LIMIT_REACHED` when the plan has none left.",
+        "description": "Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again. Also brings an expired invitation back, not an accepted (`409 ERROR_INVITE_ACCEPTED`) or withdrawn one (404). At most every 5 minutes per invitation (`429 ERROR_RATE_LIMITED`). An expired invitation takes a seat again: `403 ERROR_PLAN_LIMIT_REACHED` when the plan has none left.",
         "parameters": [
           {
             "name": "id",
@@ -17043,7 +17041,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -17481,7 +17480,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -17929,7 +17929,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -18924,7 +18925,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -19358,7 +19360,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -19802,7 +19805,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -21337,7 +21341,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -21772,7 +21777,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22217,7 +22223,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -22645,6 +22652,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -22974,6 +22982,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -23303,6 +23312,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -23726,7 +23736,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -24161,7 +24172,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -24606,7 +24618,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -25527,7 +25540,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -25961,7 +25975,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -26405,7 +26420,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -27919,7 +27935,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -28353,7 +28370,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -28797,7 +28815,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -30437,7 +30456,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "One play": {
@@ -31007,7 +31027,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Stopped": {
@@ -32399,7 +32420,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -32837,7 +32859,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -33285,7 +33308,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
