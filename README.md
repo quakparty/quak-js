@@ -436,17 +436,18 @@ the history it sends the plays of the whole workspace; `keys: "current"` limits 
 
 Everything a play can name, read-only (scope `play`). Each returns the parsed answer, `{ data, … }`.
 
-| Method                                                                                 | Route                                             | For                            |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------ |
-| `quak.speakers.list({ type? })`                                                        | `GET /v1/speakers`                                | the slugs for `to`             |
-| `quak.voices.list({ provider?, gender?, locale?, model?, multiLanguage?, language? })` | `GET /v1/voices`                                  | `voice`                        |
-| `quak.voices.languages()`, `.locales({ language? })`, `.models()`                      | `GET /v1/voices/languages`, `/locales`, `/models` | `language`, filters            |
-| `quak.sounds.list({ q?, tags?, limit?, offset? })`, `quak.sounds.tags()`               | `GET /v1/sounds`, `/v1/sounds/tags`               | `sound`, `intro`, `outro`      |
-| `quak.clips.list()`                                                                    | `GET /v1/clips`                                   | `clip`, `intro: "clip:<slug>"` |
-| `quak.effects.list({ kind? })`                                                         | `GET /v1/effects`                                 | `effect`, `ambience`           |
+| Method                                                                                               | Route                                             | For                            |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------ |
+| `quak.speakers.list({ type? })`                                                                      | `GET /v1/speakers`                                | the slugs for `to`             |
+| `quak.voices.list({ provider?, gender?, locale?, model?, language?, maxCredits?, limit?, offset? })` | `GET /v1/voices`                                  | `voice`                        |
+| `quak.voices.languages()`, `.locales({ language? })`, `.models()`                                    | `GET /v1/voices/languages`, `/locales`, `/models` | `language`, filters            |
+| `quak.sounds.list({ q?, tags?, limit?, offset? })`, `quak.sounds.tags()`                             | `GET /v1/sounds`, `/v1/sounds/tags`               | `sound`, `intro`, `outro`      |
+| `quak.clips.list()`                                                                                  | `GET /v1/clips`                                   | `clip`, `intro: "clip:<slug>"` |
+| `quak.effects.list({ kind? })`                                                                       | `GET /v1/effects`                                 | `effect`, `ambience`           |
 
 ```ts
-// Speak with the first English voice
+// Speak with the first English voice; lists come in pages (voices: 500 by default, up to 5000), `meta.total` says
+// how many there are
 const { data: voices } = await quak.voices.list({ language: "en" });
 await quak.play.text({ text: "Hello everyone!", voice: voices[0]!.slug });
 

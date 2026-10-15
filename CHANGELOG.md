@@ -4,6 +4,11 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- `voices.list({ maxCredits?, limit?, offset? })`: voices come in pages now, 500 by default, `limit` up to 5000, with
+  `meta: { total, limit, offset }`. Before, only the first 500 of about 1,850 came back
+- New types `Effect`, `VoiceLanguage` and `VoiceModel`; OpenAPI snapshot updated (`PlayClient`, `PlayUser`, `PlayKey`,
+  `LoginStart` under `components["schemas"]`)
+
 ## 0.9.17 - 2026-10-15
 
 - **Breaking for the helper types:** the API's operationIds are hand-picked now, so `operations[...]` and the helpers

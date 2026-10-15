@@ -804,7 +804,7 @@ export interface paths {
         };
         /**
          * List voices
-         * @description Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the user language); other multi-language voices keep their native accent as `locale`.
+         * @description Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). There are about 1,850 voices: narrow them with `language`, `locale`, `provider`, `model`, `gender` or `maxCredits`; one answer holds 500 by default, all of them with `limit=5000` (`offset`, `meta.total`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the workspace language); other multi-language voices keep their native accent as `locale`.
          */
         get: operations["listVoices"];
         put?: never;
@@ -1815,6 +1815,12 @@ export interface components {
                 requestId?: string;
             };
         };
+        LoginStart: {
+            verifyToken: string;
+            loginPhrase: string;
+            /** Format: date-time */
+            expiresAt: string;
+        };
         Profile: {
             /** Format: uuid */
             id: string;
@@ -2229,6 +2235,56 @@ export interface components {
             languageName: string;
             languageNativeName: string;
         };
+        VoiceLanguage: {
+            language: string;
+            languageName: string;
+            languageNativeName: string;
+        };
+        VoiceModel: {
+            /** @enum {string} */
+            provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
+            model: string;
+            /** @enum {string} */
+            status: "ga" | "preview";
+            /** @enum {string} */
+            latency: "fast" | "normal" | "slow";
+            multiLanguage: boolean;
+            voices: number;
+            languages: string[];
+            /** @description credits per started 100 characters, plus the base fee of a play */
+            credits: number;
+        };
+        Effect: {
+            /**
+             * @description the value for effect or ambience in the play routes
+             * @example robot
+             */
+            id: string;
+            /** @enum {string} */
+            kind: "effect" | "ambience";
+            /** @example Robot */
+            name: string;
+            /** @description what it sounds like and what it fits */
+            description: string;
+            /** @description false: needs the whole take, not during talk live (reverse, faster, slower) */
+            live: boolean;
+            /** @enum {string} */
+            plan: "none" | "home" | "family";
+            /** @description whether the plan of this workspace has it; plays with one it does not have answer 403 ERROR_PLAN_REQUIRED */
+            available: boolean;
+            /** @description effectIntensity or ambienceIntensity, off turns it off */
+            levels: {
+                weak: {
+                    detail: string | null;
+                };
+                medium: {
+                    detail: string | null;
+                };
+                strong: {
+                    detail: string | null;
+                };
+            };
+        };
         PlayPlayer: {
             id: string;
             slug: string;
@@ -2243,6 +2299,41 @@ export interface components {
             startedAt: string | null;
             /** @description when the clip ended (Sonos event or stop), else null */
             endedAt: string | null;
+        };
+        /** @description who sent the play */
+        PlayClient: {
+            /**
+             * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+             * @enum {string}
+             */
+            platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+            /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+            name: string | null;
+            /** @description its version, e.g. "0.9.0" */
+            version: string | null;
+        };
+        PlayUser: {
+            /** @example Mike */
+            name: string | null;
+            /** @example mike@example.com */
+            email: string;
+        };
+        PlayKey: {
+            /**
+             * @description the name of an own API key, null for other keys
+             * @example Doorbell
+             */
+            name: string | null;
+            /**
+             * @description a login (web app, CLI), an own API key or an app connected with OAuth
+             * @enum {string}
+             */
+            type: "LOGIN" | "API" | "OAUTH";
+            /**
+             * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+             * @example Claude
+             */
+            app: string | null;
         };
         Play: {
             id: string;
@@ -2275,47 +2366,15 @@ export interface components {
             test: boolean;
             /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
             startsAt: string | null;
-            /** @description who sent the play */
-            client: {
-                /**
-                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                 * @enum {string}
-                 */
-                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                name: string | null;
-                /** @description its version, e.g. "0.9.0" */
-                version: string | null;
-            };
+            client: components["schemas"]["PlayClient"];
             /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
             canReplay: boolean;
             /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
             canSave: boolean;
             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-            user: {
-                /** @example Mike */
-                name: string | null;
-                /** @example mike@example.com */
-                email: string;
-            } | null;
+            user: components["schemas"]["PlayUser"] | null;
             /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-            key: {
-                /**
-                 * @description the name of an own API key, null for other keys
-                 * @example Doorbell
-                 */
-                name: string | null;
-                /**
-                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                 * @enum {string}
-                 */
-                type: "LOGIN" | "API" | "OAUTH";
-                /**
-                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                 * @example Claude
-                 */
-                app: string | null;
-            } | null;
+            key: components["schemas"]["PlayKey"] | null;
             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
             requestId: string | null;
             /** Format: date-time */
@@ -2647,12 +2706,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            verifyToken: string;
-                            loginPhrase: string;
-                            /** Format: date-time */
-                            expiresAt: string;
-                        };
+                        data: components["schemas"]["LoginStart"];
                     };
                 };
             };
@@ -2714,12 +2768,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            verifyToken: string;
-                            loginPhrase: string;
-                            /** Format: date-time */
-                            expiresAt: string;
-                        };
+                        data: components["schemas"]["LoginStart"];
                     };
                 };
             };
@@ -7479,6 +7528,9 @@ export interface operations {
                 locale?: string;
                 model?: string;
                 multiLanguage?: string;
+                maxCredits?: string;
+                limit?: number;
+                offset?: number;
                 language?: string;
             };
             header?: never;
@@ -7499,6 +7551,8 @@ export interface operations {
                         data: components["schemas"]["Voice"][];
                         meta: {
                             total: number;
+                            limit: number;
+                            offset: number;
                         };
                     };
                 };
@@ -7627,11 +7681,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            language: string;
-                            languageName: string;
-                            languageNativeName: string;
-                        }[];
+                        data: components["schemas"]["VoiceLanguage"][];
                         meta: {
                             total: number;
                         };
@@ -7690,20 +7740,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** @enum {string} */
-                            provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
-                            model: string;
-                            /** @enum {string} */
-                            status: "ga" | "preview";
-                            /** @enum {string} */
-                            latency: "fast" | "normal" | "slow";
-                            multiLanguage: boolean;
-                            voices: number;
-                            languages: string[];
-                            /** @description credits per started 100 characters, plus the base fee of a play */
-                            credits: number;
-                        }[];
+                        data: components["schemas"]["VoiceModel"][];
                         meta: {
                             total: number;
                         };
@@ -7764,37 +7801,7 @@ export interface operations {
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * @description the value for effect or ambience in the play routes
-                             * @example robot
-                             */
-                            id: string;
-                            /** @enum {string} */
-                            kind: "effect" | "ambience";
-                            /** @example Robot */
-                            name: string;
-                            /** @description what it sounds like and what it fits */
-                            description: string;
-                            /** @description false: needs the whole take, not during talk live (reverse, faster, slower) */
-                            live: boolean;
-                            /** @enum {string} */
-                            plan: "none" | "home" | "family";
-                            /** @description whether the plan of this workspace has it; plays with one it does not have answer 403 ERROR_PLAN_REQUIRED */
-                            available: boolean;
-                            /** @description effectIntensity or ambienceIntensity, off turns it off */
-                            levels: {
-                                weak: {
-                                    detail: string | null;
-                                };
-                                medium: {
-                                    detail: string | null;
-                                };
-                                strong: {
-                                    detail: string | null;
-                                };
-                            };
-                        }[];
+                        data: components["schemas"]["Effect"][];
                         meta: {
                             total: number;
                         };

@@ -152,7 +152,10 @@ export class Quak {
 
   /** Voices for `play.text` (`voice`, `language`). */
   readonly voices: {
-    /** List voices, filtered by provider, gender, locale, model or language (`GET /v1/voices`). */
+    /**
+     * List voices, filtered by provider, gender, locale, model, language or `maxCredits` (`GET /v1/voices`). In pages:
+     * 500 by default, `limit` up to 5000, `meta.total` for all.
+     */
     list(query?: VoicesQuery): Promise<VoicesResponse>;
     /** The languages voices speak (`GET /v1/voices/languages`). */
     languages(): Promise<VoiceLanguagesResponse>;

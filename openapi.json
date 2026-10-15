@@ -287,6 +287,26 @@
         ],
         "description": "Every error of the API: a stable `code` for code to check, a `message` for people, `field` for the parameter it is about."
       },
+      "LoginStart": {
+        "type": "object",
+        "properties": {
+          "verifyToken": {
+            "type": "string"
+          },
+          "loginPhrase": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "verifyToken",
+          "loginPhrase",
+          "expiresAt"
+        ]
+      },
       "Profile": {
         "type": "object",
         "properties": {
@@ -1621,6 +1641,206 @@
           "languageNativeName"
         ]
       },
+      "VoiceLanguage": {
+        "type": "object",
+        "properties": {
+          "language": {
+            "type": "string"
+          },
+          "languageName": {
+            "type": "string"
+          },
+          "languageNativeName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "language",
+          "languageName",
+          "languageNativeName"
+        ]
+      },
+      "VoiceModel": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "AWS",
+              "GOOGLE",
+              "OPENAI",
+              "ELEVENLABS"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ga",
+              "preview"
+            ]
+          },
+          "latency": {
+            "type": "string",
+            "enum": [
+              "fast",
+              "normal",
+              "slow"
+            ]
+          },
+          "multiLanguage": {
+            "type": "boolean"
+          },
+          "voices": {
+            "type": "number"
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "credits": {
+            "description": "credits per started 100 characters, plus the base fee of a play",
+            "type": "number"
+          }
+        },
+        "required": [
+          "provider",
+          "model",
+          "status",
+          "latency",
+          "multiLanguage",
+          "voices",
+          "languages",
+          "credits"
+        ]
+      },
+      "Effect": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "the value for effect or ambience in the play routes",
+            "examples": [
+              "robot"
+            ],
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "effect",
+              "ambience"
+            ]
+          },
+          "name": {
+            "examples": [
+              "Robot"
+            ],
+            "type": "string"
+          },
+          "description": {
+            "description": "what it sounds like and what it fits",
+            "type": "string"
+          },
+          "live": {
+            "description": "false: needs the whole take, not during talk live (reverse, faster, slower)",
+            "type": "boolean"
+          },
+          "plan": {
+            "type": "string",
+            "enum": [
+              "none",
+              "home",
+              "family"
+            ]
+          },
+          "available": {
+            "description": "whether the plan of this workspace has it; plays with one it does not have answer 403 ERROR_PLAN_REQUIRED",
+            "type": "boolean"
+          },
+          "levels": {
+            "description": "effectIntensity or ambienceIntensity, off turns it off",
+            "type": "object",
+            "properties": {
+              "weak": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "anyOf": [
+                      {
+                        "description": "the physical size where there is one, e.g. +6 semitones",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "detail"
+                ]
+              },
+              "medium": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "anyOf": [
+                      {
+                        "description": "the physical size where there is one, e.g. +6 semitones",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "detail"
+                ]
+              },
+              "strong": {
+                "type": "object",
+                "properties": {
+                  "detail": {
+                    "anyOf": [
+                      {
+                        "description": "the physical size where there is one, e.g. +6 semitones",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "detail"
+                ]
+              }
+            },
+            "required": [
+              "weak",
+              "medium",
+              "strong"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "live",
+          "plan",
+          "available",
+          "levels"
+        ]
+      },
       "PlayPlayer": {
         "type": "object",
         "properties": {
@@ -1688,6 +1908,137 @@
           "error",
           "startedAt",
           "endedAt"
+        ]
+      },
+      "PlayClient": {
+        "description": "who sent the play",
+        "type": "object",
+        "properties": {
+          "platform": {
+            "enum": [
+              "API",
+              "JS",
+              "WEB",
+              "CLI",
+              "MACOS",
+              "IOS",
+              "IPADOS",
+              "RAYCAST",
+              "STREAM_DECK",
+              "HOME_ASSISTANT",
+              "BOARD",
+              "GITHUB",
+              "SLACK",
+              "ZAPIER",
+              "IFTTT",
+              "MCP",
+              "TRIGGER"
+            ],
+            "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
+            "type": "string"
+          },
+          "name": {
+            "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "version": {
+            "description": "its version, e.g. \"0.9.0\"",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "platform",
+          "name",
+          "version"
+        ]
+      },
+      "PlayUser": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "examples": [
+              "Mike"
+            ],
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "examples": [
+              "mike@example.com"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email"
+        ]
+      },
+      "PlayKey": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "the name of an own API key, null for other keys",
+            "examples": [
+              "Doorbell"
+            ],
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "enum": [
+              "LOGIN",
+              "API",
+              "OAUTH"
+            ],
+            "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
+            "type": "string"
+          },
+          "app": {
+            "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
+            "examples": [
+              "Claude"
+            ],
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "app"
         ]
       },
       "Play": {
@@ -1800,60 +2151,7 @@
             ]
           },
           "client": {
-            "description": "who sent the play",
-            "type": "object",
-            "properties": {
-              "platform": {
-                "enum": [
-                  "API",
-                  "JS",
-                  "WEB",
-                  "CLI",
-                  "MACOS",
-                  "IOS",
-                  "IPADOS",
-                  "RAYCAST",
-                  "STREAM_DECK",
-                  "HOME_ASSISTANT",
-                  "BOARD",
-                  "GITHUB",
-                  "SLACK",
-                  "ZAPIER",
-                  "IFTTT",
-                  "MCP",
-                  "TRIGGER"
-                ],
-                "description": "where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side",
-                "type": "string"
-              },
-              "name": {
-                "description": "the client that sent the play, from User-Agent \"quak-<name>/<version>\" or X-Quak-Client, e.g. \"cli\"",
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "version": {
-                "description": "its version, e.g. \"0.9.0\"",
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "required": [
-              "platform",
-              "name",
-              "version"
-            ]
+            "$ref": "#/components/schemas/PlayClient"
           },
           "canReplay": {
             "description": "whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing",
@@ -1867,32 +2165,7 @@
             "description": "Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone",
             "anyOf": [
               {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "examples": [
-                      "Mike"
-                    ],
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "email": {
-                    "examples": [
-                      "mike@example.com"
-                    ],
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name",
-                  "email"
-                ]
+                "$ref": "#/components/schemas/PlayUser"
               },
               {
                 "type": "null"
@@ -1903,51 +2176,7 @@
             "description": "Beta, may change without notice. the key the play was made with, never its token; null when the key is gone",
             "anyOf": [
               {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "description": "the name of an own API key, null for other keys",
-                    "examples": [
-                      "Doorbell"
-                    ],
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  },
-                  "type": {
-                    "enum": [
-                      "LOGIN",
-                      "API",
-                      "OAUTH"
-                    ],
-                    "description": "a login (web app, CLI), an own API key or an app connected with OAuth",
-                    "type": "string"
-                  },
-                  "app": {
-                    "description": "for OAUTH the app, e.g. \"Claude\" or \"IFTTT\"",
-                    "examples": [
-                      "Claude"
-                    ],
-                    "anyOf": [
-                      {
-                        "type": "string"
-                      },
-                      {
-                        "type": "null"
-                      }
-                    ]
-                  }
-                },
-                "required": [
-                  "name",
-                  "type",
-                  "app"
-                ]
+                "$ref": "#/components/schemas/PlayKey"
               },
               {
                 "type": "null"
@@ -3331,24 +3560,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "verifyToken": {
-                          "type": "string"
-                        },
-                        "loginPhrase": {
-                          "type": "string"
-                        },
-                        "expiresAt": {
-                          "format": "date-time",
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "verifyToken",
-                        "loginPhrase",
-                        "expiresAt"
-                      ]
+                      "$ref": "#/components/schemas/LoginStart"
                     }
                   },
                   "required": [
@@ -3510,24 +3722,7 @@
                   "type": "object",
                   "properties": {
                     "data": {
-                      "type": "object",
-                      "properties": {
-                        "verifyToken": {
-                          "type": "string"
-                        },
-                        "loginPhrase": {
-                          "type": "string"
-                        },
-                        "expiresAt": {
-                          "format": "date-time",
-                          "type": "string"
-                        }
-                      },
-                      "required": [
-                        "verifyToken",
-                        "loginPhrase",
-                        "expiresAt"
-                      ]
+                      "$ref": "#/components/schemas/LoginStart"
                     }
                   },
                   "required": [
@@ -16104,7 +16299,7 @@
           "Voices"
         ],
         "summary": "List voices",
-        "description": "Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the user language); other multi-language voices keep their native accent as `locale`.",
+        "description": "Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). There are about 1,850 voices: narrow them with `language`, `locale`, `provider`, `model`, `gender` or `maxCredits`; one answer holds 500 by default, all of them with `limit=5000` (`offset`, `meta.total`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the workspace language); other multi-language voices keep their native accent as `locale`.",
         "parameters": [
           {
             "name": "provider",
@@ -16173,6 +16368,47 @@
             }
           },
           {
+            "name": "maxCredits",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "description": "Optional: only voices that cost at most this many credits per started 100 characters.",
+              "examples": [
+                "2",
+                "4"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 5000,
+              "description": "Pagination limit. Default: 500. Allowed range: 1..5000.",
+              "examples": [
+                500
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pagination offset. Default: 0.",
+              "examples": [
+                0,
+                10
+              ]
+            }
+          },
+          {
             "name": "language",
             "in": "query",
             "required": false,
@@ -16205,10 +16441,18 @@
                       "properties": {
                         "total": {
                           "type": "number"
+                        },
+                        "limit": {
+                          "type": "number"
+                        },
+                        "offset": {
+                          "type": "number"
                         }
                       },
                       "required": [
-                        "total"
+                        "total",
+                        "limit",
+                        "offset"
                       ]
                     }
                   },
@@ -16495,23 +16739,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "language": {
-                            "type": "string"
-                          },
-                          "languageName": {
-                            "type": "string"
-                          },
-                          "languageNativeName": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "language",
-                          "languageName",
-                          "languageNativeName"
-                        ]
+                        "$ref": "#/components/schemas/VoiceLanguage"
                       }
                     },
                     "meta": {
@@ -16637,62 +16865,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "provider": {
-                            "type": "string",
-                            "enum": [
-                              "AWS",
-                              "GOOGLE",
-                              "OPENAI",
-                              "ELEVENLABS"
-                            ]
-                          },
-                          "model": {
-                            "type": "string"
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "ga",
-                              "preview"
-                            ]
-                          },
-                          "latency": {
-                            "type": "string",
-                            "enum": [
-                              "fast",
-                              "normal",
-                              "slow"
-                            ]
-                          },
-                          "multiLanguage": {
-                            "type": "boolean"
-                          },
-                          "voices": {
-                            "type": "number"
-                          },
-                          "languages": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "credits": {
-                            "description": "credits per started 100 characters, plus the base fee of a play",
-                            "type": "number"
-                          }
-                        },
-                        "required": [
-                          "provider",
-                          "model",
-                          "status",
-                          "latency",
-                          "multiLanguage",
-                          "voices",
-                          "languages",
-                          "credits"
-                        ]
+                        "$ref": "#/components/schemas/VoiceModel"
                       }
                     },
                     "meta": {
@@ -16833,127 +17006,7 @@
                     "data": {
                       "type": "array",
                       "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "description": "the value for effect or ambience in the play routes",
-                            "examples": [
-                              "robot"
-                            ],
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string",
-                            "enum": [
-                              "effect",
-                              "ambience"
-                            ]
-                          },
-                          "name": {
-                            "examples": [
-                              "Robot"
-                            ],
-                            "type": "string"
-                          },
-                          "description": {
-                            "description": "what it sounds like and what it fits",
-                            "type": "string"
-                          },
-                          "live": {
-                            "description": "false: needs the whole take, not during talk live (reverse, faster, slower)",
-                            "type": "boolean"
-                          },
-                          "plan": {
-                            "type": "string",
-                            "enum": [
-                              "none",
-                              "home",
-                              "family"
-                            ]
-                          },
-                          "available": {
-                            "description": "whether the plan of this workspace has it; plays with one it does not have answer 403 ERROR_PLAN_REQUIRED",
-                            "type": "boolean"
-                          },
-                          "levels": {
-                            "description": "effectIntensity or ambienceIntensity, off turns it off",
-                            "type": "object",
-                            "properties": {
-                              "weak": {
-                                "type": "object",
-                                "properties": {
-                                  "detail": {
-                                    "anyOf": [
-                                      {
-                                        "description": "the physical size where there is one, e.g. +6 semitones",
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "detail"
-                                ]
-                              },
-                              "medium": {
-                                "type": "object",
-                                "properties": {
-                                  "detail": {
-                                    "anyOf": [
-                                      {
-                                        "description": "the physical size where there is one, e.g. +6 semitones",
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "detail"
-                                ]
-                              },
-                              "strong": {
-                                "type": "object",
-                                "properties": {
-                                  "detail": {
-                                    "anyOf": [
-                                      {
-                                        "description": "the physical size where there is one, e.g. +6 semitones",
-                                        "type": "string"
-                                      },
-                                      {
-                                        "type": "null"
-                                      }
-                                    ]
-                                  }
-                                },
-                                "required": [
-                                  "detail"
-                                ]
-                              }
-                            },
-                            "required": [
-                              "weak",
-                              "medium",
-                              "strong"
-                            ]
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "kind",
-                          "name",
-                          "description",
-                          "live",
-                          "plan",
-                          "available",
-                          "levels"
-                        ]
+                        "$ref": "#/components/schemas/Effect"
                       }
                     },
                     "meta": {
@@ -18064,7 +18117,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -18150,7 +18204,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -18246,7 +18301,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -18950,7 +19006,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -19032,7 +19089,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -19124,7 +19182,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -20368,7 +20427,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -20451,7 +20511,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -20544,7 +20605,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -21042,6 +21104,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21371,6 +21434,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21700,6 +21764,7 @@
                     ]
                   }
                 },
+                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21762,7 +21827,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -21845,7 +21911,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -21938,7 +22005,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -22568,7 +22636,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -22650,7 +22719,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22742,7 +22812,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -23965,7 +24036,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -24047,7 +24119,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -24139,7 +24212,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -25157,7 +25231,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "One play": {
@@ -25412,7 +25487,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Stopped": {
@@ -26530,7 +26606,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -26616,7 +26693,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -26712,7 +26790,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Scheduled with startIn": {

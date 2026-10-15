@@ -71,9 +71,11 @@ export type VoicesQuery = Query<"listVoices">;
 export type VoicesResponse = Success<"listVoices">;
 export type Voice = components["schemas"]["Voice"];
 export type VoiceLanguagesResponse = Success<"listVoiceLanguages">;
+export type VoiceLanguage = components["schemas"]["VoiceLanguage"];
 export type VoiceLocalesQuery = Query<"listVoiceLocales">;
 export type VoiceLocalesResponse = Success<"listVoiceLocales">;
 export type VoiceModelsResponse = Success<"listVoiceModels">;
+export type VoiceModel = components["schemas"]["VoiceModel"];
 
 export type SoundsQuery = Query<"listSounds">;
 export type SoundsResponse = Success<"listSounds">;
@@ -85,6 +87,8 @@ export type Clip = components["schemas"]["Clip"];
 
 export type EffectsQuery = Query<"listEffects">;
 export type EffectsResponse = Success<"listEffects">;
+/** An effect or ambience, with the plan it needs. */
+export type Effect = components["schemas"]["Effect"];
 
 export type PlaysQuery = Query<"listPlays">;
 export type PlaysResponse = Success<"listPlays">;
