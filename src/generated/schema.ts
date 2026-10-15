@@ -1781,15 +1781,15 @@ export interface components {
                  * @enum {string}
                  */
                 status: "played" | "skipped" | "dry_run";
-                reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
-                event: (string | null) | null;
-                rule: ({
+                reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
+                event: string | null;
+                rule: {
                     index: number;
-                    name: (string | null) | null;
-                } | null) | null;
-                played: (unknown | null) | null;
-                text: (string | null) | null;
-                play: ({
+                    name: string | null;
+                } | null;
+                played: unknown | null;
+                text: string | null;
+                play: {
                     id: string;
                     /**
                      * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
@@ -1840,7 +1840,7 @@ export interface components {
                          * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                          * @enum {string}
                          */
-                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                         /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                         name: string | null;
                         /** @description its version, e.g. "0.9.0" */
@@ -1878,14 +1878,14 @@ export interface components {
                     /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                     requestId: string | null;
                     createdAt: string;
-                } | null) | null;
-                callId: (string | null) | null;
+                } | null;
+                callId: string | null;
                 /** @description tests only: every rule and whether it held */
                 rules?: {
                     index: number;
-                    name: (string | null) | null;
+                    name: string | null;
                     holds: boolean;
-                    failed: (string | null) | null;
+                    failed: string | null;
                 }[];
             };
         };
@@ -2925,7 +2925,7 @@ export interface operations {
                                      * @enum {string}
                                      */
                                     status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                                    currentPeriodEnd: (string | null) | null;
+                                    currentPeriodEnd: string | null;
                                     walletCredits: number;
                                     subscriptionCredits: number;
                                 };
@@ -3019,15 +3019,15 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                             };
                             defaults: {
                                 voice: string;
                                 /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
-                                intro: (string | null) | null;
-                                outro: (string | null) | null;
+                                intro: string | null;
+                                outro: string | null;
                                 /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
                                 speakers: string[];
                                 gap: number;
@@ -3162,7 +3162,7 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                                currentPeriodEnd: (string | null) | null;
+                                currentPeriodEnd: string | null;
                                 walletCredits: number;
                                 subscriptionCredits: number;
                             };
@@ -3327,15 +3327,15 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                             };
                             defaults: {
                                 voice: string;
                                 /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
-                                intro: (string | null) | null;
-                                outro: (string | null) | null;
+                                intro: string | null;
+                                outro: string | null;
                                 /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
                                 speakers: string[];
                                 gap: number;
@@ -3714,15 +3714,15 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                             };
                             defaults: {
                                 voice: string;
                                 /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
-                                intro: (string | null) | null;
-                                outro: (string | null) | null;
+                                intro: string | null;
+                                outro: string | null;
                                 /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
                                 speakers: string[];
                                 gap: number;
@@ -4415,42 +4415,42 @@ export interface operations {
                              * @enum {string}
                              */
                             plan: "none" | "home" | "family" | "team" | "business";
-                            interval: (("month" | "year") | null) | null;
+                            interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
                              * @default none
                              * @enum {string}
                              */
                             status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                            currentPeriodEnd: (string | null) | null;
+                            currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
-                            cancelAt: (string | null) | null;
-                            scheduledChange: ({
+                            cancelAt: string | null;
+                            scheduledChange: {
                                 /**
                                  * @description the plan of the workspace
                                  * @default none
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                                 /**
                                  * Format: date-time
                                  * @description when the change takes effect
                                  */
                                 at: string;
-                            } | null) | null;
-                            discount: ({
+                            } | null;
+                            discount: {
                                 /**
                                  * @description as on the invoice
                                  * @example Launch discount
                                  */
                                 name: string;
-                                percentOff: (number | null) | null;
-                                amountOff: (number | null) | null;
-                                currency: (string | null) | null;
-                                endsAt: (string | null) | null;
-                            } | null) | null;
-                            trialEndsAt: (string | null) | null;
+                                percentOff: number | null;
+                                amountOff: number | null;
+                                currency: string | null;
+                                endsAt: string | null;
+                            } | null;
+                            trialEndsAt: string | null;
                             /** @description whether a new Home, Family or Team subscription starts with a trial */
                             trialAvailable: boolean;
                             /** @example 7 */
@@ -4475,16 +4475,16 @@ export interface operations {
                             packTax: "inclusive" | "exclusive";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
-                            billingEmail: (string | null) | null;
+                            billingEmail: string | null;
                             /** @description development with a Stripe test key only: reset and test clock (POST …/billing/reset, …/clock) */
                             dev?: {
                                 resettable: boolean;
-                                testClock: ({
+                                testClock: {
                                     id: string;
                                     /** Format: date-time */
                                     frozenTime: string;
                                     status: string;
-                                } | null) | null;
+                                } | null;
                             };
                         };
                     };
@@ -4559,42 +4559,42 @@ export interface operations {
                              * @enum {string}
                              */
                             plan: "none" | "home" | "family" | "team" | "business";
-                            interval: (("month" | "year") | null) | null;
+                            interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
                              * @default none
                              * @enum {string}
                              */
                             status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                            currentPeriodEnd: (string | null) | null;
+                            currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
-                            cancelAt: (string | null) | null;
-                            scheduledChange: ({
+                            cancelAt: string | null;
+                            scheduledChange: {
                                 /**
                                  * @description the plan of the workspace
                                  * @default none
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                                 /**
                                  * Format: date-time
                                  * @description when the change takes effect
                                  */
                                 at: string;
-                            } | null) | null;
-                            discount: ({
+                            } | null;
+                            discount: {
                                 /**
                                  * @description as on the invoice
                                  * @example Launch discount
                                  */
                                 name: string;
-                                percentOff: (number | null) | null;
-                                amountOff: (number | null) | null;
-                                currency: (string | null) | null;
-                                endsAt: (string | null) | null;
-                            } | null) | null;
-                            trialEndsAt: (string | null) | null;
+                                percentOff: number | null;
+                                amountOff: number | null;
+                                currency: string | null;
+                                endsAt: string | null;
+                            } | null;
+                            trialEndsAt: string | null;
                             /** @description whether a new Home, Family or Team subscription starts with a trial */
                             trialAvailable: boolean;
                             /** @example 7 */
@@ -4619,16 +4619,16 @@ export interface operations {
                             packTax: "inclusive" | "exclusive";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
-                            billingEmail: (string | null) | null;
+                            billingEmail: string | null;
                             /** @description development with a Stripe test key only: reset and test clock (POST …/billing/reset, …/clock) */
                             dev?: {
                                 resettable: boolean;
-                                testClock: ({
+                                testClock: {
                                     id: string;
                                     /** Format: date-time */
                                     frozenTime: string;
                                     status: string;
-                                } | null) | null;
+                                } | null;
                             };
                         };
                     };
@@ -4926,11 +4926,11 @@ export interface operations {
                                  */
                                 tax: "inclusive" | "exclusive";
                             };
-                            dueNow: ({
+                            dueNow: {
                                 /** @description in cents, with tax, proration and discount */
                                 amount: number;
                                 currency: string;
-                            } | null) | null;
+                            } | null;
                             trial: {
                                 /** @description the trial goes on with the new plan */
                                 continues: boolean;
@@ -4956,11 +4956,11 @@ export interface operations {
                                 /** @example 3 */
                                 allowed: number;
                             }[];
-                            discount: ({
+                            discount: {
                                 name: string;
                                 /** @description whether it applies to the new plan */
                                 continues: boolean;
-                            } | null) | null;
+                            } | null;
                             /** @description Team and Business need the full billing address, add it in the portal first (POST …/billing/portal), the change answers 409 until then */
                             addressRequired: boolean;
                         };
@@ -5083,7 +5083,7 @@ export interface operations {
                             effective: "now" | "period_end";
                             /** Format: date-time */
                             at: string;
-                            url?: (string | null) | null;
+                            url?: string | null;
                         };
                     };
                 };
@@ -5160,42 +5160,42 @@ export interface operations {
                              * @enum {string}
                              */
                             plan: "none" | "home" | "family" | "team" | "business";
-                            interval: (("month" | "year") | null) | null;
+                            interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
                              * @default none
                              * @enum {string}
                              */
                             status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                            currentPeriodEnd: (string | null) | null;
+                            currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
-                            cancelAt: (string | null) | null;
-                            scheduledChange: ({
+                            cancelAt: string | null;
+                            scheduledChange: {
                                 /**
                                  * @description the plan of the workspace
                                  * @default none
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                                 /**
                                  * Format: date-time
                                  * @description when the change takes effect
                                  */
                                 at: string;
-                            } | null) | null;
-                            discount: ({
+                            } | null;
+                            discount: {
                                 /**
                                  * @description as on the invoice
                                  * @example Launch discount
                                  */
                                 name: string;
-                                percentOff: (number | null) | null;
-                                amountOff: (number | null) | null;
-                                currency: (string | null) | null;
-                                endsAt: (string | null) | null;
-                            } | null) | null;
-                            trialEndsAt: (string | null) | null;
+                                percentOff: number | null;
+                                amountOff: number | null;
+                                currency: string | null;
+                                endsAt: string | null;
+                            } | null;
+                            trialEndsAt: string | null;
                             /** @description whether a new Home, Family or Team subscription starts with a trial */
                             trialAvailable: boolean;
                             /** @example 7 */
@@ -5220,16 +5220,16 @@ export interface operations {
                             packTax: "inclusive" | "exclusive";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
-                            billingEmail: (string | null) | null;
+                            billingEmail: string | null;
                             /** @description development with a Stripe test key only: reset and test clock (POST …/billing/reset, …/clock) */
                             dev?: {
                                 resettable: boolean;
-                                testClock: ({
+                                testClock: {
                                     id: string;
                                     /** Format: date-time */
                                     frozenTime: string;
                                     status: string;
-                                } | null) | null;
+                                } | null;
                             };
                         };
                     };
@@ -5421,10 +5421,10 @@ export interface operations {
                              * @enum {string}
                              */
                             category: "signup" | "plan" | "pack" | "promo" | "goodwill" | "service" | "refund";
-                            description: (string | null) | null;
+                            description: string | null;
                             /** @description true for plan credits, they end with the period; all others stay */
                             expires: boolean;
-                            period: (string | null) | null;
+                            period: string | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -5588,15 +5588,15 @@ export interface operations {
                                  * @enum {string}
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
-                                interval: (("month" | "year") | null) | null;
+                                interval: ("month" | "year") | null;
                             };
                             defaults: {
                                 voice: string;
                                 /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                 language: string;
                                 volume: number;
-                                intro: (string | null) | null;
-                                outro: (string | null) | null;
+                                intro: string | null;
+                                outro: string | null;
                                 /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
                                 speakers: string[];
                                 gap: number;
@@ -5920,11 +5920,11 @@ export interface operations {
                             }[];
                             /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
                             details?: {
-                                model: (string | null) | null;
-                                icon: (("speaker" | "soundbar" | "sub" | "amp" | "portable") | null) | null;
+                                model: string | null;
+                                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
                                 /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
                                 devices: {
-                                    model: (string | null) | null;
+                                    model: string | null;
                                     /** @description LF/RF for a stereo pair, LR/RR for surrounds, empty for one speaker */
                                     channels: string[];
                                     connected: boolean;
@@ -5932,13 +5932,13 @@ export interface operations {
                                 audioClip: {
                                     /** @description whether it plays announcements (the audioClip capability of Sonos) */
                                     supported: boolean;
-                                    reason: ("NO_AUDIO_CLIP_CAPABILITY" | null) | null;
+                                    reason: "NO_AUDIO_CLIP_CAPABILITY" | null;
                                 };
                                 stereoPair: boolean;
                                 homeTheater: boolean;
                                 /** @description as Sonos reports them, e.g. AUDIO_CLIP, HT_PLAYBACK, VOICE, LINE_IN */
                                 capabilities: string[];
-                                softwareVersion: (string | null) | null;
+                                softwareVersion: string | null;
                                 location: {
                                     /** Format: uuid */
                                     id: string;
@@ -5948,14 +5948,14 @@ export interface operations {
                                     /** Format: uuid */
                                     id: string;
                                     name: string;
-                                    lastSyncedAt: (string | null) | null;
+                                    lastSyncedAt: string | null;
                                 };
                             } | {
                                 sonosAccount: {
                                     /** Format: uuid */
                                     id: string;
                                     name: string;
-                                    lastSyncedAt: (string | null) | null;
+                                    lastSyncedAt: string | null;
                                 };
                             };
                         }[];
@@ -6088,11 +6088,11 @@ export interface operations {
                             }[];
                             /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
                             details?: {
-                                model: (string | null) | null;
-                                icon: (("speaker" | "soundbar" | "sub" | "amp" | "portable") | null) | null;
+                                model: string | null;
+                                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
                                 /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
                                 devices: {
-                                    model: (string | null) | null;
+                                    model: string | null;
                                     /** @description LF/RF for a stereo pair, LR/RR for surrounds, empty for one speaker */
                                     channels: string[];
                                     connected: boolean;
@@ -6100,13 +6100,13 @@ export interface operations {
                                 audioClip: {
                                     /** @description whether it plays announcements (the audioClip capability of Sonos) */
                                     supported: boolean;
-                                    reason: ("NO_AUDIO_CLIP_CAPABILITY" | null) | null;
+                                    reason: "NO_AUDIO_CLIP_CAPABILITY" | null;
                                 };
                                 stereoPair: boolean;
                                 homeTheater: boolean;
                                 /** @description as Sonos reports them, e.g. AUDIO_CLIP, HT_PLAYBACK, VOICE, LINE_IN */
                                 capabilities: string[];
-                                softwareVersion: (string | null) | null;
+                                softwareVersion: string | null;
                                 location: {
                                     /** Format: uuid */
                                     id: string;
@@ -6116,14 +6116,14 @@ export interface operations {
                                     /** Format: uuid */
                                     id: string;
                                     name: string;
-                                    lastSyncedAt: (string | null) | null;
+                                    lastSyncedAt: string | null;
                                 };
                             } | {
                                 sonosAccount: {
                                     /** Format: uuid */
                                     id: string;
                                     name: string;
-                                    lastSyncedAt: (string | null) | null;
+                                    lastSyncedAt: string | null;
                                 };
                             };
                         }[];
@@ -6945,7 +6945,7 @@ export interface operations {
                             /** @description length in seconds */
                             seconds: number;
                             tags: ("INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC")[];
-                            description: (string | null) | null;
+                            description: string | null;
                             /**
                              * @description Lowercase English search words: kind of sound, source, mood, occasions.
                              * @example [
@@ -7275,13 +7275,13 @@ export interface operations {
                             /** @description effectIntensity or ambienceIntensity, off turns it off */
                             levels: {
                                 weak: {
-                                    detail: (string | null) | null;
+                                    detail: string | null;
                                 };
                                 medium: {
-                                    detail: (string | null) | null;
+                                    detail: string | null;
                                 };
                                 strong: {
-                                    detail: (string | null) | null;
+                                    detail: string | null;
                                 };
                             };
                         }[];
@@ -7714,7 +7714,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7815,7 +7815,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -7916,7 +7916,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8204,7 +8204,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8305,7 +8305,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8406,7 +8406,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -8905,7 +8905,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9006,7 +9006,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9107,7 +9107,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9588,7 +9588,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9689,7 +9689,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -9790,7 +9790,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10064,7 +10064,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10165,7 +10165,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10266,7 +10266,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10750,7 +10750,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10851,7 +10851,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -10952,7 +10952,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11241,7 +11241,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11383,7 +11383,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11520,7 +11520,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -11908,7 +11908,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12009,7 +12009,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12110,7 +12110,7 @@ export interface operations {
                                  * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                  * @enum {string}
                                  */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                 /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                 name: string | null;
                                 /** @description its version, e.g. "0.9.0" */
@@ -12510,23 +12510,23 @@ export interface operations {
                             enabled: boolean;
                             /** @description how the URL reads its caller: generic or unifi_access */
                             profile: string;
-                            type: (string | null) | null;
-                            text: (string | null) | null;
-                            fallbackText: (string | null) | null;
-                            sound: (string | null) | null;
-                            clip: (string | null) | null;
-                            to: (string[] | null) | null;
-                            voice: (string | null) | null;
-                            effect: (string | null) | null;
-                            effectIntensity: (string | null) | null;
-                            ambience: (string | null) | null;
-                            ambienceIntensity: (string | null) | null;
-                            intro: (string | null) | null;
-                            outro: (string | null) | null;
-                            gap: (number | null) | null;
-                            volume: (number | null) | null;
+                            type: string | null;
+                            text: string | null;
+                            fallbackText: string | null;
+                            sound: string | null;
+                            clip: string | null;
+                            to: string[] | null;
+                            voice: string | null;
+                            effect: string | null;
+                            effectIntensity: string | null;
+                            ambience: string | null;
+                            ambienceIntensity: string | null;
+                            intro: string | null;
+                            outro: string | null;
+                            gap: number | null;
+                            volume: number | null;
                             priority: boolean;
-                            quietHours: (string | null) | null;
+                            quietHours: string | null;
                             /** @description only these events play; empty = the profile decides */
                             events: string[];
                             /** @description the caller's signature is checked (unifi_access) */
@@ -12535,23 +12535,23 @@ export interface operations {
                             cooldownSeconds: number;
                             /** @description a caller's value in a text is cut to this length */
                             maxValueLength: number;
-                            dailyLimit: (number | null) | null;
+                            dailyLimit: number | null;
                             /** @description plays today, for the daily limit */
                             playsToday: number;
                             /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
                             allowedOrigins: string[];
                             rules: {
-                                name: (string | null) | null;
+                                name: string | null;
                                 when: {
-                                    events: (string[] | null) | null;
-                                    match: ({
+                                    events: string[] | null;
+                                    match: {
                                         [key: string]: string | string[] | {
                                             contains: string;
                                         } | {
                                             exists: boolean;
                                         };
-                                    } | null) | null;
-                                    time: (string | null) | null;
+                                    } | null;
+                                    time: string | null;
                                 };
                                 /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                                 play: ({
@@ -12561,8 +12561,8 @@ export interface operations {
                                 } | {
                                     text: string;
                                 })[];
-                                to: (string[] | null) | null;
-                                volume: (number | null) | null;
+                                to: string[] | null;
+                                volume: number | null;
                             }[];
                             /** @description the start of the token, to recognize the URL */
                             tokenPrefix: string;
@@ -12573,7 +12573,7 @@ export interface operations {
                             /** @description false when its maker left the workspace: make it again */
                             working: boolean;
                             fireCount: number;
-                            lastFiredAt: (string | null) | null;
+                            lastFiredAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -12675,17 +12675,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -12695,8 +12695,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean;
@@ -12771,17 +12771,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -12791,8 +12791,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean | ("true" | "false");
@@ -12867,17 +12867,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -12887,8 +12887,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean | ("true" | "false");
@@ -12911,23 +12911,23 @@ export interface operations {
                             enabled: boolean;
                             /** @description how the URL reads its caller: generic or unifi_access */
                             profile: string;
-                            type: (string | null) | null;
-                            text: (string | null) | null;
-                            fallbackText: (string | null) | null;
-                            sound: (string | null) | null;
-                            clip: (string | null) | null;
-                            to: (string[] | null) | null;
-                            voice: (string | null) | null;
-                            effect: (string | null) | null;
-                            effectIntensity: (string | null) | null;
-                            ambience: (string | null) | null;
-                            ambienceIntensity: (string | null) | null;
-                            intro: (string | null) | null;
-                            outro: (string | null) | null;
-                            gap: (number | null) | null;
-                            volume: (number | null) | null;
+                            type: string | null;
+                            text: string | null;
+                            fallbackText: string | null;
+                            sound: string | null;
+                            clip: string | null;
+                            to: string[] | null;
+                            voice: string | null;
+                            effect: string | null;
+                            effectIntensity: string | null;
+                            ambience: string | null;
+                            ambienceIntensity: string | null;
+                            intro: string | null;
+                            outro: string | null;
+                            gap: number | null;
+                            volume: number | null;
                             priority: boolean;
-                            quietHours: (string | null) | null;
+                            quietHours: string | null;
                             /** @description only these events play; empty = the profile decides */
                             events: string[];
                             /** @description the caller's signature is checked (unifi_access) */
@@ -12936,23 +12936,23 @@ export interface operations {
                             cooldownSeconds: number;
                             /** @description a caller's value in a text is cut to this length */
                             maxValueLength: number;
-                            dailyLimit: (number | null) | null;
+                            dailyLimit: number | null;
                             /** @description plays today, for the daily limit */
                             playsToday: number;
                             /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
                             allowedOrigins: string[];
                             rules: {
-                                name: (string | null) | null;
+                                name: string | null;
                                 when: {
-                                    events: (string[] | null) | null;
-                                    match: ({
+                                    events: string[] | null;
+                                    match: {
                                         [key: string]: string | string[] | {
                                             contains: string;
                                         } | {
                                             exists: boolean;
                                         };
-                                    } | null) | null;
-                                    time: (string | null) | null;
+                                    } | null;
+                                    time: string | null;
                                 };
                                 /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                                 play: ({
@@ -12962,8 +12962,8 @@ export interface operations {
                                 } | {
                                     text: string;
                                 })[];
-                                to: (string[] | null) | null;
-                                volume: (number | null) | null;
+                                to: string[] | null;
+                                volume: number | null;
                             }[];
                             /** @description the start of the token, to recognize the URL */
                             tokenPrefix: string;
@@ -12974,7 +12974,7 @@ export interface operations {
                             /** @description false when its maker left the workspace: make it again */
                             working: boolean;
                             fireCount: number;
-                            lastFiredAt: (string | null) | null;
+                            lastFiredAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -13038,23 +13038,23 @@ export interface operations {
                             enabled: boolean;
                             /** @description how the URL reads its caller: generic or unifi_access */
                             profile: string;
-                            type: (string | null) | null;
-                            text: (string | null) | null;
-                            fallbackText: (string | null) | null;
-                            sound: (string | null) | null;
-                            clip: (string | null) | null;
-                            to: (string[] | null) | null;
-                            voice: (string | null) | null;
-                            effect: (string | null) | null;
-                            effectIntensity: (string | null) | null;
-                            ambience: (string | null) | null;
-                            ambienceIntensity: (string | null) | null;
-                            intro: (string | null) | null;
-                            outro: (string | null) | null;
-                            gap: (number | null) | null;
-                            volume: (number | null) | null;
+                            type: string | null;
+                            text: string | null;
+                            fallbackText: string | null;
+                            sound: string | null;
+                            clip: string | null;
+                            to: string[] | null;
+                            voice: string | null;
+                            effect: string | null;
+                            effectIntensity: string | null;
+                            ambience: string | null;
+                            ambienceIntensity: string | null;
+                            intro: string | null;
+                            outro: string | null;
+                            gap: number | null;
+                            volume: number | null;
                             priority: boolean;
-                            quietHours: (string | null) | null;
+                            quietHours: string | null;
                             /** @description only these events play; empty = the profile decides */
                             events: string[];
                             /** @description the caller's signature is checked (unifi_access) */
@@ -13063,23 +13063,23 @@ export interface operations {
                             cooldownSeconds: number;
                             /** @description a caller's value in a text is cut to this length */
                             maxValueLength: number;
-                            dailyLimit: (number | null) | null;
+                            dailyLimit: number | null;
                             /** @description plays today, for the daily limit */
                             playsToday: number;
                             /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
                             allowedOrigins: string[];
                             rules: {
-                                name: (string | null) | null;
+                                name: string | null;
                                 when: {
-                                    events: (string[] | null) | null;
-                                    match: ({
+                                    events: string[] | null;
+                                    match: {
                                         [key: string]: string | string[] | {
                                             contains: string;
                                         } | {
                                             exists: boolean;
                                         };
-                                    } | null) | null;
-                                    time: (string | null) | null;
+                                    } | null;
+                                    time: string | null;
                                 };
                                 /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                                 play: ({
@@ -13089,8 +13089,8 @@ export interface operations {
                                 } | {
                                     text: string;
                                 })[];
-                                to: (string[] | null) | null;
-                                volume: (number | null) | null;
+                                to: string[] | null;
+                                volume: number | null;
                             }[];
                             /** @description the start of the token, to recognize the URL */
                             tokenPrefix: string;
@@ -13101,7 +13101,7 @@ export interface operations {
                             /** @description false when its maker left the workspace: make it again */
                             working: boolean;
                             fireCount: number;
-                            lastFiredAt: (string | null) | null;
+                            lastFiredAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -13249,17 +13249,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -13269,8 +13269,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean;
@@ -13345,17 +13345,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -13365,8 +13365,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean | ("true" | "false");
@@ -13441,17 +13441,17 @@ export interface operations {
                     allowedOrigins?: string[] | string;
                     /** @description if/then rules, null or [] = none */
                     rules?: {
-                        name: (string | null) | null;
+                        name: string | null;
                         when: {
-                            events: (string[] | null) | null;
-                            match: ({
+                            events: string[] | null;
+                            match: {
                                 [key: string]: string | string[] | {
                                     contains: string;
                                 } | {
                                     exists: boolean;
                                 };
-                            } | null) | null;
-                            time: (string | null) | null;
+                            } | null;
+                            time: string | null;
                         };
                         /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                         play: ({
@@ -13461,8 +13461,8 @@ export interface operations {
                         } | {
                             text: string;
                         })[];
-                        to: (string[] | null) | null;
-                        volume: (number | null) | null;
+                        to: string[] | null;
+                        volume: number | null;
                     }[];
                     /** @description default true */
                     enabled?: boolean | ("true" | "false");
@@ -13485,23 +13485,23 @@ export interface operations {
                             enabled: boolean;
                             /** @description how the URL reads its caller: generic or unifi_access */
                             profile: string;
-                            type: (string | null) | null;
-                            text: (string | null) | null;
-                            fallbackText: (string | null) | null;
-                            sound: (string | null) | null;
-                            clip: (string | null) | null;
-                            to: (string[] | null) | null;
-                            voice: (string | null) | null;
-                            effect: (string | null) | null;
-                            effectIntensity: (string | null) | null;
-                            ambience: (string | null) | null;
-                            ambienceIntensity: (string | null) | null;
-                            intro: (string | null) | null;
-                            outro: (string | null) | null;
-                            gap: (number | null) | null;
-                            volume: (number | null) | null;
+                            type: string | null;
+                            text: string | null;
+                            fallbackText: string | null;
+                            sound: string | null;
+                            clip: string | null;
+                            to: string[] | null;
+                            voice: string | null;
+                            effect: string | null;
+                            effectIntensity: string | null;
+                            ambience: string | null;
+                            ambienceIntensity: string | null;
+                            intro: string | null;
+                            outro: string | null;
+                            gap: number | null;
+                            volume: number | null;
                             priority: boolean;
-                            quietHours: (string | null) | null;
+                            quietHours: string | null;
                             /** @description only these events play; empty = the profile decides */
                             events: string[];
                             /** @description the caller's signature is checked (unifi_access) */
@@ -13510,23 +13510,23 @@ export interface operations {
                             cooldownSeconds: number;
                             /** @description a caller's value in a text is cut to this length */
                             maxValueLength: number;
-                            dailyLimit: (number | null) | null;
+                            dailyLimit: number | null;
                             /** @description plays today, for the daily limit */
                             playsToday: number;
                             /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
                             allowedOrigins: string[];
                             rules: {
-                                name: (string | null) | null;
+                                name: string | null;
                                 when: {
-                                    events: (string[] | null) | null;
-                                    match: ({
+                                    events: string[] | null;
+                                    match: {
                                         [key: string]: string | string[] | {
                                             contains: string;
                                         } | {
                                             exists: boolean;
                                         };
-                                    } | null) | null;
-                                    time: (string | null) | null;
+                                    } | null;
+                                    time: string | null;
                                 };
                                 /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                                 play: ({
@@ -13536,8 +13536,8 @@ export interface operations {
                                 } | {
                                     text: string;
                                 })[];
-                                to: (string[] | null) | null;
-                                volume: (number | null) | null;
+                                to: string[] | null;
+                                volume: number | null;
                             }[];
                             /** @description the start of the token, to recognize the URL */
                             tokenPrefix: string;
@@ -13548,7 +13548,7 @@ export interface operations {
                             /** @description false when its maker left the workspace: make it again */
                             working: boolean;
                             fireCount: number;
-                            lastFiredAt: (string | null) | null;
+                            lastFiredAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -13612,23 +13612,23 @@ export interface operations {
                             enabled: boolean;
                             /** @description how the URL reads its caller: generic or unifi_access */
                             profile: string;
-                            type: (string | null) | null;
-                            text: (string | null) | null;
-                            fallbackText: (string | null) | null;
-                            sound: (string | null) | null;
-                            clip: (string | null) | null;
-                            to: (string[] | null) | null;
-                            voice: (string | null) | null;
-                            effect: (string | null) | null;
-                            effectIntensity: (string | null) | null;
-                            ambience: (string | null) | null;
-                            ambienceIntensity: (string | null) | null;
-                            intro: (string | null) | null;
-                            outro: (string | null) | null;
-                            gap: (number | null) | null;
-                            volume: (number | null) | null;
+                            type: string | null;
+                            text: string | null;
+                            fallbackText: string | null;
+                            sound: string | null;
+                            clip: string | null;
+                            to: string[] | null;
+                            voice: string | null;
+                            effect: string | null;
+                            effectIntensity: string | null;
+                            ambience: string | null;
+                            ambienceIntensity: string | null;
+                            intro: string | null;
+                            outro: string | null;
+                            gap: number | null;
+                            volume: number | null;
                             priority: boolean;
-                            quietHours: (string | null) | null;
+                            quietHours: string | null;
                             /** @description only these events play; empty = the profile decides */
                             events: string[];
                             /** @description the caller's signature is checked (unifi_access) */
@@ -13637,23 +13637,23 @@ export interface operations {
                             cooldownSeconds: number;
                             /** @description a caller's value in a text is cut to this length */
                             maxValueLength: number;
-                            dailyLimit: (number | null) | null;
+                            dailyLimit: number | null;
                             /** @description plays today, for the daily limit */
                             playsToday: number;
                             /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
                             allowedOrigins: string[];
                             rules: {
-                                name: (string | null) | null;
+                                name: string | null;
                                 when: {
-                                    events: (string[] | null) | null;
-                                    match: ({
+                                    events: string[] | null;
+                                    match: {
                                         [key: string]: string | string[] | {
                                             contains: string;
                                         } | {
                                             exists: boolean;
                                         };
-                                    } | null) | null;
-                                    time: (string | null) | null;
+                                    } | null;
+                                    time: string | null;
                                 };
                                 /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
                                 play: ({
@@ -13663,8 +13663,8 @@ export interface operations {
                                 } | {
                                     text: string;
                                 })[];
-                                to: (string[] | null) | null;
-                                volume: (number | null) | null;
+                                to: string[] | null;
+                                volume: number | null;
                             }[];
                             /** @description the start of the token, to recognize the URL */
                             tokenPrefix: string;
@@ -13675,7 +13675,7 @@ export interface operations {
                             /** @description false when its maker left the workspace: make it again */
                             working: boolean;
                             fireCount: number;
-                            lastFiredAt: (string | null) | null;
+                            lastFiredAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                             /** Format: date-time */
@@ -13800,15 +13800,15 @@ export interface operations {
                         data: {
                             /** @enum {string} */
                             status: "played" | "skipped" | "dry_run";
-                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
-                            event: (string | null) | null;
-                            rule: ({
+                            reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
+                            event: string | null;
+                            rule: {
                                 index: number;
-                                name: (string | null) | null;
-                            } | null) | null;
-                            played: (unknown | null) | null;
-                            text: (string | null) | null;
-                            play: ({
+                                name: string | null;
+                            } | null;
+                            played: unknown | null;
+                            text: string | null;
+                            play: {
                                 id: string;
                                 /**
                                  * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
@@ -13859,7 +13859,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -13898,14 +13898,14 @@ export interface operations {
                                 requestId: string | null;
                                 /** Format: date-time */
                                 createdAt: string;
-                            } | null) | null;
-                            callId: (string | null) | null;
+                            } | null;
+                            callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
                                 index: number;
-                                name: (string | null) | null;
+                                name: string | null;
                                 holds: boolean;
-                                failed: (string | null) | null;
+                                failed: string | null;
                             }[];
                         };
                     };
@@ -13921,15 +13921,15 @@ export interface operations {
                         data: {
                             /** @enum {string} */
                             status: "played" | "skipped" | "dry_run";
-                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
-                            event: (string | null) | null;
-                            rule: ({
+                            reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
+                            event: string | null;
+                            rule: {
                                 index: number;
-                                name: (string | null) | null;
-                            } | null) | null;
-                            played: (unknown | null) | null;
-                            text: (string | null) | null;
-                            play: ({
+                                name: string | null;
+                            } | null;
+                            played: unknown | null;
+                            text: string | null;
+                            play: {
                                 id: string;
                                 /**
                                  * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
@@ -13980,7 +13980,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -14019,14 +14019,14 @@ export interface operations {
                                 requestId: string | null;
                                 /** Format: date-time */
                                 createdAt: string;
-                            } | null) | null;
-                            callId: (string | null) | null;
+                            } | null;
+                            callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
                                 index: number;
-                                name: (string | null) | null;
+                                name: string | null;
                                 holds: boolean;
-                                failed: (string | null) | null;
+                                failed: string | null;
                             }[];
                         };
                     };
@@ -14042,15 +14042,15 @@ export interface operations {
                         data: {
                             /** @enum {string} */
                             status: "played" | "skipped" | "dry_run";
-                            reason: (("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null) | null;
-                            event: (string | null) | null;
-                            rule: ({
+                            reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
+                            event: string | null;
+                            rule: {
                                 index: number;
-                                name: (string | null) | null;
-                            } | null) | null;
-                            played: (unknown | null) | null;
-                            text: (string | null) | null;
-                            play: ({
+                                name: string | null;
+                            } | null;
+                            played: unknown | null;
+                            text: string | null;
+                            play: {
                                 id: string;
                                 /**
                                  * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
@@ -14101,7 +14101,7 @@ export interface operations {
                                      * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
                                      * @enum {string}
                                      */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
                                     /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
                                     name: string | null;
                                     /** @description its version, e.g. "0.9.0" */
@@ -14140,14 +14140,14 @@ export interface operations {
                                 requestId: string | null;
                                 /** Format: date-time */
                                 createdAt: string;
-                            } | null) | null;
-                            callId: (string | null) | null;
+                            } | null;
+                            callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
                                 index: number;
-                                name: (string | null) | null;
+                                name: string | null;
                                 holds: boolean;
-                                failed: (string | null) | null;
+                                failed: string | null;
                             }[];
                         };
                     };
@@ -14241,23 +14241,23 @@ export interface operations {
                             dryRun: boolean;
                             /** @description played, skipped, dry_run or failed */
                             status: string;
-                            reason: (string | null) | null;
+                            reason: string | null;
                             /** @description what the caller got */
                             httpStatus: number;
-                            event: (string | null) | null;
+                            event: string | null;
                             /** @description query and body as they came in, cut to 4 KB; null after the audio cache time (inputExpiresAt) */
                             input: unknown;
                             /** @description the names of the fields that came in, e.g. data.actor.name */
                             inputFields: string[];
-                            inputExpiresAt: (string | null) | null;
-                            rule: ({
+                            inputExpiresAt: string | null;
+                            rule: {
                                 index: number;
-                                name: (string | null) | null;
-                            } | null) | null;
-                            played: (unknown | null) | null;
-                            text: (string | null) | null;
-                            playId: (string | null) | null;
-                            creditsUsed: (number | null) | null;
+                                name: string | null;
+                            } | null;
+                            played: unknown | null;
+                            text: string | null;
+                            playId: string | null;
+                            creditsUsed: number | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -14368,15 +14368,15 @@ export interface operations {
                                      * @enum {string}
                                      */
                                     plan: "none" | "home" | "family" | "team" | "business";
-                                    interval: (("month" | "year") | null) | null;
+                                    interval: ("month" | "year") | null;
                                 };
                                 defaults: {
                                     voice: string;
                                     /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
                                     language: string;
                                     volume: number;
-                                    intro: (string | null) | null;
-                                    outro: (string | null) | null;
+                                    intro: string | null;
+                                    outro: string | null;
                                     /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
                                     speakers: string[];
                                     gap: number;
@@ -14968,7 +14968,7 @@ export interface operations {
                             }[];
                             playerCount: number;
                             supportedPlayerCount: number;
-                            lastSyncedAt: (string | null) | null;
+                            lastSyncedAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -15032,7 +15032,7 @@ export interface operations {
                             }[];
                             playerCount: number;
                             supportedPlayerCount: number;
-                            lastSyncedAt: (string | null) | null;
+                            lastSyncedAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
@@ -15223,7 +15223,7 @@ export interface operations {
                             }[];
                             playerCount: number;
                             supportedPlayerCount: number;
-                            lastSyncedAt: (string | null) | null;
+                            lastSyncedAt: string | null;
                             /** Format: date-time */
                             createdAt: string;
                         };
@@ -15298,10 +15298,10 @@ export interface operations {
                             /** @description false when this server has no setup for the provider: hide it */
                             available: boolean;
                             connected: boolean;
-                            connectedAt: (string | null) | null;
-                            details: ({
+                            connectedAt: string | null;
+                            details: {
                                 [key: string]: unknown;
-                            } | null) | null;
+                            } | null;
                         }[];
                         meta: {
                             total: number;
@@ -15331,18 +15331,18 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": ({
+                "application/json": {
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                } | null) | null;
-                "application/x-www-form-urlencoded": ({
+                } | null;
+                "application/x-www-form-urlencoded": {
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                } | null) | null;
-                "multipart/form-data": ({
+                } | null;
+                "multipart/form-data": {
                     /** @description connect again although connected, e.g. for new permissions. Default: false */
                     reconnect?: boolean;
-                } | null) | null;
+                } | null;
             };
         };
         responses: {
@@ -15608,8 +15608,8 @@ export interface operations {
                                 id: string;
                                 /** @description the app's own name, e.g. Claude or ChatGPT */
                                 name: string;
-                                uri: (string | null) | null;
-                                logoUri: (string | null) | null;
+                                uri: string | null;
+                                logoUri: string | null;
                                 /** @description true: the client_id is an https URL of the app's metadata document, the domain vouches for it */
                                 metadataUrl: boolean;
                                 /** @description true: a service Quak set up itself (IFTTT), the name is Quak's and can be trusted */

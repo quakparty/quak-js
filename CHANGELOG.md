@@ -13,6 +13,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
   `ERROR_NAME_TAKEN`, schema violations are 400 `ERROR_INVALID_PARAMS` (no 422 any more)
 - Raw client: the play routes are `/v1/plays/{id}`, clips `/v1/clips/{id}` (id or slug); lists have no `meta.count`;
   `POST /v1/play-tokens` and `/v1/upload-tickets` answer 201; the user's routes answer in `{ data }`
+- OpenAPI snapshot updated: OpenAPI 3.1 (nullable fields as `| null`), platform `BOARD`, `field: "workspace"` when
+  the `X-Quak-Workspace` header is the problem
 
 ## 0.9.15 - 2026-10-14
 
