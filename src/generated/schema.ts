@@ -7528,7 +7528,7 @@ export interface operations {
                 locale?: string;
                 model?: string;
                 multiLanguage?: string;
-                maxCredits?: number | string;
+                maxCredits?: number;
                 limit?: number;
                 offset?: number;
                 language?: string;

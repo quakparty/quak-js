@@ -16372,16 +16372,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "string",
-                  "description": "the same number as a string (query, multipart)"
-                }
-              ],
+              "type": "integer",
+              "minimum": 1,
               "description": "Optional: only voices that cost at most this many credits per started 100 characters.",
               "examples": [
                 2,
@@ -24977,7 +24969,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Your history": {
