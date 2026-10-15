@@ -1418,7 +1418,7 @@ export interface paths {
         };
         /**
          * List a trigger's calls
-         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as `{"type":"trigger_call","data":{…}}` (admins).
+         * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. They stay as long as the history of the plan (like the plays). New calls come live on GET /v1/plays/watch as `{"type":"trigger_call","data":{…}}` (admins).
          */
         get: operations["listTriggerCalls"];
         put?: never;
@@ -7528,7 +7528,7 @@ export interface operations {
                 locale?: string;
                 model?: string;
                 multiLanguage?: string;
-                maxCredits?: string;
+                maxCredits?: number | string;
                 limit?: number;
                 offset?: number;
                 language?: string;
@@ -12380,7 +12380,7 @@ export interface operations {
     listTriggerCalls: {
         parameters: {
             query?: {
-                limit?: number | string;
+                limit?: number;
                 offset?: number;
             };
             header?: never;

@@ -16372,12 +16372,21 @@
             "in": "query",
             "required": false,
             "schema": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                {
+                  "type": "string",
+                  "description": "the same number as a string (query, multipart)"
+                }
+              ],
               "description": "Optional: only voices that cost at most this many credits per started 100 characters.",
               "examples": [
-                "2",
-                "4"
-              ],
-              "type": "string"
+                2,
+                4
+              ]
             }
           },
           {
@@ -32087,7 +32096,7 @@
           "Triggers"
         ],
         "summary": "List a trigger's calls",
-        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as `{\"type\":\"trigger_call\",\"data\":{…}}` (admins).",
+        "description": "Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. They stay as long as the history of the plan (like the plays). New calls come live on GET /v1/plays/watch as `{\"type\":\"trigger_call\",\"data\":{…}}` (admins).",
         "parameters": [
           {
             "name": "id",
@@ -32103,17 +32112,13 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "integer",
-                  "minimum": 1
-                },
-                {
-                  "type": "string",
-                  "description": "the same number as a string (query, multipart)"
-                }
-              ],
-              "description": "default 50, at most 100"
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000,
+              "description": "Pagination limit. Default: 50. Allowed range: 1..1000.",
+              "examples": [
+                50
+              ]
             }
           },
           {
