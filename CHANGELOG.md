@@ -4,6 +4,10 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- **Needed for `watch()` and `talkLive()`:** the API's WebSocket messages are `{ type, data }` now, errors
+  `{ type: "error", error }`; older versions of this package can no longer log in on either. The callbacks are
+  unchanged. A play token goes in as `token`, a key as `apiKey`; errors carry the API's `message` and `requestId`
+
 - `voices.list({ maxCredits?, limit?, offset? })`: voices come in pages now, 500 by default, `limit` up to 5000, with
   `meta: { total, limit, offset }`. Before, only the first 500 of about 1,850 came back
 - New types `Effect`, `VoiceLanguage` and `VoiceModel`; OpenAPI snapshot updated (`PlayClient`, `PlayUser`, `PlayKey`,

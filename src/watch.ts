@@ -38,7 +38,11 @@ export type Watch = {
   close(): void;
 };
 
-type Message = { type: "ready" } | { type: "play"; data: Play } | { type: "ping" } | { type: "error"; code: string };
+type Message =
+  | { type: "ready" }
+  | { type: "play"; data: Play }
+  | { type: "ping" }
+  | { type: "error"; error: { code: string; message: string; requestId?: string } };
 
 // 4001: key missing or rejected, 4401: play token rejected. Trying again cannot help.
 const FINAL_CODES = new Set([4001, 4401]);
@@ -46,6 +50,14 @@ const FIRST_RETRY_MS = 1000;
 const MAX_RETRY_MS = 30_000;
 // The server pings every 25 s; this long without any message means the connection is dead without a close.
 const SILENCE_MS = 60_000;
+
+/** The key or play token and the workspace, as the first message of both WebSockets wants them. */
+export function authData(apiKey: string, workspace: string | undefined) {
+  return {
+    ...(apiKey.startsWith("qk_ptk_") ? { token: apiKey } : { apiKey }),
+    ...(workspace ? { workspace } : {}),
+  };
+}
 
 export function watchPlays(url: string, apiKey: string, options: WatchOptions): Watch {
   const Found = options.WebSocket ?? (globalThis as { WebSocket?: WebSocketConstructor }).WebSocket;
@@ -76,9 +88,7 @@ export function watchPlays(url: string, apiKey: string, options: WatchOptions): 
     const current = new Socket(url);
     socket = current;
     current.onopen = () => {
-      current.send(
-        JSON.stringify({ type: "auth", apiKey, ...(options.workspace ? { workspace: options.workspace } : {}) }),
-      );
+      current.send(JSON.stringify({ type: "auth", data: authData(apiKey, options.workspace) }));
       listen();
     };
     current.onmessage = (event) => {
@@ -96,7 +106,8 @@ export function watchPlays(url: string, apiKey: string, options: WatchOptions): 
       } else if (message.type === "play") {
         options.onPlay(message.data);
       } else if (message.type === "error") {
-        options.onError?.(new QuakError({ status: 0, code: message.code, message: `watch: ${message.code}` }));
+        const { code, message: text, requestId } = message.error;
+        options.onError?.(new QuakError({ status: 0, code, message: text, requestId }));
       }
     };
     current.onclose = (event) => {

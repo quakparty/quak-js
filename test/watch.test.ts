@@ -56,7 +56,7 @@ describe("watch", () => {
 
     expect(last().url).toBe("wss://api.test/v1/plays/watch");
     last().open();
-    expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test" }]);
+    expect(last().sent).toEqual([{ type: "auth", data: { apiKey: "qk_key_test" } }]);
     expect(watch.connected).toBe(false);
 
     last().message({ type: "ready" });
@@ -73,7 +73,7 @@ describe("watch", () => {
   test("names the workspace in the auth message: the option, else X-Quak-Workspace from headers", () => {
     mockQuak({ headers: { "x-quak-workspace": "home" } }).quak.watch({ WebSocket, onPlay: () => {} });
     last().open();
-    expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test", workspace: "home" }]);
+    expect(last().sent).toEqual([{ type: "auth", data: { apiKey: "qk_key_test", workspace: "home" } }]);
 
     mockQuak({ headers: { "X-Quak-Workspace": "home" } }).quak.watch({
       WebSocket,
@@ -81,7 +81,7 @@ describe("watch", () => {
       workspace: "office",
     });
     last().open();
-    expect(last().sent).toEqual([{ type: "auth", apiKey: "qk_key_test", workspace: "office" }]);
+    expect(last().sent).toEqual([{ type: "auth", data: { apiKey: "qk_key_test", workspace: "office" } }]);
   });
 
   test("keys goes on the URL", () => {
@@ -125,11 +125,14 @@ describe("watch", () => {
     });
 
     last().open();
-    last().message({ type: "error", code: "ERROR_INVALID_API_KEY" });
+    last().message({
+      type: "error",
+      error: { code: "ERROR_INVALID_API_KEY", message: "Invalid API key.", requestId: "r2" },
+    });
     last().drop(4001);
     jest.advanceTimersByTime(60_000);
     expect(FakeSocket.all).toHaveLength(1);
-    expect(errors[0]?.code).toBe("ERROR_INVALID_API_KEY");
+    expect(errors[0]).toMatchObject({ code: "ERROR_INVALID_API_KEY", message: "Invalid API key.", requestId: "r2" });
     expect(closes).toEqual([false]);
   });
 

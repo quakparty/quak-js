@@ -1,9 +1,10 @@
 import { QuakError } from "./errors.js";
 import type { PlayTextParams, Play } from "./types.js";
-import type { WebSocketConstructor } from "./watch.js";
+import { authData, type WebSocketConstructor } from "./watch.js";
 
 // Talk live over the API's WebSocket `GET /v1/play/talk/live`: a start message with the key or a play token, the
-// audio as binary frames, `update` while talking, `end`, then `done` and close 1000. The protocol is in the
+// audio as binary frames, `update` while talking, `end`, then `done` and close 1000. Every text message is
+// `{ type, data }`, an error `{ type: "error", error }`. The protocol is in the
 // description of the route in the OpenAPI; it has no schema of its own, so the messages are typed here.
 
 /** Effects that need the whole take and cannot run live. */
@@ -108,12 +109,12 @@ export type TalkLive = {
 };
 
 type Message =
-  | ({ type: "ready" } & TalkLiveReady)
-  | ({ type: "updated" } & TalkLiveUpdate)
-  | ({ type: "warning" } & TalkLiveWarning)
-  | { type: "skipped"; play: Play; creditsUsed: number }
-  | ({ type: "done" } & TalkLiveDone)
-  | { type: "error"; code: string; message: string; field?: string; requestId?: string }
+  | { type: "ready"; data: TalkLiveReady }
+  | { type: "updated"; data: TalkLiveUpdate }
+  | { type: "warning"; data: TalkLiveWarning }
+  | { type: "skipped"; data: { play: Play; creditsUsed: number } }
+  | { type: "done"; data: TalkLiveDone }
+  | { type: "error"; error: { code: string; message: string; field?: string; requestId?: string } }
   | { type: "ping" };
 
 export function startTalkLive(url: string, apiKey: string | undefined, options: TalkLiveOptions): TalkLive {
@@ -177,10 +178,11 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
     socket.send(
       JSON.stringify({
         type: "start",
-        apiKey,
-        ...(workspace ? { workspace } : {}),
-        ...params,
-        ...(source ? { format: source.format } : format ? { format } : {}),
+        data: {
+          ...authData(apiKey, workspace),
+          ...params,
+          ...(source ? { format: source.format } : format ? { format } : {}),
+        },
       }),
     );
     for (const frame of pending.splice(0)) socket.send(frame);
@@ -197,39 +199,32 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
       case "ready": {
         state = "live";
         source?.start(send);
-        const { type: _, ...ready } = message;
-        onReady?.(ready);
+        onReady?.(message.data);
         break;
       }
-      case "updated": {
-        const { type: _, ...updated } = message;
-        onUpdated?.(updated);
+      case "updated":
+        onUpdated?.(message.data);
         break;
-      }
-      case "warning": {
-        const { type: _, ...warning } = message;
-        onWarning?.(warning);
+      case "warning":
+        onWarning?.(message.data);
         break;
-      }
       case "skipped":
         finished = true;
         void stopSource();
-        onSkipped?.({ play: message.play, creditsUsed: message.creditsUsed });
+        onSkipped?.(message.data);
         break;
-      case "done": {
+      case "done":
         finished = true;
-        const { type: _, ...done } = message;
-        onDone?.(done);
+        onDone?.(message.data);
         break;
-      }
       case "error":
         fail(
           new QuakError({
             status: 0,
-            code: message.code,
-            message: message.message,
-            field: message.field,
-            requestId: message.requestId,
+            code: message.error.code,
+            message: message.error.message,
+            field: message.error.field,
+            requestId: message.error.requestId,
           }),
         );
         break;
@@ -255,7 +250,7 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
     send,
     update(changes) {
       if (changes.muted !== undefined) source?.setMuted?.(changes.muted);
-      if (socket.readyState === 1) socket.send(JSON.stringify({ type: "update", ...changes }));
+      if (socket.readyState === 1) socket.send(JSON.stringify({ type: "update", data: changes }));
     },
     async end() {
       if (state === "ending" || state === "closed") return;

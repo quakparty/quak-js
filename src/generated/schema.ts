@@ -950,30 +950,30 @@ export interface paths {
          *
          *     ### 1. Start
          *
-         *     The first message, as text, within 2 s:
+         *     Every message, both ways, is `{ "type": …, "data": {…} }`; an error is `{ "type": "error", "error": { code, message, field, requestId } }` like a REST error. The first message, as text, within 2 s:
          *
          *     ```json
-         *     { "type": "start", "apiKey": "qk_key_…", "to": ["kitchen"], "format": { "encoding": "opus", "sampleRate": 48000 } }
+         *     { "type": "start", "data": { "apiKey": "qk_key_…", "to": ["kitchen"], "format": { "encoding": "opus", "sampleRate": 48000 } } }
          *     ```
          *
          *     - `format.encoding`: `opus`, `pcm_s16le` or `pcm_f32le`; `format.sampleRate`: `16000`, `24000`, `44100` or `48000`.
          *     - Optional, as with the other plays: `volume`, `volumes`, `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `intro`, `outro`, `gap`, `priority`, `quietHours`.
          *     - Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `"token": "qk_ptk_…"`, a play token from `POST /v1/play-tokens` (5 minutes, it names the workspace; an invalid one closes with `4401` and `ERROR_INVALID_TOKEN`).
-         *     - A login key names its workspace with `"workspace": "<slug or id>"` in the start, `?workspace=` or `X-Quak-Workspace`.
+         *     - A login key names its workspace with `"workspace": "<slug or id>"` in `data`, `?workspace=` or `X-Quak-Workspace`.
          *
          *     ### 2. Talk
          *
-         *     The answer is `{"type":"ready","play":{…},"creditsUsed":2,"balance":…,"maxSeconds":180}` (`creditsUsed`: charged so far, `balance`: the workspace's credits). During quiet hours it is `{"type":"skipped",…}` instead and the socket closes, at no cost.
+         *     The answer is `{"type":"ready","data":{"play":{…},"creditsUsed":2,"balance":…,"maxSeconds":180}}` (`creditsUsed`: charged so far, `balance`: the workspace's credits). During quiet hours it is `{"type":"skipped","data":{…}}` instead and the socket closes, at no cost.
          *
          *     Send the audio as binary frames, in the format of the start: Opus one raw 20 ms packet per frame, PCM mono little endian. Audio sent before `ready` is kept (up to 5 s).
          *
          *     Change things while talking:
          *
          *     ```json
-         *     { "type": "update", "effect": "none", "muted": true }
+         *     { "type": "update", "data": { "effect": "none", "muted": true } }
          *     ```
          *
-         *     → `{"type":"updated",…}` with the current values. Fields: `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `muted`. The server sends `{"type":"ping"}` every 25 s.
+         *     → `{"type":"updated","data":{…}}` with the current values. Fields: `effect`, `effectIntensity`, `ambience`, `ambienceIntensity`, `muted`. The server sends `{"type":"ping"}` every 25 s.
          *
          *     ### 3. End
          *
@@ -981,13 +981,13 @@ export interface paths {
          *     { "type": "end" }
          *     ```
          *
-         *     → `{"type":"done","play":{…},"creditsUsed":…,"balance":…,"endedBy":"client"}`, then the socket closes. `creditsUsed` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.
+         *     → `{"type":"done","data":{"play":{…},"creditsUsed":…,"balance":…,"endedBy":"client"}}`, then the socket closes. `creditsUsed` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.
          *
          *     ### Limits, errors, credits
          *
-         *     - At most 3 minutes. 30 s before, a warning comes: `{"type":"warning","code":"LIMIT_SOON","message":"talk live ends in 30 s (max. 3 minutes)","secondsLeft":30}`.
+         *     - At most 3 minutes. 30 s before, a warning comes: `{"type":"warning","data":{"code":"LIMIT_SOON","message":"Talk live ends in 30 s (max. 3 minutes).","secondsLeft":30}}`.
          *     - Faster, slower and reverse do not work live.
-         *     - Errors: `{"type":"error","code":…,"message":…,"field":…,"requestId":…}`, then the socket closes with 4000 + the HTTP status (e.g. `4402` without credits).
+         *     - Errors: `{"type":"error","error":{"code":…,"message":…,"field":…,"requestId":…}}`, then the socket closes with 4000 + the HTTP status (e.g. `4402` without credits).
          *     - Credits: 2 at the start, and the workspace needs enough for a minute of speech. After the end 1 per started 10 s of speech. If the credits no longer cover the next minute, a warning with `ERROR_INSUFFICIENT_CREDITS` comes and the talk ends.
          */
         get: operations["talkLive"];
@@ -1122,14 +1122,14 @@ export interface paths {
          *
          *     ### 1. Log in
          *
-         *     The first message, as text, within 5 s:
+         *     Every message is `{ "type": …, "data": {…} }`, an error `{ "type": "error", "error": { code, message } }`. The first message, as text, within 5 s:
          *
          *     ```json
-         *     { "type": "auth", "apiKey": "qk_key_…" }
+         *     { "type": "auth", "data": { "apiKey": "qk_key_…" } }
          *     ```
          *
          *     - Instead of `apiKey`: the `Authorization` header on the handshake (native clients). From a browser that should not see the key: `"token": "qk_ptk_…"`, a play token from `POST /v1/play-tokens` (5 minutes, it names the workspace; an invalid one closes with `4401` and `ERROR_INVALID_TOKEN`).
-         *     - A login key watches the workspace named by `"workspace"` in that message, `?workspace=` or `X-Quak-Workspace` (slug or id), else the last used one.
+         *     - A login key watches the workspace named by `"workspace"` in its `data`, `?workspace=` or `X-Quak-Workspace` (slug or id), else the last used one.
          *     - No or a wrong key closes with `4001`.
          *
          *     ### 2. Receive
@@ -10257,7 +10257,6 @@ export interface operations {
                 type?: string;
                 platform?: string;
                 keys?: "current" | "all";
-                scope?: "key" | "all";
             };
             header?: never;
             path?: never;
@@ -10325,7 +10324,6 @@ export interface operations {
                 type?: string;
                 platform?: string;
                 keys?: "current" | "all";
-                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -10390,7 +10388,6 @@ export interface operations {
                 type?: string;
                 platform?: string;
                 keys?: "current" | "all";
-                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -10466,7 +10463,6 @@ export interface operations {
                 type?: string;
                 platform?: string;
                 keys?: "current" | "all";
-                scope?: "key" | "all";
             };
             header?: never;
             path: {
@@ -10585,7 +10581,6 @@ export interface operations {
                 type?: string;
                 platform?: string;
                 keys?: "current" | "all";
-                scope?: "key" | "all";
             };
             header?: never;
             path: {

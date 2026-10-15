@@ -66,22 +66,24 @@ describe("talkLive", () => {
     expect(last().sent).toEqual([
       {
         type: "start",
-        apiKey: "qk_key_test",
-        workspace: "home",
-        to: ["kitchen"],
-        volume: 30,
-        effect: "robot",
-        format: { encoding: "pcm_s16le", sampleRate: 48000 },
+        data: {
+          apiKey: "qk_key_test",
+          workspace: "home",
+          to: ["kitchen"],
+          volume: 30,
+          effect: "robot",
+          format: { encoding: "pcm_s16le", sampleRate: 48000 },
+        },
       },
       frame,
     ]);
     expect(live.state).toBe("connecting");
   });
 
-  test("a play token goes in like a key, without one it throws", () => {
+  test("a play token goes in as token, without a key it throws", () => {
     mockQuak({ apiKey: "qk_ptk_1" }).quak.talkLive({ WebSocket });
     last().open();
-    expect(last().sent).toEqual([{ type: "start", apiKey: "qk_ptk_1" }]);
+    expect(last().sent).toEqual([{ type: "start", data: { token: "qk_ptk_1" } }]);
     expect(() => mockQuak({ apiKey: undefined }).quak.talkLive({ WebSocket })).toThrow("talkLive() needs an apiKey");
   });
 
@@ -110,22 +112,22 @@ describe("talkLive", () => {
       onClose: ({ code }) => events.push(`close ${code}`),
     });
     last().open();
-    expect(last().sent[0]).toMatchObject({ type: "start", format: { encoding: "opus", sampleRate: 48000 } });
+    expect(last().sent[0]).toMatchObject({ type: "start", data: { format: { encoding: "opus", sampleRate: 48000 } } });
     expect(events).toEqual([]);
 
-    last().message({ type: "ready", play: play(), creditsUsed: 2, balance: 98, maxSeconds: 180 });
+    last().message({ type: "ready", data: { play: play(), creditsUsed: 2, balance: 98, maxSeconds: 180 } });
     expect(live.state).toBe("live");
     send!(new Uint8Array([1]).buffer);
     live.update({ muted: true });
-    last().message({ type: "updated", muted: true });
+    last().message({ type: "updated", data: { muted: true } });
     await live.end();
     expect(live.state).toBe("ending");
-    last().message({ type: "done", play: play(), creditsUsed: 3, balance: 97, endedBy: "client" });
+    last().message({ type: "done", data: { play: play(), creditsUsed: 3, balance: 97, endedBy: "client" } });
     last().drop(1000);
 
     expect(last().sent.slice(1)).toEqual([
       new Uint8Array([1]).buffer,
-      { type: "update", muted: true },
+      { type: "update", data: { muted: true } },
       new Uint8Array([9]).buffer,
       { type: "end" },
     ]);
@@ -138,7 +140,10 @@ describe("talkLive", () => {
     const errors: QuakError[] = [];
     quak.talkLive({ WebSocket, onError: (error) => errors.push(error) });
     last().open();
-    last().message({ type: "error", code: "ERROR_PLAN_REQUIRED", message: "from the family plan", requestId: "r1" });
+    last().message({
+      type: "error",
+      error: { code: "ERROR_PLAN_REQUIRED", message: "From the family plan.", requestId: "r1" },
+    });
     last().drop(4403);
 
     quak.talkLive({ WebSocket, onError: (error) => errors.push(error) });
@@ -163,7 +168,7 @@ describe("talkLive", () => {
       onError: (error) => events.push(error.code),
     });
     last().open();
-    last().message({ type: "skipped", play: play(), creditsUsed: 0 });
+    last().message({ type: "skipped", data: { play: play(), creditsUsed: 0 } });
     last().drop(1000);
     expect(events).toEqual(["skipped"]);
   });
