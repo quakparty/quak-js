@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.16 - 2026-10-15
+
 **Breaking, following the API's cleanup of errors and answers (quak-api, 15.10.2026):**
 
 - Plays: `credits` is `creditsUsed`, `length` is `seconds` (also clips and sounds)
