@@ -55,7 +55,7 @@ export type TalkLiveDone = {
   creditsUsed: number;
   /** The workspace's credits after the charge. */
   balance: number;
-  endedBy: "client" | "disconnected" | "limit" | "credits";
+  endedBy: "CLIENT" | "DISCONNECTED" | "LIMIT" | "CREDITS";
 };
 export type TalkLiveWarning = { code: string; message: string; secondsLeft?: number };
 
@@ -104,7 +104,7 @@ export type TalkLive = {
   update(changes: TalkLiveUpdate): void;
   /** Ends the talk: the source sends what is left, then reverb and outro run out and `onDone` follows. */
   end(): Promise<void>;
-  /** Drops the connection at once. The API ends the talk too (`endedBy: "disconnected"`). */
+  /** Drops the connection at once. The API ends the talk too (`endedBy: "DISCONNECTED"`). */
   close(): void;
 };
 

@@ -981,7 +981,7 @@ export interface paths {
          *     { "type": "end" }
          *     ```
          *
-         *     → `{"type":"done","data":{"play":{…},"creditsUsed":…,"balance":…,"endedBy":"client"}}`, then the socket closes. `creditsUsed` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.
+         *     → `{"type":"done","data":{"play":{…},"creditsUsed":…,"balance":…,"endedBy":"CLIENT"}}`, then the socket closes. `creditsUsed` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `CLIENT`, `DISCONNECTED`, `LIMIT` or `CREDITS`. Closing the socket also ends the talk.
          *
          *     ### Limits, errors, credits
          *

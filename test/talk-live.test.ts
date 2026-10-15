@@ -122,7 +122,7 @@ describe("talkLive", () => {
     last().message({ type: "updated", data: { muted: true } });
     await live.end();
     expect(live.state).toBe("ending");
-    last().message({ type: "done", data: { play: play(), creditsUsed: 3, balance: 97, endedBy: "client" } });
+    last().message({ type: "done", data: { play: play(), creditsUsed: 3, balance: 97, endedBy: "CLIENT" } });
     last().drop(1000);
 
     expect(last().sent.slice(1)).toEqual([
@@ -131,7 +131,7 @@ describe("talkLive", () => {
       new Uint8Array([9]).buffer,
       { type: "end" },
     ]);
-    expect(events).toEqual(["start", "ready 180", "muted true", "updated true", "stop", "done 3 client", "close 1000"]);
+    expect(events).toEqual(["start", "ready 180", "muted true", "updated true", "stop", "done 3 CLIENT", "close 1000"]);
     expect(live.state).toBe("closed");
   });
 
