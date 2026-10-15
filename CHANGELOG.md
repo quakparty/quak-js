@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.17 - 2026-10-15
+
 - **Breaking for the helper types:** the API's operationIds are hand-picked now, so `operations[...]` and the helpers
   take the new names: `JsonBody<"playText">`, `Query<"listPlays">`, `Success<"getPlay">` (was `postV1PlayText`,
   `getV1Plays`, `getV1PlaysById`). The shortcut types (`Play`, `PlayTextParams` …) keep their names
