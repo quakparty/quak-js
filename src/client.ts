@@ -1,6 +1,7 @@
 import createClient, { type Client } from "openapi-fetch";
 import { clientHeader } from "./client-header.js";
 import { QuakError, unwrap } from "./errors.js";
+import { idempotent, newIdempotencyKey, type Replayable, type RequestOptions } from "./idempotency.js";
 import { startTalkLive, type TalkLive, type TalkLiveOptions } from "./talk-live.js";
 import { watchPlays, type Watch, type WatchOptions } from "./watch.js";
 import type {
@@ -63,6 +64,13 @@ export type QuakOptions = {
    * adds `(<os>; <arch>)`.
    */
   client?: string | undefined;
+  /**
+   * Plays, `plays.replay()` and `plays.save()` with an `Idempotency-Key`: each call gets its own key and, after a
+   * network error, a 503 or while the first try still runs, sends the same request again with it, up to 3 times. The
+   * API never plays or charges a key twice; an answer it repeats has `replayed: true`. For integrations and scripts
+   * that must not play twice. Default: off, or per call with `{ idempotencyKey }`.
+   */
+  idempotency?: boolean | undefined;
 };
 
 export type RawClient = Client<Paths>;
@@ -88,17 +96,17 @@ export class Quak {
   /** Plays: kinds always in this order: text, talk, sound, clip, file, url. */
   readonly play: {
     /** Speak a text (`POST /v1/play/text`). */
-    text(params: PlayTextParams): Promise<PlayResponse>;
+    text(params: PlayTextParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
     /** Play what someone said into a mic, after release (`POST /v1/play/talk`, multipart). */
-    talk(params: PlayTalkParams): Promise<PlayResponse>;
+    talk(params: PlayTalkParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
     /** Play a built-in sound (`POST /v1/play/sound`). */
-    sound(params: PlaySoundParams): Promise<PlayResponse>;
+    sound(params: PlaySoundParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
     /** Play one of the workspace's clips (`POST /v1/play/clip`). */
-    clip(params: PlayClipParams): Promise<PlayResponse>;
+    clip(params: PlayClipParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
     /** Upload and play an audio file (`POST /v1/play/file`, multipart). */
-    file(params: PlayFileParams): Promise<PlayResponse>;
+    file(params: PlayFileParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
     /** Play audio from a URL (`POST /v1/play/url`). */
-    url(params: PlayUrlParams): Promise<PlayResponse>;
+    url(params: PlayUrlParams, options?: RequestOptions): Promise<Replayable<PlayResponse>>;
   };
 
   /** The history. */
@@ -118,12 +126,12 @@ export class Quak {
      * Play a play's audio once more, on its speakers or the ones in `to` (`POST /v1/plays/{id}/replay`, `"last"`
      * for your newest). While `canReplay` is true.
      */
-    replay(id: string, params?: ReplayParams): Promise<ReplayResponse>;
+    replay(id: string, params?: ReplayParams, options?: RequestOptions): Promise<Replayable<ReplayResponse>>;
     /**
      * Keep a play's audio as a clip (`POST /v1/plays/{id}/save`, `"last"` for your newest). Needs a key with scope
      * `create`; while `canSave` is true.
      */
-    save(id: string, params?: SaveParams): Promise<SaveResponse>;
+    save(id: string, params?: SaveParams, options?: RequestOptions): Promise<Replayable<SaveResponse>>;
   };
 
   /** The key itself. */
@@ -188,10 +196,12 @@ export class Quak {
   private readonly baseUrl: string;
   private readonly apiKey: string | undefined;
   private readonly workspaceHeader: string | undefined;
+  private readonly idempotency: boolean;
 
   constructor(options: QuakOptions = {}) {
     this.baseUrl = (options.baseUrl ?? DEFAULT_BASE_URL).replace(/\/+$/, "");
     this.apiKey = options.apiKey;
+    this.idempotency = options.idempotency === true;
     // headers are case-insensitive, and a WebSocket cannot send them: watch() puts it into the auth message
     this.workspaceHeader = Object.entries(options.headers ?? {}).find(
       ([name]) => name.toLowerCase() === "x-quak-workspace",
@@ -220,24 +230,42 @@ export class Quak {
     });
 
     const api = this.api;
+    // a call that may be retried: with a key (the call's own, or a new one with `idempotency`) it goes through
+    // idempotent(), else straight to the API as before
+    const send = <T>(
+      options: RequestOptions | undefined,
+      call: (headers: Record<string, string>) => Promise<{ data?: T; error?: unknown; response: Response }>,
+    ): Promise<Replayable<T>> => {
+      const key = options?.idempotencyKey ?? (this.idempotency ? newIdempotencyKey() : undefined);
+      return key ? idempotent(call, key) : (unwrap(call({})) as Promise<Replayable<T>>);
+    };
     this.play = {
-      text: (params) => unwrap(api.POST("/v1/play/text", { body: params })),
-      talk: (params) =>
-        unwrap(api.POST("/v1/play/talk", { body: {} as never, bodySerializer: () => toFormData(params) })),
-      sound: (params) => unwrap(api.POST("/v1/play/sound", { body: params })),
-      clip: (params) => unwrap(api.POST("/v1/play/clip", { body: params })),
-      file: (params) =>
-        unwrap(api.POST("/v1/play/file", { body: {} as never, bodySerializer: () => toFormData(params) })),
-      url: (params) => unwrap(api.POST("/v1/play/url", { body: params })),
+      text: (params, options) => send(options, (headers) => api.POST("/v1/play/text", { body: params, headers })),
+      talk: (params, options) =>
+        send(options, (headers) =>
+          api.POST("/v1/play/talk", { body: {} as never, bodySerializer: () => toFormData(params), headers }),
+        ),
+      sound: (params, options) => send(options, (headers) => api.POST("/v1/play/sound", { body: params, headers })),
+      clip: (params, options) => send(options, (headers) => api.POST("/v1/play/clip", { body: params, headers })),
+      file: (params, options) =>
+        send(options, (headers) =>
+          api.POST("/v1/play/file", { body: {} as never, bodySerializer: () => toFormData(params), headers }),
+        ),
+      url: (params, options) => send(options, (headers) => api.POST("/v1/play/url", { body: params, headers })),
     };
     this.plays = {
       list: (query) => unwrap(api.GET("/v1/plays", { params: { query } })),
       get: (id, query) => unwrap(api.GET("/v1/plays/{id}", { params: { path: { id }, query } })),
       last: (query) => unwrap(api.GET("/v1/plays/{id}", { params: { path: { id: "last" }, query } })),
       stop: (id) => unwrap(api.POST("/v1/plays/{id}/stop", { params: { path: { id } } })),
-      replay: (id, params = {}) =>
-        unwrap(api.POST("/v1/plays/{id}/replay", { params: { path: { id } }, body: params })),
-      save: (id, params = {}) => unwrap(api.POST("/v1/plays/{id}/save", { params: { path: { id } }, body: params })),
+      replay: (id, params = {}, options) =>
+        send(options, (headers) =>
+          api.POST("/v1/plays/{id}/replay", { params: { path: { id } }, body: params, headers }),
+        ),
+      save: (id, params = {}, options) =>
+        send(options, (headers) =>
+          api.POST("/v1/plays/{id}/save", { params: { path: { id } }, body: params, headers }),
+        ),
     };
     this.keys = {
       current: () => unwrap(api.GET("/v1/keys/current")),

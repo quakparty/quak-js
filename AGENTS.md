@@ -42,6 +42,9 @@ enters them there.
 - `src/types.ts`: all parameter and response types, **only derived** from `src/generated/schema.ts`, never rebuilt by
   hand. When the schema lacks a type, fix it in the API, not here.
 - `src/errors.ts`: `QuakError` and `unwrap`.
+- `src/idempotency.ts`: the opt-in `Idempotency-Key` for plays, replay and save (client option `idempotency` or
+  `{ idempotencyKey }` per call): one key per call, retries with the same key after a network error, 503 or
+  `ERROR_IDEMPOTENCY_IN_PROGRESS`, `replayed` from `Idempotent-Replayed`. Off by default (Mike, 15.10.2026).
 - `src/client-header.ts`: `X-Quak-Client`, `js/<version>` plus `(<os>; <arch>)` outside browsers. Extra `headers`
   cannot override it (plays made through this package must stay recognisable in the history). The only exception is
   the internal option `client` for Quak's own clients built on this package (the Raycast extension: `raycast/<version>`),

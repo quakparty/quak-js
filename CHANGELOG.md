@@ -4,6 +4,11 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- Opt-in `Idempotency-Key`: `new Quak({ idempotency: true })` or `quak.play.text(params, { idempotencyKey })` (also
+  the other plays, `plays.replay()` and `plays.save()`). Retries after a network error, a 503 or
+  `ERROR_IDEMPOTENCY_IN_PROGRESS` with the same key, up to 3 times; the answer has `replayed: true` when the API repeated
+  a stored one. Off by default, nothing changes without it
+
 - **Needed for `watch()` and `talkLive()`:** the API's WebSocket messages are `{ type, data }` now, errors
   `{ type: "error", error }`; older versions of this package can no longer log in on either. The callbacks are
   unchanged. A play token goes in as `token`, a key as `apiKey`; errors carry the API's `message` and `requestId`

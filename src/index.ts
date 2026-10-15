@@ -1,6 +1,7 @@
 export { DEFAULT_BASE_URL, Quak, type QuakOptions, type RawClient } from "./client.js";
 export { clientHeader } from "./client-header.js";
 export { QuakError, unwrap, type QuakErrorInit } from "./errors.js";
+export type { Replayable, RequestOptions } from "./idempotency.js";
 export { fireTrigger, type FireTriggerOptions, type TriggerResponse, type TriggerResult } from "./trigger.js";
 export { microphone, type Microphone, type MicrophoneOptions, type MicrophoneStream } from "./microphone.js";
 export type {

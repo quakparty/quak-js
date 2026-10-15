@@ -1807,7 +1807,7 @@ export interface components {
                  * @description what went wrong, stable for code to check; message is for people
                  * @enum {string}
                  */
-                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
+                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_IDEMPOTENCY_IN_PROGRESS" | "ERROR_IDEMPOTENCY_KEY_REUSED" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
                 message: string;
                 field?: string;
                 details?: unknown;
@@ -7842,7 +7842,10 @@ export interface operations {
     playText: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8304,7 +8307,10 @@ export interface operations {
     playTalk: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -8570,7 +8576,10 @@ export interface operations {
     playSound: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9011,7 +9020,10 @@ export interface operations {
     playClip: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9452,7 +9464,10 @@ export interface operations {
     playFile: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -9686,7 +9701,10 @@ export interface operations {
     playUrl: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };
@@ -10464,7 +10482,10 @@ export interface operations {
                 platform?: string;
                 keys?: "current" | "all";
             };
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: string;
             };
@@ -10582,7 +10603,10 @@ export interface operations {
                 platform?: string;
                 keys?: "current" | "all";
             };
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path: {
                 id: string;
             };
@@ -10899,7 +10923,10 @@ export interface operations {
     createClip: {
         parameters: {
             query?: never;
-            header?: never;
+            header?: {
+                /** @description Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`. */
+                "Idempotency-Key"?: string;
+            };
             path?: never;
             cookie?: never;
         };

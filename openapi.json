@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Quak API",
-    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Before you start\n\n1. An account: sign up at https://quak.party (or `POST /v1/user/signup`).\n2. Sonos connected to the workspace: in the app or on the website, the Sonos login runs in a browser (`GET /v1/sonos/connect` gives the link).\n3. An API key: in the app under API keys (`POST /v1/keys`), or the login key from `POST /v1/user/login/key`.\n\nThen `POST /v1/play/text` with `{ \"text\": \"Hello\" }` plays on the workspace's default speakers; `GET /v1/speakers` lists the slugs for `to`.\n\n## Requests\n\n- Unknown fields in a request are ignored, not refused, so a newer client works with an older server.\n- `PATCH` changes only the fields you send: a missing field stays, `null` sets it back to its default where the field allows `null`.\n\nSend bodies as JSON with the header `Content-Type: application/json` (curl's `--json` sets it, in other tools such as Shortcuts, Postman or Zapier set it yourself). Uploads (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`) go as `multipart/form-data` (curl `-F`). Simple GET parameters also work in the query string.\n\n```sh\ncurl -X POST https://api.quak.party/v1/play/sound \\\n  -H \"Authorization: Bearer $QUAK_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"sound\":\"quakquak\"}'\n```\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n2. Confirm the request via the email link.\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nScripts, integrations and AI agents can also use a key made in the Quak app (or with `POST /v1/keys`); the login is for apps that sign a person in.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `audioCacheMinutes` in `PATCH /v1/workspace`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n- `201 Created`: a resource was created (for example an API key).\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n- `400 Bad Request`: a parameter is missing or not valid (`field` names it), or the body is not readable.\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n- `402 Payment Required`: not enough credits for the play.\n- `403 Forbidden`: the API key is valid but may not do this.\n- `404 Not Found`: requested resource does not exist in your scope.\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n- `429 Too Many Requests`: a rate limit was hit, wait `Retry-After` seconds.\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.\n\nEvery error has the same body, the schema `Error`: `{ \"error\": { \"code\": \"ERROR_…\", \"message\": \"…\", \"field\": \"…\", \"requestId\": \"…\" } }`. Check `code`, it is stable; `message` is for people.\n\n## Rate limits\n\nGenerous limits guard against floods and loops, not against normal use. Each answer of a limited route says where you stand, with the headers of the IETF draft: `RateLimit-Policy: \"tts\";q=30;w=60` (30 requests per 60 seconds in the group `tts`) and `RateLimit: \"tts\";r=29;t=42` (29 left, the window ends in 42 seconds). Over the limit: `429 ERROR_RATE_LIMITED` with `Retry-After`.\n\n- Login and sign-up: per IP and per address.\n- Speech (`POST /v1/play/text`) and the other plays: per workspace.\n- Everything else with a key: per key.\n\n## Versions\n\nThe version is part of the path. `/v1` is stable to build on. New routes, fields, error codes and enum values (a play `status`, a `platform`, a `type`, a voice `provider` …) can come at any time, so a client must not break on them:\n\n- ignore fields you don't know,\n- treat an unknown enum value like an unknown one in the UI (show it as is, or as other), never as an error,\n- treat an unknown `code` like its HTTP status.",
+    "description": "The Quak API plays announcements on Sonos speakers: text-to-speech, sounds, own clips, files, URLs and push-to-talk, with voice effects and ambiences, quiet hours and a live history.\n\n## Before you start\n\n1. An account: sign up at https://quak.party (or `POST /v1/user/signup`).\n2. Sonos connected to the workspace: in the app or on the website, the Sonos login runs in a browser (`GET /v1/sonos/connect` gives the link).\n3. An API key: in the app under API keys (`POST /v1/keys`), or the login key from `POST /v1/user/login/key`.\n\nThen `POST /v1/play/text` with `{ \"text\": \"Hello\" }` plays on the workspace's default speakers; `GET /v1/speakers` lists the slugs for `to`.\n\n## Requests\n\n- Unknown fields in a request are ignored, not refused, so a newer client works with an older server.\n- `PATCH` changes only the fields you send: a missing field stays, `null` sets it back to its default where the field allows `null`.\n\nSend bodies as JSON with the header `Content-Type: application/json` (curl's `--json` sets it, in other tools such as Shortcuts, Postman or Zapier set it yourself). Uploads (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`) go as `multipart/form-data` (curl `-F`). Simple GET parameters also work in the query string.\n\n```sh\ncurl -X POST https://api.quak.party/v1/play/sound \\\n  -H \"Authorization: Bearer $QUAK_API_KEY\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"sound\":\"quakquak\"}'\n```\n\n## Authentication\n\nTo get an API key:\n\n1. Call `POST /v1/user/signup` (new account) or `POST /v1/user/login` with your email address.\n2. Confirm the request via the email link.\n3. Exchange the `verifyToken` using `POST /v1/user/login/key` to receive your API key.\n\nScripts, integrations and AI agents can also use a key made in the Quak app (or with `POST /v1/keys`); the login is for apps that sign a person in.\n\nUse the API key on protected endpoints with either:\n\n- Header: `Authorization: Bearer <API_KEY>` (raw token also works). Recommended.\n- Query parameter: `?apikey=<API_KEY>`, handy for demos and quick tests. A key in a URL can end up in logs, the browser history and referrers of the tools on the way, so use the header in integrations.\n\nAPI keys look like `qk_key_…` (43 characters). The full key is shown once, when it is made (`POST /v1/keys`, `POST /v1/user/login/key`); Quak only keeps a hash of it. Lists show its start (`qk_key_7Fh2…`).\n\n## Workspaces, roles and scopes\n\nA workspace holds the credits and subscription, the Sonos accounts and speakers, groups, clips, keys and the playback defaults (`GET /v1/workspace`). Every user gets a personal workspace at sign-up and can be a member of more (`GET /v1/workspaces`, invitations with `POST /v1/workspace/invites`); plays keep who triggered them.\n\nWhich workspace a request works in: a **login key** (from logging in with an app, the website or the CLI) belongs to you, not to a workspace. Name the workspace per request with the header `X-Quak-Workspace: <slug or id>`; without it the request works in the workspace you named last, else your personal one. Switching needs no new login. A key made with `POST /v1/keys` belongs to one workspace; a header naming another one is `403 ERROR_WORKSPACE_MISMATCH`. The workspace of a request is in the `X-Quak-Workspace-UUID` header of the answer.\n\nBoth have to allow a request: the key's **scope** and your **role** in the workspace. Scopes include the ones below: `play` (read speakers, voices, sounds, credits, history and play, costs credits) < `create` (and add clips: upload one or keep a play as one) < `manage` (and settings, Sonos accounts, keys, groups, renaming and deleting clips, members). Keys made with `POST /v1/keys` get `play` unless asked otherwise, login keys `manage`. Roles: `MEMBER` reads and plays (and adds clips); `ADMIN` also runs the workspace, several admins are equal. Changing the email and creating workspaces need a login key. Every endpoint names its scope; with too little the answer is `403 ERROR_INSUFFICIENT_SCOPE`, with a role too low `403 ERROR_INSUFFICIENT_ROLE`, both with the need in `details.required`.\n\n## Identifiers\n\n- `id`: stable UUID identifier exposed in public API payloads.\n- `slug`: human-friendly identifier on slug-enabled resources (for example Sonos accounts).\n\nFor slug-enabled resources, `/{id}` path params can accept either `id` or `slug`.\n\n## Playback\n\nPlay text (`POST /v1/play/text`), built-in sounds, own clips, URLs, uploaded files and what someone said into a mic (`POST /v1/play/talk` after release, `GET /v1/play/talk/live` as a WebSocket while talking) on your Sonos speakers. Missing parameters come from the workspace defaults (`PATCH /v1/workspace/defaults`), including quiet hours (default `22-7`, in the workspace time zone): a play during quiet hours is not played, costs nothing and returns `200` with status `SKIPPED`. `preview: true` only produces the audio and returns its `audioUrl`. Every play is kept in the history (`GET /v1/plays`) and can be stopped while it runs.\n\nCredits: 1 when Sonos fetches from the CDN or the source (sound, clip, URL without processing), 2 when the audio goes through the API server (TTS, processed URL, file, talk), plus the voice rate per started 100 characters for TTS and 1 per started 10 s of speech for talk. A TTS cache hit (same text and voice within the workspace's audio cache time, `audioCacheMinutes` in `PATCH /v1/workspace`) costs 2, the preview skips the base fee. The balance after the play is in the `X-Quak-Credits` header.\n\n## Audio formats\n\nEverything Quak plays is mono, a Sonos room plays on one speaker (a stereo pair only on the left one), so mono uploads lose nothing.\n\n- **Uploads** (`POST /v1/play/file`, `POST /v1/play/talk`, `POST /v1/clips`): any common audio format, for example MP3, M4A/AAC, Opus (WebM or Ogg), WAV or FLAC, max. 10 MB and 180 s. Prefer a compressed format (MP3, M4A, Opus): a WAV of 180 s is about 15 MB mono and does not fit, an MP3 at 128 kbit/s is about 3 MB. For talk the browser's `MediaRecorder` output (WebM/Opus) or iOS M4A can be sent as is.\n- **URLs with processing** (`POST /v1/play/url`, default): like uploads, the server downloads and converts them.\n- **URLs without processing** (`process: false`): Sonos fetches the file itself, so it must be **MP3** (or WAV) on a public HTTPS URL. Use MP3: Sonos does not play WAV files shorter than about one second.\n- **What Sonos gets** from Quak is MP3 (128 kbit/s, 44.1 kHz, mono) for generated audio, sounds and clips.\n\n## Responses\n\nThe API can return these status codes across endpoints:\n\n- `200 OK`: request succeeded.\n- `201 Created`: a resource was created (for example an API key).\n- `202 Accepted`: request is valid but completion is still pending (for example login confirmation wait mode).\n- `204 No Content`: request succeeded and no response body is returned (typically delete endpoints).\n- `302 Found`: redirect response (for example Sonos connect with `redirect=1`).\n- `400 Bad Request`: a parameter is missing or not valid (`field` names it), or the body is not readable.\n- `401 Unauthorized`: API key missing, invalid or deleted (log in again), or an expired/invalid login verify token.\n- `402 Payment Required`: not enough credits for the play.\n- `403 Forbidden`: the API key is valid but may not do this.\n- `404 Not Found`: requested resource does not exist in your scope.\n- `409 Conflict`: uniqueness conflict (for example duplicate API key name) or a play that is not running any more.\n- `424 Failed Dependency`: no speaker accepted the play (for example offline or gone), or Sonos did not let it stop.\n- `429 Too Many Requests`: a rate limit was hit, wait `Retry-After` seconds.\n- `503 Service Unavailable`: a service behind Quak failed, for example Sonos or the speech synthesis. Quak never answers with 502 or 504.\n\nEvery error has the same body, the schema `Error`: `{ \"error\": { \"code\": \"ERROR_…\", \"message\": \"…\", \"field\": \"…\", \"requestId\": \"…\" } }`. Check `code`, it is stable; `message` is for people.\n\n## Rate limits\n\nGenerous limits guard against floods and loops, not against normal use. Each answer of a limited route says where you stand, with the headers of the IETF draft: `RateLimit-Policy: \"tts\";q=30;w=60` (30 requests per 60 seconds in the group `tts`) and `RateLimit: \"tts\";r=29;t=42` (29 left, the window ends in 42 seconds). Over the limit: `429 ERROR_RATE_LIMITED` with `Retry-After`.\n\n- Login and sign-up: per IP and per address.\n- Speech (`POST /v1/play/text`) and the other plays: per workspace.\n- Everything else with a key: per key.\n\n## Retries\n\nA play that timed out may still have played. To retry it safely, send the header `Idempotency-Key` with your own ID (a UUID) on the plays, `POST /v1/plays/{id}/replay`, `POST /v1/plays/{id}/save` and `POST /v1/clips`. The same key within 24 hours returns the first answer again, with `Idempotent-Replayed: true`, and nothing plays or costs twice. Only a success is kept; after an error the next try runs normally.\n\n- `409 ERROR_IDEMPOTENCY_IN_PROGRESS`: the first request is still running, wait `Retry-After` seconds.\n- `409 ERROR_IDEMPOTENCY_KEY_REUSED`: the key belongs to another request. Use a new key for every play.\n\n## Versions\n\nThe version is part of the path. `/v1` is stable to build on. New routes, fields, error codes and enum values (a play `status`, a `platform`, a `type`, a voice `provider` …) can come at any time, so a client must not break on them:\n\n- ignore fields you don't know,\n- treat an unknown enum value like an unknown one in the UI (show it as is, or as other), never as an error,\n- treat an unknown `code` like its HTTP status.",
     "version": "1.0.0",
     "contact": {
       "name": "Quak",
@@ -213,6 +213,8 @@
                   "ERROR_AUDIO_GONE",
                   "ERROR_BILLING_ADDRESS_REQUIRED",
                   "ERROR_BILLING_UNAVAILABLE",
+                  "ERROR_IDEMPOTENCY_IN_PROGRESS",
+                  "ERROR_IDEMPOTENCY_KEY_REUSED",
                   "ERROR_INSUFFICIENT_CREDITS",
                   "ERROR_INSUFFICIENT_ROLE",
                   "ERROR_INSUFFICIENT_SCOPE",
@@ -5913,10 +5915,10 @@
                           {
                             "slug": "mike",
                             "name": "Mike's Space",
-                            "action": "delete",
+                            "action": "DELETE",
                             "billing": {
                               "plan": "none",
-                              "status": "none",
+                              "status": "NONE",
                               "currentPeriodEnd": null,
                               "walletCredits": 480,
                               "subscriptionCredits": 0
@@ -5925,10 +5927,10 @@
                           {
                             "slug": "office",
                             "name": "Office",
-                            "action": "leave",
+                            "action": "LEAVE",
                             "billing": {
                               "plan": "none",
-                              "status": "none",
+                              "status": "NONE",
                               "currentPeriodEnd": null,
                               "walletCredits": 480,
                               "subscriptionCredits": 0
@@ -18561,7 +18563,20 @@
             }
           }
         },
-        "operationId": "playText"
+        "operationId": "playText",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/talk": {
@@ -19438,7 +19453,20 @@
             }
           }
         },
-        "operationId": "playTalk"
+        "operationId": "playTalk",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/talk/live": {
@@ -20862,7 +20890,20 @@
             }
           }
         },
-        "operationId": "playSound"
+        "operationId": "playSound",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/clip": {
@@ -22262,7 +22303,20 @@
             }
           }
         },
-        "operationId": "playClip"
+        "operationId": "playClip",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/file": {
@@ -23068,7 +23122,20 @@
             }
           }
         },
-        "operationId": "playFile"
+        "operationId": "playFile",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/url": {
@@ -24468,7 +24535,20 @@
             }
           }
         },
-        "operationId": "playUrl"
+        "operationId": "playUrl",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/play/stop": {
@@ -25684,6 +25764,17 @@
               ],
               "type": "string"
             }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
           }
         ],
         "requestBody": {
@@ -26070,6 +26161,17 @@
                 "all"
               ],
               "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
             }
           }
         ],
@@ -27406,7 +27508,20 @@
             }
           }
         },
-        "operationId": "createClip"
+        "operationId": "createClip",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "description": "Your ID for this request (a UUID), so a retry does not play or charge twice. The same key within 24 h returns the first answer with `Idempotent-Replayed: true`.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            }
+          }
+        ]
       }
     },
     "/v1/clips/{id}": {

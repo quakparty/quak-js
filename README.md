@@ -578,6 +578,24 @@ When no answer arrives at all (offline, DNS, CORS, aborted), the error is a `Qua
 Too many requests in a short time answer with 429 `ERROR_RATE_LIMITED` and `retryAfter` in seconds. The request was
 not carried out, so it is safe to send it again after that; the client does not retry by itself.
 
+## Retries
+
+A play that runs into a timeout or a dropped connection may still have played. With `idempotency: true` every play,
+`plays.replay()` and `plays.save()` sends its own `Idempotency-Key` and, after a network error, a 503 or while the
+first try still runs, sends the same request again with the same key, up to 3 times. The API never plays or charges a
+key twice: a repeat gets the stored answer with `replayed: true`. Meant for integrations and scripts; off by default.
+
+```ts
+const quak = new Quak({ apiKey: process.env.QUAK_API_KEY, idempotency: true });
+const { data, replayed } = await quak.play.text({ text: "The build is green", to: "office" });
+
+// or for one call, with a key of your own, e.g. to retry across runs of a job (kept for 24 hours)
+await quak.play.text({ text: "Deploy done" }, { idempotencyKey: `deploy-${process.env.GITHUB_RUN_ID}` });
+```
+
+The same key with a different request is a `QuakError` with `ERROR_IDEMPOTENCY_KEY_REUSED`. Only successful answers are
+kept: after an error the next try with the key runs normally.
+
 ## Client name
 
 The API records which client sent a play. This library always sends `X-Quak-Client: js/<version> (<os>; <arch>)` in
@@ -586,11 +604,12 @@ history. Extra `headers` cannot replace it.
 
 ## Options
 
-| Option    | Default        | What it does                                               |
-| --------- | -------------- | ---------------------------------------------------------- |
-| `apiKey`  |                | `Authorization: Bearer <key>`                              |
-| `fetch`   | global `fetch` | a custom fetch (tests, proxies, retries)                   |
-| `headers` |                | extra headers for every request (e.g. your `X-Request-Id`) |
+| Option        | Default        | What it does                                                                               |
+| ------------- | -------------- | ------------------------------------------------------------------------------------------ |
+| `apiKey`      |                | `Authorization: Bearer <key>`                                                              |
+| `fetch`       | global `fetch` | a custom fetch (tests, proxies, retries)                                                   |
+| `headers`     |                | extra headers for every request (e.g. your `X-Request-Id`)                                 |
+| `idempotency` | `false`        | plays, replay and save with an `Idempotency-Key` and safe retries, see [Retries](#retries) |
 
 ## Runtimes
 
