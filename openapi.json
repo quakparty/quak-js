@@ -14123,36 +14123,6 @@
         ],
         "summary": "List groups",
         "description": "Scope: `play`. Your groups of speakers with their players.",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000,
-              "description": "Pagination limit. Default: 100. Allowed range: 1..1000.",
-              "examples": [
-                100
-              ]
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Pagination offset. Default: 0.",
-              "examples": [
-                0,
-                10
-              ]
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -14172,18 +14142,10 @@
                       "properties": {
                         "total": {
                           "type": "number"
-                        },
-                        "limit": {
-                          "type": "number"
-                        },
-                        "offset": {
-                          "type": "number"
                         }
                       },
                       "required": [
-                        "total",
-                        "limit",
-                        "offset"
+                        "total"
                       ]
                     }
                   },
@@ -14232,9 +14194,7 @@
                         }
                       ],
                       "meta": {
-                        "total": 1,
-                        "limit": 100,
-                        "offset": 0
+                        "total": 1
                       }
                     }
                   }
@@ -18118,8 +18078,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -18205,8 +18164,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -18302,8 +18260,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -19007,8 +18964,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -19090,8 +19046,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -19183,8 +19138,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -20428,8 +20382,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -20512,8 +20465,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -20606,8 +20558,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -21105,7 +21056,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21435,7 +21385,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21765,7 +21714,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21828,8 +21776,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -21912,8 +21859,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22006,8 +21952,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -22637,8 +22582,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -22720,8 +22664,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22813,8 +22756,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -24037,8 +23979,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -24120,8 +24061,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -24213,8 +24153,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -24969,8 +24908,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Your history": {
@@ -25233,8 +25171,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "One play": {
@@ -25489,8 +25426,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Stopped": {
@@ -26608,8 +26544,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -26695,8 +26630,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -26792,8 +26726,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -32573,37 +32506,7 @@
           "API Keys"
         ],
         "summary": "List API keys",
-        "description": "Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000,
-              "description": "Pagination limit. Default: 100. Allowed range: 1..1000.",
-              "examples": [
-                100
-              ]
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Pagination offset. Default: 0.",
-              "examples": [
-                0,
-                10
-              ]
-            }
-          }
-        ],
+        "description": "Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, all of them in one answer. Never the keys themselves, only their start (prefix) to recognize them.",
         "responses": {
           "200": {
             "description": "OK",
@@ -32623,18 +32526,10 @@
                       "properties": {
                         "total": {
                           "type": "number"
-                        },
-                        "limit": {
-                          "type": "number"
-                        },
-                        "offset": {
-                          "type": "number"
                         }
                       },
                       "required": [
-                        "total",
-                        "limit",
-                        "offset"
+                        "total"
                       ]
                     }
                   },
@@ -32663,9 +32558,7 @@
                         }
                       ],
                       "meta": {
-                        "total": 1,
-                        "limit": 100,
-                        "offset": 0
+                        "total": 1
                       }
                     }
                   }
@@ -33809,36 +33702,6 @@
         ],
         "summary": "List accounts",
         "description": "Scope: `play`. Returns all connected Sonos accounts for the authenticated user.",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 1000,
-              "description": "Pagination limit. Default: 100. Allowed range: 1..1000.",
-              "examples": [
-                100
-              ]
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "integer",
-              "minimum": 0,
-              "description": "Pagination offset. Default: 0.",
-              "examples": [
-                0,
-                10
-              ]
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -33858,18 +33721,10 @@
                       "properties": {
                         "total": {
                           "type": "number"
-                        },
-                        "limit": {
-                          "type": "number"
-                        },
-                        "offset": {
-                          "type": "number"
                         }
                       },
                       "required": [
-                        "total",
-                        "limit",
-                        "offset"
+                        "total"
                       ]
                     }
                   },
@@ -33901,9 +33756,7 @@
                         }
                       ],
                       "meta": {
-                        "total": 1,
-                        "limit": 100,
-                        "offset": 0
+                        "total": 1
                       }
                     }
                   }

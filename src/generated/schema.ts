@@ -1462,7 +1462,7 @@ export interface paths {
         };
         /**
          * List API keys
-         * @description Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.
+         * @description Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, all of them in one answer. Never the keys themselves, only their start (prefix) to recognize them.
          */
         get: operations["listKeys"];
         put?: never;
@@ -6797,10 +6797,7 @@ export interface operations {
     };
     listGroups: {
         parameters: {
-            query?: {
-                limit?: number;
-                offset?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -6819,8 +6816,6 @@ export interface operations {
                         data: components["schemas"]["Group"][];
                         meta: {
                             total: number;
-                            limit: number;
-                            offset: number;
                         };
                     };
                 };
@@ -12567,10 +12562,7 @@ export interface operations {
     };
     listKeys: {
         parameters: {
-            query?: {
-                limit?: number;
-                offset?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -12589,8 +12581,6 @@ export interface operations {
                         data: components["schemas"]["Key"][];
                         meta: {
                             total: number;
-                            limit: number;
-                            offset: number;
                         };
                     };
                 };
@@ -13010,10 +13000,7 @@ export interface operations {
     };
     listSonosAccounts: {
         parameters: {
-            query?: {
-                limit?: number;
-                offset?: number;
-            };
+            query?: never;
             header?: never;
             path?: never;
             cookie?: never;
@@ -13032,8 +13019,6 @@ export interface operations {
                         data: components["schemas"]["SonosAccount"][];
                         meta: {
                             total: number;
-                            limit: number;
-                            offset: number;
                         };
                     };
                 };

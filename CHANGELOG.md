@@ -8,6 +8,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
   `meta: { total, limit, offset }`. Before, only the first 500 of about 1,850 came back
 - New types `Effect`, `VoiceLanguage` and `VoiceModel`; OpenAPI snapshot updated (`PlayClient`, `PlayUser`, `PlayKey`,
   `LoginStart` under `components["schemas"]`)
+- OpenAPI snapshot updated: query parameters with their plain type (`maxCredits` a number); `GET /v1/sonos`,
+  `/v1/groups` and `/v1/keys` always return everything (`meta: { total }`, no `limit`/`offset`); trigger calls up to
+  1000 per page
 
 ## 0.9.17 - 2026-10-15
 
