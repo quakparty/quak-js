@@ -4,6 +4,14 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- **Breaking for the helper types:** the API's operationIds are hand-picked now, so `operations[...]` and the helpers
+  take the new names: `JsonBody<"playText">`, `Query<"listPlays">`, `Success<"getPlay">` (was `postV1PlayText`,
+  `getV1Plays`, `getV1PlaysById`). The shortcut types (`Play`, `PlayTextParams` …) keep their names
+- `Play`, `Speaker`, `Voice`, `Sound`, `Clip` and `Workspace` come from the API's components now; new `PlayPlayer` and
+  `SpeakerPlayer`
+- OpenAPI snapshot updated: the objects as `components["schemas"]` (`Play`, `Key`, `Trigger`, `Member` …),
+  `workspace.get()` has `platforms`, `GET /v1/clips` (500) and `/v1/groups` (100) with `meta: { total, limit, offset }`
+
 ## 0.9.16 - 2026-10-15
 
 **Breaking, following the API's cleanup of errors and answers (quak-api, 15.10.2026):**

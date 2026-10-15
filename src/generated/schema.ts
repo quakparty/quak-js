@@ -33,7 +33,7 @@ export interface paths {
          * Sign up
          * @description Starts a sign-up with email (magic link). A welcome email with a confirmation link is sent, the account is created when the link is confirmed, then poll POST /v1/user/login/key like after a login. If the address has an account already, the email is a login link instead; the response looks the same, so nobody can find out whether an address is registered.
          */
-        post: operations["postV1UserSignup"];
+        post: operations["signUp"];
         delete?: never;
         options?: never;
         head?: never;
@@ -53,7 +53,7 @@ export interface paths {
          * Login
          * @description Starts a login with email (magic link). A confirmation email is sent and a verify token is returned for polling POST /v1/user/login/key. The response includes `loginPhrase`, which should match the phrase shown in the email. No account is created, and an unknown address gets no email. The response looks the same, so nobody can find out whether an address is registered. If no email arrives, there may be no account yet: sign up with POST /v1/user/signup.
          */
-        post: operations["postV1UserLogin"];
+        post: operations["logIn"];
         delete?: never;
         options?: never;
         head?: never;
@@ -73,7 +73,7 @@ export interface paths {
          * Get API key after login
          * @description Exchanges a verify token for an API key, optionally waiting for email confirmation.
          */
-        post: operations["postV1UserLoginKey"];
+        post: operations["getLoginKey"];
         delete?: never;
         options?: never;
         head?: never;
@@ -91,7 +91,7 @@ export interface paths {
          * Get user profile
          * @description Scope: any key. Returns profile information for the authenticated user.
          */
-        get: operations["getV1UserProfile"];
+        get: operations["getProfile"];
         put?: never;
         post?: never;
         delete?: never;
@@ -101,7 +101,7 @@ export interface paths {
          * Update profile
          * @description Scope: `manage`. Changes your profile; fields left out stay as they are. Today: name.
          */
-        patch: operations["patchV1UserProfile"];
+        patch: operations["updateProfile"];
         trace?: never;
     };
     "/v1/user/time-zones": {
@@ -115,7 +115,7 @@ export interface paths {
          * List time zones
          * @description Scope: `play`. Returns supported IANA time zones for user settings. If the user's current time zone is valid but not in the global list, it is included as well.
          */
-        get: operations["getV1UserTime-zones"];
+        get: operations["listTimeZones"];
         put?: never;
         post?: never;
         delete?: never;
@@ -141,7 +141,7 @@ export interface paths {
          * Update email address
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Starts an email change flow for the authenticated user. A verification email is sent and the new email becomes active only after link confirmation.
          */
-        patch: operations["patchV1UserEmail"];
+        patch: operations["updateEmail"];
         trace?: never;
     };
     "/v1/user/newsletter": {
@@ -161,7 +161,7 @@ export interface paths {
          * Update newsletter setting
          * @description Scope: `manage`. Updates the newsletter setting for the authenticated user.
          */
-        patch: operations["patchV1UserNewsletter"];
+        patch: operations["updateNewsletter"];
         trace?: never;
     };
     "/v1/user/time-zone": {
@@ -181,7 +181,7 @@ export interface paths {
          * Update time zone
          * @description Scope: `manage`. Updates the user's time zone.
          */
-        patch: operations["patchV1UserTime-zone"];
+        patch: operations["updateTimeZone"];
         trace?: never;
     };
     "/v1/user/logins": {
@@ -195,14 +195,14 @@ export interface paths {
          * List my logins
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Your logins, one per device or client (CLI, web app, apps), most recently used first, and the apps you let in with OAuth (type OAUTH, e.g. Claude or ChatGPT through the MCP server). `current` marks the login of this request. Keys you made with /v1/keys are not in it. Logins do not expire, they stay valid until you sign them out.
          */
-        get: operations["getV1UserLogins"];
+        get: operations["listLogins"];
         put?: never;
         post?: never;
         /**
          * Sign out everywhere
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs all your logins out right away, the apps you let in with OAuth too. With `?except=current` the login of this request stays. Keys you made with /v1/keys stay valid, manage them under /v1/keys.
          */
-        delete: operations["deleteV1UserLogins"];
+        delete: operations["signOutEverywhere"];
         options?: never;
         head?: never;
         patch?: never;
@@ -222,7 +222,7 @@ export interface paths {
          * Sign out a login
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Signs one of your logins out right away, e.g. of a lost laptop. Also works for the login of this request.
          */
-        delete: operations["deleteV1UserLoginsById"];
+        delete: operations["signOutLogin"];
         options?: never;
         head?: never;
         patch?: never;
@@ -239,7 +239,7 @@ export interface paths {
          * Export my data
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). Everything Quak stores about you as one JSON file (GDPR access and portability): account, workspaces, and for workspaces you administer their settings, Sonos connections, groups, keys (never the tokens), credits and open invitations; your clips with download links (24 hours) and your announcements. Texts and audio are not stored, so they are not in it.
          */
-        get: operations["getV1UserExport"];
+        get: operations["exportData"];
         put?: never;
         post?: never;
         delete?: never;
@@ -266,7 +266,7 @@ export interface paths {
          *     - A deleted workspace's subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded (`workspaces` in the answer shows what is at stake).
          *     - The only admin of a workspace with other members: `409 ERROR_LAST_ADMIN`. Make someone else admin or delete that workspace first.
          */
-        delete: operations["deleteV1User"];
+        delete: operations["deleteAccount"];
         options?: never;
         head?: never;
         patch?: never;
@@ -283,7 +283,7 @@ export interface paths {
          * Get workspace
          * @description Scope: `play`. The workspace of the API key: its credits and subscription, the playback defaults, the audio cache time and its time zone, in which quiet hours run, and the plan's limits with what is used (planLimits). Everything played, the speakers, groups, clips and keys belong to it.
          */
-        get: operations["getV1Workspace"];
+        get: operations["getWorkspace"];
         put?: never;
         post?: never;
         /**
@@ -294,14 +294,14 @@ export interface paths {
          *     - If it is your last workspace, your account is deleted too (`accountToo`).
          *     - A running subscription ends right away, its credits and bought packs are lost, nothing already paid is refunded.
          */
-        delete: operations["deleteV1Workspace"];
+        delete: operations["deleteWorkspace"];
         options?: never;
         head?: never;
         /**
          * Update workspace
          * @description Scope: `manage`. Admins of the workspace only. Renames the workspace, changes its slug, its time zone (quiet hours run in it) or the audio cache time. Only the fields you send change.
          */
-        patch: operations["patchV1Workspace"];
+        patch: operations["updateWorkspace"];
         trace?: never;
     };
     "/v1/workspace/defaults": {
@@ -321,7 +321,7 @@ export interface paths {
          * Update playback defaults
          * @description Scope: `manage`. Admins of the workspace only. Updates the playback defaults of the workspace, for everyone in it. Intro and outro accept a sound slug, "clip:<slug>" for one of your clips, or "none" to disable them. effect and ambience (with their intensities) apply to text, talk, files and processed URLs like intro and outro, not to sounds and clips, "none" switches them off. quietHours sets when nothing plays, in the workspace time zone and full hours, e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none".
          */
-        patch: operations["patchV1WorkspaceDefaults"];
+        patch: operations["updateDefaults"];
         trace?: never;
     };
     "/v1/workspace/members": {
@@ -335,7 +335,7 @@ export interface paths {
          * List members
          * @description Scope: `play`. Everyone in the workspace with their role.
          */
-        get: operations["getV1WorkspaceMembers"];
+        get: operations["listMembers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -358,14 +358,14 @@ export interface paths {
          * Remove a member or leave
          * @description Scope: `manage`. Admins remove anyone, everyone may leave. The member's own keys of this workspace stop working; the last admin cannot leave (`409 ERROR_LAST_ADMIN`).
          */
-        delete: operations["deleteV1WorkspaceMembersById"];
+        delete: operations["removeMember"];
         options?: never;
         head?: never;
         /**
          * Change a member's role
          * @description Scope: `manage`. Admins of the workspace only. Admins change roles. The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).
          */
-        patch: operations["patchV1WorkspaceMembersById"];
+        patch: operations["updateMemberRole"];
         trace?: never;
     };
     "/v1/workspace/invites": {
@@ -379,13 +379,13 @@ export interface paths {
          * List open invitations
          * @description Scope: `manage`. Admins of the workspace only. Invitations not accepted and not expired yet.
          */
-        get: operations["getV1WorkspaceInvites"];
+        get: operations["listInvitations"];
         put?: never;
         /**
          * Invite someone
          * @description Scope: `manage`. Admins of the workspace only. Sends an invitation mail. Its link shows the invitation, the button accepts it; valid 7 days, once. A new invitation for the same address replaces an open one. Accepting without a Quak account creates one (without starting credits). Members and open invitations count against the users of the plan (Free and Home 1, Family 5, Team 20, Business 30): above it `403 ERROR_PLAN_LIMIT_REACHED` with limit, used, allowed and requiredPlan in details.
          */
-        post: operations["postV1WorkspaceInvites"];
+        post: operations["createInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -406,7 +406,7 @@ export interface paths {
          * Withdraw an invitation
          * @description Scope: `manage`. Admins of the workspace only. The link in the mail stops working.
          */
-        delete: operations["deleteV1WorkspaceInvitesById"];
+        delete: operations["withdrawInvitation"];
         options?: never;
         head?: never;
         patch?: never;
@@ -425,7 +425,7 @@ export interface paths {
          * Send an invitation again
          * @description Scope: `manage`. Admins of the workspace only. Sends the invitation mail once more with a new link (the old one stops working), valid 7 days again. Also brings an expired invitation back, not an accepted (`409 ERROR_INVITE_ACCEPTED`) or withdrawn one (404). At most every 5 minutes per invitation (`429 ERROR_RATE_LIMITED`). An expired invitation takes a seat again: `403 ERROR_PLAN_LIMIT_REACHED` when the plan has none left.
          */
-        post: operations["postV1WorkspaceInvitesByIdResend"];
+        post: operations["resendInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -443,7 +443,7 @@ export interface paths {
          * Get billing
          * @description Scope: `manage`. Admins of the workspace only. Plan, subscription state, trial, renewal and credits of the workspace. Payments run through Stripe (merchant of record).
          */
-        get: operations["getV1WorkspaceBilling"];
+        get: operations["getBilling"];
         put?: never;
         post?: never;
         delete?: never;
@@ -453,7 +453,7 @@ export interface paths {
          * Update billing email
          * @description Scope: `manage`. Admins of the workspace only. The billing email of the workspace: where Stripe sends receipts and invoices, e.g. the accounting team. Answers the billing state.
          */
-        patch: operations["patchV1WorkspaceBilling"];
+        patch: operations["updateBilling"];
         trace?: never;
     };
     "/v1/workspace/billing/checkout": {
@@ -469,7 +469,7 @@ export interface paths {
          * Start a checkout
          * @description Scope: `manage`. Admins of the workspace only. A Stripe Checkout for a plan or a credit pack, answers its URL. Home, Family and Team start with a 7-day trial once per person and Sonos household, packs get the discount of the plan. An optional promotion code (from Stripe) comes filled in, an unknown one is left out. A workspace with a subscription changes it in the portal (409).
          */
-        post: operations["postV1WorkspaceBillingCheckout"];
+        post: operations["startCheckout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -487,7 +487,7 @@ export interface paths {
          * Preview a plan change
          * @description Scope: `manage`. Admins of the workspace only. What switching the running subscription to another plan or interval does: upgrade or downgrade, when, the new price, what is charged today, the credits, the discount, and for a downgrade what is above the smaller plan's limits (blockedBy). Changes nothing.
          */
-        get: operations["getV1WorkspaceBillingChange"];
+        get: operations["previewPlanChange"];
         put?: never;
         /**
          * Change the plan
@@ -498,12 +498,12 @@ export interface paths {
          *     - While a downgrade is scheduled, adding beyond its limits answers `403 ERROR_PLAN_LIMIT_REACHED`; take the change back (`DELETE …/billing/change`) to grow.
          *     - `409` without a running subscription, for the current plan, for a cancelled or past due subscription, and for Team and Business without the full billing address.
          */
-        post: operations["postV1WorkspaceBillingChange"];
+        post: operations["changePlan"];
         /**
          * Undo a scheduled plan change
          * @description Scope: `manage`. Admins of the workspace only. Takes back a downgrade scheduled for the end of the period, the plan stays. Answers the billing state; 409 without one.
          */
-        delete: operations["deleteV1WorkspaceBillingChange"];
+        delete: operations["undoPlanChange"];
         options?: never;
         head?: never;
         patch?: never;
@@ -522,7 +522,7 @@ export interface paths {
          * Open the customer portal
          * @description Scope: `manage`. Admins of the workspace only. The Stripe customer portal of the workspace: payment method, billing address, VAT ID, invoices and cancelling; plan changes are POST …/billing/change. flow opens it right at cancelling, the payment method or the billing address; with address, plan and interval come back on the return URL (?plan=…&interval=…) so the change preview opens again. Answers its URL; 409 before the first purchase.
          */
-        post: operations["postV1WorkspaceBillingPortal"];
+        post: operations["openBillingPortal"];
         delete?: never;
         options?: never;
         head?: never;
@@ -540,7 +540,7 @@ export interface paths {
          * List credit grants
          * @description Scope: `manage`. Admins of the workspace only. Where the credits of the workspace came from, newest first: starting credits, plan credits (they expire with the period), bought packs, credits given by Quak, SLA service credits, and what a refund took back. The balance is in GET /v1/workspace (credits).
          */
-        get: operations["getV1WorkspaceCreditsGrants"];
+        get: operations["listCreditGrants"];
         put?: never;
         post?: never;
         delete?: never;
@@ -560,13 +560,13 @@ export interface paths {
          * List workspaces
          * @description Scope: `play`. The workspaces you are a member of. With a login key all of them; pick one per request with the header X-Quak-Workspace (slug or id). An own key (from POST /v1/keys) only sees its own workspace.
          */
-        get: operations["getV1Workspaces"];
+        get: operations["listWorkspaces"];
         put?: never;
         /**
          * Create workspace
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). A new, empty workspace, you become its admin (login key only). At most 20 own workspaces including the personal one (`409 ERROR_WORKSPACE_LIMIT`), invitations to other workspaces do not count. It starts with 100 credits (the first 20 workspaces you create, deleted ones and the personal one included), after that without. Its time zone and TTS language are yours. Work in it with the header X-Quak-Workspace.
          */
-        post: operations["postV1Workspaces"];
+        post: operations["createWorkspace"];
         delete?: never;
         options?: never;
         head?: never;
@@ -584,7 +584,7 @@ export interface paths {
          * Show invitation
          * @description Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. `404 ERROR_NOT_FOUND`, `410 ERROR_INVITE_EXPIRED` (details name the workspace and who invited, to ask for a new one), `409 ERROR_INVITE_ACCEPTED`.
          */
-        get: operations["getV1InvitesByToken"];
+        get: operations["getInvitation"];
         put?: never;
         post?: never;
         delete?: never;
@@ -606,7 +606,7 @@ export interface paths {
          * Accept invitation
          * @description Beta, may change without notice. Accepts the invitation once and logs the invited address in: the answer has a login key (scope manage), like the end of a login. The link came by mail to that address, the same proof as a login link. An address without an account gets one, then `name` is required (`400 ERROR_INVALID_PARAMS`, field name); it is only a member of the invited workspace, without an own one and without starting credits (500 come with the first own workspace, POST /v1/workspaces). Sent with a login key of the invited user, `apiKey` is null and no new key is made. 404, 410 and 409 as for GET /v1/invites/:token.
          */
-        post: operations["postV1InvitesByTokenAccept"];
+        post: operations["acceptInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -624,7 +624,7 @@ export interface paths {
          * List speakers
          * @description Scope: `play`. Everything a play can go to (`to`): all players, locations (a Sonos household each), rooms and groups, each with its players. In the order of the workspace: `all` first, then locations, rooms and groups, each in the order of `PUT /v1/speakers/order`. Show them in this order.
          */
-        get: operations["getV1Speakers"];
+        get: operations["listSpeakers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -651,7 +651,7 @@ export interface paths {
          *
          *     The answer is the new list of every speaker, like `GET /v1/speakers?type=ALL`.
          */
-        put: operations["putV1SpeakersOrder"];
+        put: operations["orderSpeakers"];
         post?: never;
         delete?: never;
         options?: never;
@@ -676,7 +676,7 @@ export interface paths {
          * Rename a location
          * @description Scope: `manage`. Admins of the workspace only. Renames a location (a Sonos household) or changes its slug. Its slug comes from its name; a new name brings a new slug unless you give one. Free.
          */
-        patch: operations["patchV1LocationsById"];
+        patch: operations["updateLocation"];
         trace?: never;
     };
     "/v1/groups": {
@@ -690,13 +690,13 @@ export interface paths {
          * List groups
          * @description Scope: `play`. Your groups of speakers with their players.
          */
-        get: operations["getV1Groups"];
+        get: operations["listGroups"];
         put?: never;
         /**
          * Create a group
          * @description Scope: `manage`. Admins of the workspace only. A group of speakers, usable in `to` by its slug. Groups cannot contain groups. Free.
          */
-        post: operations["postV1Groups"];
+        post: operations["createGroup"];
         delete?: never;
         options?: never;
         head?: never;
@@ -714,21 +714,21 @@ export interface paths {
          * Show a group
          * @description Scope: `play`. One group with its speakers and players.
          */
-        get: operations["getV1GroupsById"];
+        get: operations["getGroup"];
         put?: never;
         post?: never;
         /**
          * Delete a group
          * @description Scope: `manage`. Admins of the workspace only. Deletes the group; it also leaves your default speakers (all if nothing else is left).
          */
-        delete: operations["deleteV1GroupsById"];
+        delete: operations["deleteGroup"];
         options?: never;
         head?: never;
         /**
          * Update a group
          * @description Scope: `manage`. Admins of the workspace only. Renames a group or replaces its speakers. Free.
          */
-        patch: operations["patchV1GroupsById"];
+        patch: operations["updateGroup"];
         trace?: never;
     };
     "/v1/groups/{id}/speakers": {
@@ -744,12 +744,12 @@ export interface paths {
          * Add speakers to a group
          * @description Scope: `manage`. Admins of the workspace only. Adds speakers (no groups); ones the group has already stay once.
          */
-        post: operations["postV1GroupsByIdSpeakers"];
+        post: operations["addGroupSpeakers"];
         /**
          * Remove speakers from a group
          * @description Scope: `manage`. Admins of the workspace only. Removes speakers from the group.
          */
-        delete: operations["deleteV1GroupsByIdSpeakers"];
+        delete: operations["removeGroupSpeakers"];
         options?: never;
         head?: never;
         patch?: never;
@@ -766,7 +766,7 @@ export interface paths {
          * List sounds
          * @description Public. Returns available sounds with audio URLs, descriptions, and search keywords. Filter with `q` and `tags`.
          */
-        get: operations["getV1Sounds"];
+        get: operations["listSounds"];
         put?: never;
         post?: never;
         delete?: never;
@@ -786,7 +786,7 @@ export interface paths {
          * List sound tags
          * @description Public. Returns all available sound tags.
          */
-        get: operations["getV1SoundsTags"];
+        get: operations["listSoundTags"];
         put?: never;
         post?: never;
         delete?: never;
@@ -806,7 +806,7 @@ export interface paths {
          * List voices
          * @description Scope: `play`. Returns the available voices of AWS Polly, Google (Chirp 3 HD and Gemini), OpenAI and ElevenLabs, see `provider` and `model`. Pass a voice `slug` as `voice` to POST /v1/play/text. Only current models are listed (see `GET /v1/voices/models`). Multi-language voices without a native language have `locale` and `language` `mul` and speak the language of the play (`language`, else the user language); other multi-language voices keep their native accent as `locale`.
          */
-        get: operations["getV1Voices"];
+        get: operations["listVoices"];
         put?: never;
         post?: never;
         delete?: never;
@@ -826,7 +826,7 @@ export interface paths {
          * List voice locales
          * @description Scope: `play`. Returns all available voice locales.
          */
-        get: operations["getV1VoicesLocales"];
+        get: operations["listVoiceLocales"];
         put?: never;
         post?: never;
         delete?: never;
@@ -846,7 +846,7 @@ export interface paths {
          * List voice languages
          * @description Scope: `play`. Returns all available voice languages.
          */
-        get: operations["getV1VoicesLanguages"];
+        get: operations["listVoiceLanguages"];
         put?: never;
         post?: never;
         delete?: never;
@@ -866,7 +866,7 @@ export interface paths {
          * List voice models
          * @description Scope: `play`. Returns one entry per model with the number of voices, whether its voices speak several languages, the languages it supports (ISO 639 codes), its credit rate per started 100 characters (plus the base fee of a play) and its `status` (`ga` or `preview`) and `latency` (`fast`: first audio within ~300 ms, `normal`: within ~1.5 s, `slow`: may take a few seconds). For multi-language models `languages` lists every supported language, for the others the languages of their voices.
          */
-        get: operations["getV1VoicesModels"];
+        get: operations["listVoiceModels"];
         put?: never;
         post?: never;
         delete?: never;
@@ -886,7 +886,7 @@ export interface paths {
          * List effects and ambiences
          * @description Scope: `play`. Beta, may change without notice. The voice effects (field effect) and ambiences (field ambience) of the play routes, in the order clients show them, with what they sound like and what each level does. One of each can be combined, e.g. robot in the stadium.
          */
-        get: operations["getV1Effects"];
+        get: operations["listEffects"];
         put?: never;
         post?: never;
         delete?: never;
@@ -908,7 +908,7 @@ export interface paths {
          * Play text
          * @description Scope: `play`. Speaks a text with a voice from /v1/voices on the target speakers. Credits: 2 + the voice rate per started 100 characters, the preview only the voice rate. A cache hit costs 2: the same text with the same voice (and language) within the audio cache time, also with another effect, intro, outro or gap, the speech is reused without a new synthesis. Returns 200 with status SKIPPED during quiet hours.
          */
-        post: operations["postV1PlayText"];
+        post: operations["playText"];
         delete?: never;
         options?: never;
         head?: never;
@@ -928,7 +928,7 @@ export interface paths {
          * Talk
          * @description Scope: `play`. Plays what someone said into a mic, after release. Unlike play/file the audio runs through the voice processing (high-pass, noise gate, auto gain, a fixed EQ), silence at start and end is cut and at most 180 s (3 minutes) of speech are played. Effects that need the whole take (faster, slower, reverse) work here. With effects the effect can change during the take. All other parameters are plain form fields in the same request. Credits: 2 + 1 per started 10 s of speech after trimming, the preview only the speech part.
          */
-        post: operations["postV1PlayTalk"];
+        post: operations["playTalk"];
         delete?: never;
         options?: never;
         head?: never;
@@ -953,7 +953,7 @@ export interface paths {
          *     The first message, as text, within 2 s:
          *
          *     ```json
-         *     { "type": "start", "apiKey": "qk_key_…", "to": ["Kitchen"], "format": { "encoding": "opus", "sampleRate": 48000 } }
+         *     { "type": "start", "apiKey": "qk_key_…", "to": ["kitchen"], "format": { "encoding": "opus", "sampleRate": 48000 } }
          *     ```
          *
          *     - `format.encoding`: `opus`, `pcm_s16le` or `pcm_f32le`; `format.sampleRate`: `16000`, `24000`, `44100` or `48000`.
@@ -990,7 +990,7 @@ export interface paths {
          *     - Errors: `{"type":"error","code":…,"message":…,"field":…,"requestId":…}`, then the socket closes with 4000 + the HTTP status (e.g. `4402` without credits).
          *     - Credits: 2 at the start, and the workspace needs enough for a minute of speech. After the end 1 per started 10 s of speech. If the credits no longer cover the next minute, a warning with `ERROR_INSUFFICIENT_CREDITS` comes and the talk ends.
          */
-        get: operations["wsV1PlayTalkLive"];
+        get: operations["talkLive"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1016,7 +1016,7 @@ export interface paths {
          *     - With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.
          *     - Credits: 1, processed 2.
          */
-        post: operations["postV1PlaySound"];
+        post: operations["playSound"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1040,7 +1040,7 @@ export interface paths {
          *     - With `process: true` it is mixed on the server and cached: intro, outro, gap, effect and ambience come from the workspace defaults, fields of the request override them, `none` turns one off.
          *     - Credits: 1, processed 2.
          */
-        post: operations["postV1PlayClip"];
+        post: operations["playClip"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1060,7 +1060,7 @@ export interface paths {
          * Play a file
          * @description Scope: `play`. Plays an uploaded audio file (multipart/form-data, field file, max. 10 MB and 180 s, any common audio format). All other parameters (volume, to, quietHours, priority, preview, intro, outro, gap, effect, effectIntensity, ambience, ambienceIntensity, skipCache) are plain form fields in the same request. Credits: 2.
          */
-        post: operations["postV1PlayFile"];
+        post: operations["playFile"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1080,7 +1080,7 @@ export interface paths {
          * Play a URL
          * @description Scope: `play`. Plays audio from a URL. With process (default) the server downloads it (max. 10 MB and 180 s) and adds intro, outro and effect, credits: 2. With process false Sonos fetches the URL itself, credits: 1.
          */
-        post: operations["postV1PlayUrl"];
+        post: operations["playUrl"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1100,7 +1100,7 @@ export interface paths {
          * Stop the speakers
          * @description Scope: `play`. Stops whatever plays on the speakers in to, on all speakers of the workspace without to (not only the default speakers), also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:id/stop.
          */
-        post: operations["postV1PlayStop"];
+        post: operations["stopSpeakers"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1146,7 +1146,7 @@ export interface paths {
          *
          *     Reconnect after a drop: you get the current state again.
          */
-        get: operations["wsV1PlaysWatch"];
+        get: operations["watchPlays"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1166,7 +1166,7 @@ export interface paths {
          * List plays
          * @description Scope: `play`. Returns the history of plays, newest first, including previews and plays skipped by quiet hours. By default only the plays of this API key, keys=all shows all of your workspace; type and platform narrow it.
          */
-        get: operations["getV1Plays"];
+        get: operations["listPlays"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1186,7 +1186,7 @@ export interface paths {
          * Show a play
          * @description Scope: `play`. Returns one play with its status per speaker. "last" returns your newest play without listing the history.
          */
-        get: operations["getV1PlaysById"];
+        get: operations["getPlay"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1208,7 +1208,7 @@ export interface paths {
          * Stop a play
          * @description Scope: `play`. Stops a running play on all its speakers, with the play's own priority: a normal play is stopped with a LOW clip that does not block the next play, a priority play with a HIGH clip. Returns 409 when the play is not running any more.
          */
-        post: operations["postV1PlaysByIdStop"];
+        post: operations["stopPlay"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1232,7 +1232,7 @@ export interface paths {
          *     - A sound or clip without processing is already in the library: `400 ERROR_UNABLE_TO_SAVE`.
          *     - Costs 2 credits, like uploading a clip.
          */
-        post: operations["postV1PlaysByIdSave"];
+        post: operations["savePlayAsClip"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1257,7 +1257,7 @@ export interface paths {
          *     - Works for sounds and clips, and for text, talk, file and processed URL plays while their audio is there (the audio cache time), else `409 ERROR_AUDIO_GONE`. Not for talk live and URL plays without processing (`400 ERROR_NOT_REPLAYABLE`).
          *     - Credits: only the base fee, 1 for sounds and clips, 2 for the rest.
          */
-        post: operations["postV1PlaysByIdReplay"];
+        post: operations["replayPlay"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1275,13 +1275,13 @@ export interface paths {
          * List clips
          * @description Scope: `play`. Returns your own clips, sorted by name. Play them with POST /v1/play/clip.
          */
-        get: operations["getV1Clips"];
+        get: operations["listClips"];
         put?: never;
         /**
          * Create a clip
          * @description Scope: `create`. Uploads an own clip (multipart/form-data: file, optional name and slug; max. 10 MB and 180 s, any common audio format). It is converted to MP3 once and then played from the CDN like a sound, or used as intro or outro with clip:<slug>. Creating a clip costs 2 credits (402 when there are not enough), the balance is in X-Quak-Credits.
          */
-        post: operations["postV1Clips"];
+        post: operations["createClip"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1302,14 +1302,14 @@ export interface paths {
          * Delete a clip
          * @description Scope: `manage`. Admins of the workspace only. Deletes one of your clips and its audio.
          */
-        delete: operations["deleteV1ClipsById"];
+        delete: operations["deleteClip"];
         options?: never;
         head?: never;
         /**
          * Rename a clip
          * @description Scope: `manage`. Admins of the workspace only. Changes the name and/or slug of one of your clips. The audio stays. Free.
          */
-        patch: operations["patchV1ClipsById"];
+        patch: operations["updateClip"];
         trace?: never;
     };
     "/v1/triggers": {
@@ -1323,7 +1323,7 @@ export interface paths {
          * List triggers
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The trigger URLs of the workspace.
          */
-        get: operations["getV1Triggers"];
+        get: operations["listTriggers"];
         put?: never;
         /**
          * Create a trigger
@@ -1334,7 +1334,7 @@ export interface paths {
          *     - Each play costs credits like any play. Cooldown, daily limit and allowed websites limit what a leaked URL can do.
          *     - How many a workspace may have depends on the plan (Home 3, Family 10, Team 30, Business 100, none without a plan): above it `403 ERROR_PLAN_LIMIT_REACHED` with `limit`, `used`, `allowed` and `requiredPlan` in `details`.
          */
-        post: operations["postV1Triggers"];
+        post: operations["createTrigger"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1352,21 +1352,21 @@ export interface paths {
          * Get a trigger
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. One trigger with its URL.
          */
-        get: operations["getV1TriggersById"];
+        get: operations["getTrigger"];
         put?: never;
         post?: never;
         /**
          * Delete a trigger
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. Its URL stops working; the plays it made stay in the history.
          */
-        delete: operations["deleteV1TriggersById"];
+        delete: operations["deleteTrigger"];
         options?: never;
         head?: never;
         /**
          * Update a trigger
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. Changes what a trigger plays and how; null resets a field to the workspace's default. The URL stays.
          */
-        patch: operations["patchV1TriggersById"];
+        patch: operations["updateTrigger"];
         trace?: never;
     };
     "/v1/triggers/{id}/rotate": {
@@ -1382,7 +1382,7 @@ export interface paths {
          * Rotate a trigger's URL
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. A new token and URL; the old URL stops working at once.
          */
-        post: operations["postV1TriggersByIdRotate"];
+        post: operations["rotateTriggerUrl"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1402,7 +1402,7 @@ export interface paths {
          * Test a trigger
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. Calls the trigger like its URL with this query and body, without its signature, cooldown and on/off switch. It plays and costs credits like a call, but stays out of the history of plays; with dryRun it only answers what it would play. `at` checks the rules as if it were then. The answer lists every rule and why it did or did not hold. The test is in the trigger's calls.
          */
-        post: operations["postV1TriggersByIdTest"];
+        post: operations["testTrigger"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1420,7 +1420,7 @@ export interface paths {
          * List a trigger's calls
          * @description Scope: `manage`. Admins of the workspace only. Beta, may change without notice. The history of a trigger, newest first: every call of its URL and every test, with what came in, the rule that took it and what it played or why not. The last 100 stay, at most as long as the plays. New calls come live on GET /v1/plays/watch as `{"type":"trigger_call","data":{…}}` (admins).
          */
-        get: operations["getV1TriggersByIdCalls"];
+        get: operations["listTriggerCalls"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1440,14 +1440,14 @@ export interface paths {
          * Get current API key
          * @description Scope: any key. Returns the API key of this request with its scope, its workspace (the same object as GET /v1/workspace, with your role, credits, defaults and limits) and its user, e.g. to show “Key ‘Raycast’, scope play, workspace ‘Home’” when a client is set up. For a login key the workspace is the one of this request (X-Quak-Workspace, else the last used). Works with every key. Never the key itself, only its start (prefix).
          */
-        get: operations["getV1KeysCurrent"];
+        get: operations["getCurrentKey"];
         put?: never;
         post?: never;
         /**
          * Delete current API key
          * @description Scope: any key. Deletes the API key used for the current request.
          */
-        delete: operations["deleteV1KeysCurrent"];
+        delete: operations["deleteCurrentKey"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1464,7 +1464,7 @@ export interface paths {
          * List API keys
          * @description Scope: `manage`. Admins of the workspace only. Returns the API keys of the workspace made with /v1/keys, with limit/offset pagination. Never the keys themselves, only their start (prefix) to recognize them.
          */
-        get: operations["getV1Keys"];
+        get: operations["listKeys"];
         put?: never;
         /**
          * Create API key
@@ -1474,7 +1474,7 @@ export interface paths {
          *     - `scope`: `play` (default), `create` or `manage`, never more than your own key (`403 ERROR_INSUFFICIENT_SCOPE`).
          *     - The full key is in this answer only: store it now, it cannot be read again.
          */
-        post: operations["postV1Keys"];
+        post: operations["createKey"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1495,14 +1495,14 @@ export interface paths {
          * Delete API key
          * @description Scope: `manage`. Admins of the workspace only. Deletes one of the workspace's API keys by its id or slug, so it no longer works and no longer appears in the list. Its slug is free again.
          */
-        delete: operations["deleteV1KeysById"];
+        delete: operations["deleteKey"];
         options?: never;
         head?: never;
         /**
          * Update API key
          * @description Scope: `manage`. Admins of the workspace only. Changes one of the workspace's API keys by its id or slug: name, slug and scope separately, a new name keeps the slug. Names and slugs are unique among the workspace's keys (names case-insensitive). The scope can be set up to your own key's scope.
          */
-        patch: operations["patchV1KeysById"];
+        patch: operations["updateKey"];
         trace?: never;
     };
     "/v1/sonos": {
@@ -1516,7 +1516,7 @@ export interface paths {
          * List accounts
          * @description Scope: `play`. Returns all connected Sonos accounts for the authenticated user.
          */
-        get: operations["getV1Sonos"];
+        get: operations["listSonosAccounts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1538,7 +1538,7 @@ export interface paths {
          * Sync accounts
          * @description Scope: `manage`. Admins of the workspace only. Refreshes Sonos data for every account connected to the authenticated user.
          */
-        post: operations["postV1SonosSync"];
+        post: operations["syncSonos"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1556,7 +1556,7 @@ export interface paths {
          * Connect Sonos account
          * @description Scope: `manage`. Admins of the workspace only. Connect your Sonos account to your Quak account to enable playback on your speakers.
          */
-        get: operations["getV1SonosConnect"];
+        get: operations["connectSonos"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1579,14 +1579,14 @@ export interface paths {
          * Remove Sonos connection
          * @description Scope: `manage`. Admins of the workspace only. Removes your Sonos connection. Quak will no longer be able to use your Sonos speakers for playback.
          */
-        delete: operations["deleteV1SonosById"];
+        delete: operations["disconnectSonosAccount"];
         options?: never;
         head?: never;
         /**
          * Rename a Sonos account
          * @description Scope: `manage`. Admins of the workspace only. Renames a connected Sonos account or changes its slug. Without a name of its own an account is named after its first location. Free.
          */
-        patch: operations["patchV1SonosById"];
+        patch: operations["updateSonosAccount"];
         trace?: never;
     };
     "/v1/integrations": {
@@ -1600,7 +1600,7 @@ export interface paths {
          * List integrations
          * @description Scope: `play`. Every integration of Quak with its state in this workspace, also the ones not connected. Hide providers with `available: false`, this server is not set up for them. Sonos is not in here, see /v1/sonos.
          */
-        get: operations["getV1Integrations"];
+        get: operations["listIntegrations"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1626,7 +1626,7 @@ export interface paths {
          *     - **IFTTT:** `authUrl` is the service page on IFTTT (the link does not really expire). “Connect” there signs in to Quak and picks this workspace; each IFTTT account is its own connection.
          *     - Already connected: `409 ERROR_ALREADY_CONNECTED`, unless `reconnect: true`.
          */
-        post: operations["postV1IntegrationsByProviderConnect"];
+        post: operations["connectIntegration"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1647,7 +1647,7 @@ export interface paths {
          * Disconnect integration
          * @description Scope: `manage`. Admins of the workspace only. Disconnects a provider from this workspace. Slack: the Slack workspace stops playing, its key stops working and the bot token is revoked; the app stays listed in Slack until someone removes it there. IFTTT: every IFTTT account connected to this workspace stops working, its applets fail until connected again. Not connected: `404 ERROR_NOT_CONNECTED`.
          */
-        delete: operations["deleteV1IntegrationsByProvider"];
+        delete: operations["disconnectIntegration"];
         options?: never;
         head?: never;
         patch?: never;
@@ -1673,7 +1673,7 @@ export interface paths {
          *     - Opens only `POST /v1/clips`.
          *     - Works once and for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key: a clip upload needs a key with scope `create`.
          */
-        post: operations["postV1Upload-tickets"];
+        post: operations["createUploadTicket"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1702,7 +1702,7 @@ export interface paths {
          *     - Expired, unknown, or the key was signed out: `401 ERROR_INVALID_TOKEN` (on a WebSocket: closes with `4401`). Get a new token and try once more.
          *     - Send it in the header or the first message, not in a URL: it works more than once, so it stays out of addresses and logs.
          */
-        post: operations["postV1Play-tokens"];
+        post: operations["createPlayToken"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1720,7 +1720,7 @@ export interface paths {
          * Get an authorization request
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). What an app that wants to connect asks for (docs/mcp.md#anmeldung), for the consent page of the website: the app, where it sends the user back to and the scope. A request is valid for 10 minutes.
          */
-        get: operations["getV1OauthRequestsById"];
+        get: operations["getAuthorizationRequest"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1742,7 +1742,7 @@ export interface paths {
          * Approve an authorization request
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). The user lets the app in, for one workspace: the answer is the URL back to the app with a one-time code. The app then gets a token that works like a key of that workspace with the requested scope. It is listed in GET /v1/user/logins and signed out there.
          */
-        post: operations["postV1OauthRequestsByIdApprove"];
+        post: operations["approveAuthorizationRequest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1762,7 +1762,7 @@ export interface paths {
          * Deny an authorization request
          * @description Scope: login key only (from logging in with an app, not a key made with `/v1/keys`). The user does not let the app in: the answer is the URL back to the app with access_denied.
          */
-        post: operations["postV1OauthRequestsByIdDeny"];
+        post: operations["denyAuthorizationRequest"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1789,96 +1789,7 @@ export interface components {
                 } | null;
                 played: unknown | null;
                 text: string | null;
-                play: {
-                    id: string;
-                    /**
-                     * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                     * @enum {string}
-                     */
-                    type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                    /**
-                     * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                     * @enum {string}
-                     */
-                    status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                    /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                    skipReason: "QUIET_HOURS" | "BUSY" | null;
-                    preview: boolean;
-                    /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                    params: {
-                        [key: string]: unknown;
-                    };
-                    players: {
-                        id: string;
-                        slug: string;
-                        name: string;
-                        /**
-                         * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                         * @enum {string}
-                         */
-                        status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                        error: string | null;
-                        /** @description when Sonos started the clip (Sonos event), else null */
-                        startedAt: string | null;
-                        /** @description when the clip ended (Sonos event or stop), else null */
-                        endedAt: string | null;
-                    }[];
-                    /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                    audioUrl: string | null;
-                    /** @description length in seconds, rounded up */
-                    seconds: number | null;
-                    creditsUsed: number;
-                    /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                    fromCache: boolean;
-                    /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                    test: boolean;
-                    /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                    startsAt: string | null;
-                    /** @description who sent the play */
-                    client: {
-                        /**
-                         * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                         * @enum {string}
-                         */
-                        platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                        /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                        name: string | null;
-                        /** @description its version, e.g. "0.9.0" */
-                        version: string | null;
-                    };
-                    /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                    canReplay: boolean;
-                    /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                    canSave: boolean;
-                    /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                    user: {
-                        /** @example Mike */
-                        name: string | null;
-                        /** @example mike@example.com */
-                        email: string;
-                    } | null;
-                    /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                    key: {
-                        /**
-                         * @description the name of an own API key, null for other keys
-                         * @example Doorbell
-                         */
-                        name: string | null;
-                        /**
-                         * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                         * @enum {string}
-                         */
-                        type: "LOGIN" | "API" | "OAUTH";
-                        /**
-                         * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                         * @example Claude
-                         */
-                        app: string | null;
-                    } | null;
-                    /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                    requestId: string | null;
-                    createdAt: string;
-                } | null;
+                play: components["schemas"]["Play"] | null;
                 callId: string | null;
                 /** @description tests only: every rule and whether it held */
                 rules?: {
@@ -1896,7 +1807,7 @@ export interface components {
                  * @description what went wrong, stable for code to check; message is for people
                  * @enum {string}
                  */
-                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_TESTERS" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
+                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
                 message: string;
                 field?: string;
                 details?: unknown;
@@ -1904,11 +1815,722 @@ export interface components {
                 requestId?: string;
             };
         };
+        Profile: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            /** @description your display name (members list, invitations, greeting in mails) */
+            name: string;
+            emailToVerify: string | null;
+            newsletter: boolean;
+            /** Format: date-time */
+            createdAt: string;
+            /** @description your time zone for display and mails; quiet hours use the workspace's */
+            timeZone: string;
+            /** @description your language (stored, not used yet: everything is English for now) */
+            language: string;
+            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+            workspace: {
+                /** Format: uuid */
+                id: string;
+                /** @example mike */
+                slug: string;
+                /** @example Mike's Space */
+                name: string;
+                /**
+                 * @description your role in the workspace
+                 * @default ADMIN
+                 * @enum {string}
+                 */
+                role: "ADMIN" | "MEMBER";
+            } | null;
+        };
+        Login: {
+            /**
+             * Format: uuid
+             * @description id of the login, for DELETE /v1/user/logins/:id
+             */
+            id: string;
+            /** @enum {string} */
+            type: "LOGIN" | "OAUTH";
+            /**
+             * @description the app's own name (OAUTH only)
+             * @example Claude
+             */
+            name: string | null;
+            /** @description the workspace an app works in (OAUTH only, a login chooses it per request) */
+            workspace: {
+                slug: string;
+                name: string;
+            } | null;
+            /**
+             * @description start of the key to recognize it
+             * @example qk_key_7Fh2…
+             */
+            prefix: string;
+            /**
+             * @description where the login was made
+             * @example CLI
+             * @example WEB
+             * @example MCP
+             */
+            platform: string;
+            /** @description the Quak client last seen with this login (User-Agent quak-<name>/<version> or X-Quak-Client) */
+            client: {
+                /** @example cli */
+                name: string;
+                /** @example 0.9.8 */
+                version: string | null;
+            } | null;
+            /**
+             * @description rough device of a browser login, never the full User-Agent
+             * @example Chrome on macOS
+             */
+            device: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            lastRequestAt: string | null;
+            requestCount: number;
+            /** @description the login of this request */
+            current: boolean;
+        };
+        WorkspaceDefaults: {
+            voice: string;
+            /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
+            language: string;
+            volume: number;
+            intro: string | null;
+            outro: string | null;
+            /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
+            speakers: string[];
+            gap: number;
+            /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
+            effect: string;
+            /**
+             * @description strength of the voice effect: weak, medium or strong
+             * @default weak
+             * @enum {string}
+             */
+            effectIntensity: "weak" | "medium" | "strong";
+            /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
+            ambience: string;
+            /**
+             * @description strength of the ambience: weak, medium or strong
+             * @default weak
+             * @enum {string}
+             */
+            ambienceIntensity: "weak" | "medium" | "strong";
+            /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
+            quietHours: string;
+        };
+        Workspace: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description unique, from the owner's email at sign-up
+             * @example mike
+             */
+            slug: string;
+            /** @example Mike's Space */
+            name: string;
+            /**
+             * @description quiet hours (and later schedules) run in this time zone
+             * @example Europe/Berlin
+             */
+            timeZone: string;
+            /**
+             * @description your role in the workspace
+             * @default ADMIN
+             * @enum {string}
+             */
+            role: "ADMIN" | "MEMBER";
+            credits: {
+                total: number;
+                /** @description one time, free and promo credits, never expire */
+                wallet: number;
+                /** @description credits of the plan for the current period */
+                plan: number;
+                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
+                lowThreshold: number;
+            };
+            subscription: {
+                id: string | null;
+                /** @description none, trialing, active, past_due, canceled or inactive */
+                state: string;
+                /**
+                 * @description the plan; plans are bought and changed in the Quak web app
+                 * @default none
+                 * @enum {string}
+                 */
+                plan: "none" | "home" | "family" | "team" | "business";
+                interval: ("month" | "year") | null;
+            };
+            defaults: components["schemas"]["WorkspaceDefaults"];
+            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
+            audioCacheMinutes: number;
+            /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
+            features: {
+                /** @description talk live (GET /v1/play/talk/live), from the family plan */
+                talkLive: boolean;
+                /** @description the Slack app, from the team plan */
+                slack: boolean;
+            };
+            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
+            limits: {
+                /**
+                 * @description max. characters of a text play
+                 * @example 1000
+                 */
+                textCharacters: number;
+                /**
+                 * @description max. seconds of speech in a recorded talk, longer takes are cut
+                 * @example 180
+                 */
+                talkSeconds: number;
+                /**
+                 * @description max. seconds of talk live, a warning comes 30 s before
+                 * @example 180
+                 */
+                liveSeconds: number;
+                /**
+                 * @description max. seconds of a file, a processed url and an own clip
+                 * @example 180
+                 */
+                audioSeconds: number;
+                /**
+                 * @description max. bytes of an upload (file, talk, clip) and a url download
+                 * @example 10485760
+                 */
+                uploadBytes: number;
+            };
+            /**
+             * @description the platforms this workspace's plays came from (client.platform), most used first: the choices for a platform filter of the history (GET /v1/plays?platform=)
+             * @example [
+             *       "WEB",
+             *       "IOS",
+             *       "CLI"
+             *     ]
+             */
+            platforms?: string[];
+            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
+            planLimits?: {
+                /** @description active Sonos households (locations) */
+                locations: {
+                    used: number;
+                    /** @description 0: not in this plan */
+                    allowed: number;
+                };
+                /** @description members and open invitations */
+                users: {
+                    used: number;
+                    /** @description 0: not in this plan */
+                    allowed: number;
+                };
+                /** @description trigger URLs */
+                triggers: {
+                    used: number;
+                    /** @description 0: not in this plan */
+                    allowed: number;
+                };
+            };
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Member: {
+            /**
+             * Format: uuid
+             * @description the user's id
+             */
+            id: string;
+            /** Format: email */
+            email: string;
+            /** @description the member's display name */
+            name: string;
+            /**
+             * @description ADMIN runs the workspace, MEMBER plays
+             * @default ADMIN
+             * @enum {string}
+             */
+            role: "ADMIN" | "MEMBER";
+            /** Format: date-time */
+            joinedAt: string;
+            /** @description the member's last request in this workspace, with any of their keys; updated at most every 10 minutes, null when unknown */
+            lastActiveAt: string | null;
+            /** @description plays this member started in this workspace in the last 30 days, previews not counted */
+            playsLast30Days: number;
+        };
+        Invitation: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            /**
+             * @default ADMIN
+             * @enum {string}
+             */
+            role: "ADMIN" | "MEMBER";
+            /** Format: date-time */
+            expiresAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        WorkspaceSummary: {
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description use it in X-Quak-Workspace to work in this workspace
+             * @example office
+             */
+            slug: string;
+            /** @example Office */
+            name: string;
+            /**
+             * @description your role: ADMIN runs the workspace, MEMBER plays
+             * @default ADMIN
+             * @enum {string}
+             */
+            role: "ADMIN" | "MEMBER";
+            /** @description the workspace this request works in */
+            current: boolean;
+        };
+        SpeakerPlayer: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+        };
+        Speaker: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            /** @enum {string} */
+            type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
+            name: string;
+            players: components["schemas"]["SpeakerPlayer"][];
+            /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
+            details?: {
+                model: string | null;
+                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
+                /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
+                devices: {
+                    model: string | null;
+                    /** @description LF/RF for a stereo pair, LR/RR for surrounds, empty for one speaker */
+                    channels: string[];
+                    connected: boolean;
+                }[];
+                audioClip: {
+                    /** @description whether it plays announcements (the audioClip capability of Sonos) */
+                    supported: boolean;
+                    reason: "NO_AUDIO_CLIP_CAPABILITY" | null;
+                };
+                stereoPair: boolean;
+                homeTheater: boolean;
+                /** @description as Sonos reports them, e.g. AUDIO_CLIP, HT_PLAYBACK, VOICE, LINE_IN */
+                capabilities: string[];
+                softwareVersion: string | null;
+                location: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                };
+                sonosAccount: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    lastSyncedAt: string | null;
+                };
+            } | {
+                sonosAccount: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    lastSyncedAt: string | null;
+                };
+            };
+        };
+        Group: {
+            /** Format: uuid */
+            id: string;
+            /** @description usable in `to` like any speaker */
+            slug: string;
+            name: string;
+            /** @description what the group contains: rooms, locations or all, never groups */
+            speakers: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                /** @enum {string} */
+                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
+                name: string;
+            }[];
+            /** @description every player of the group once */
+            players: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            }[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        Sound: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            /** Format: uri */
+            audioUrl: string;
+            /** @description length in seconds */
+            seconds: number;
+            tags: ("INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC")[];
+            description: string | null;
+            /**
+             * @description Lowercase English search words: kind of sound, source, mood, occasions.
+             * @example [
+             *       "fanfare",
+             *       "brass",
+             *       "celebration",
+             *       "win",
+             *       "birthday"
+             *     ]
+             */
+            keywords: string[];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SoundTag: {
+            /** @enum {string} */
+            tag: "INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC";
+            name: string;
+        };
+        Voice: {
+            slug: string;
+            /** @enum {string} */
+            provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
+            model: string;
+            /** @enum {string} */
+            latency: "fast" | "normal" | "slow";
+            multiLanguage: boolean;
+            name: string;
+            locale: string;
+            language: string;
+            languageName: string;
+            languageNativeName: string;
+            gender: string;
+            /** @description credits per started 100 characters, plus the base fee of a play */
+            credits: number;
+        };
+        VoiceLocale: {
+            locale: string;
+            language: string;
+            languageName: string;
+            languageNativeName: string;
+        };
+        PlayPlayer: {
+            id: string;
+            slug: string;
+            name: string;
+            /**
+             * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
+             * @enum {string}
+             */
+            status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
+            error: string | null;
+            /** @description when Sonos started the clip (Sonos event), else null */
+            startedAt: string | null;
+            /** @description when the clip ended (Sonos event or stop), else null */
+            endedAt: string | null;
+        };
+        Play: {
+            id: string;
+            /**
+             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
+             * @enum {string}
+             */
+            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
+            /**
+             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
+             * @enum {string}
+             */
+            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
+            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
+            skipReason: "QUIET_HOURS" | "BUSY" | null;
+            preview: boolean;
+            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
+            params: {
+                [key: string]: unknown;
+            };
+            players: components["schemas"]["PlayPlayer"][];
+            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
+            audioUrl: string | null;
+            /** @description length in seconds, rounded up */
+            seconds: number | null;
+            creditsUsed: number;
+            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
+            fromCache: boolean;
+            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
+            test: boolean;
+            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
+            startsAt: string | null;
+            /** @description who sent the play */
+            client: {
+                /**
+                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
+                 * @enum {string}
+                 */
+                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
+                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
+                name: string | null;
+                /** @description its version, e.g. "0.9.0" */
+                version: string | null;
+            };
+            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+            canReplay: boolean;
+            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+            canSave: boolean;
+            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
+            user: {
+                /** @example Mike */
+                name: string | null;
+                /** @example mike@example.com */
+                email: string;
+            } | null;
+            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
+            key: {
+                /**
+                 * @description the name of an own API key, null for other keys
+                 * @example Doorbell
+                 */
+                name: string | null;
+                /**
+                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
+                 * @enum {string}
+                 */
+                type: "LOGIN" | "API" | "OAUTH";
+                /**
+                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
+                 * @example Claude
+                 */
+                app: string | null;
+            } | null;
+            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
+            requestId: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Clip: {
+            id: string;
+            slug: string;
+            name: string;
+            /** @description length in seconds */
+            seconds: number;
+            /** @description the audio (MP3), a signed link that works for 15 minutes */
+            audioUrl: string;
+            /**
+             * Format: date-time
+             * @description when audioUrl stops working, list again for a new one
+             */
+            audioUrlExpiresAt: string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Trigger: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @description a switched-off trigger answers 404 */
+            enabled: boolean;
+            /** @description how the URL reads its caller: generic or unifi_access */
+            profile: string;
+            type: string | null;
+            text: string | null;
+            fallbackText: string | null;
+            sound: string | null;
+            clip: string | null;
+            to: string[] | null;
+            voice: string | null;
+            effect: string | null;
+            effectIntensity: string | null;
+            ambience: string | null;
+            ambienceIntensity: string | null;
+            intro: string | null;
+            outro: string | null;
+            gap: number | null;
+            volume: number | null;
+            priority: boolean;
+            quietHours: string | null;
+            /** @description only these events play; empty = the profile decides */
+            events: string[];
+            /** @description the caller's signature is checked (unifi_access) */
+            hasSigningSecret: boolean;
+            /** @description calls within this time after a play are skipped */
+            cooldownSeconds: number;
+            /** @description a caller's value in a text is cut to this length */
+            maxValueLength: number;
+            dailyLimit: number | null;
+            /** @description plays today, for the daily limit */
+            playsToday: number;
+            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
+            allowedOrigins: string[];
+            rules: {
+                name: string | null;
+                when: {
+                    events: string[] | null;
+                    match: {
+                        [key: string]: string | string[] | {
+                            contains: string;
+                        } | {
+                            exists: boolean;
+                        };
+                    } | null;
+                    time: string | null;
+                };
+                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
+                play: ({
+                    sound: string;
+                } | {
+                    clip: string;
+                } | {
+                    text: string;
+                })[];
+                to: string[] | null;
+                volume: number | null;
+            }[];
+            /** @description the start of the token, to recognize the URL */
+            tokenPrefix: string;
+            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
+            token: string;
+            /** @description the URL to call with GET or POST */
+            url: string;
+            /** @description false when its maker left the workspace: make it again */
+            working: boolean;
+            fireCount: number;
+            lastFiredAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        TriggerCall: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            triggerId: string;
+            /** @description a test from the app */
+            test: boolean;
+            /** @description a test that only decided, nothing played */
+            dryRun: boolean;
+            /** @description played, skipped, dry_run or failed */
+            status: string;
+            reason: string | null;
+            /** @description what the caller got */
+            httpStatus: number;
+            event: string | null;
+            /** @description query and body as they came in, cut to 4 KB; null after the audio cache time (inputExpiresAt) */
+            input: unknown;
+            /** @description the names of the fields that came in, e.g. data.actor.name */
+            inputFields: string[];
+            inputExpiresAt: string | null;
+            rule: {
+                index: number;
+                name: string | null;
+            } | null;
+            played: unknown | null;
+            text: string | null;
+            playId: string | null;
+            creditsUsed: number | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Key: {
+            /**
+             * Format: uuid
+             * @description use it (or the slug) in /v1/keys/{id}
+             */
+            id: string;
+            /**
+             * @description unique among the keys of the workspace, from the name, use it in /v1/keys/{id}
+             * @example home-assistant
+             */
+            slug: string | null;
+            name: string | null;
+            /** @enum {string} */
+            scope: "play" | "create" | "manage";
+            /**
+             * @description USER for keys made with /v1/keys, LOGIN for the keys of the apps, OAUTH for apps connected with OAuth
+             * @enum {string}
+             */
+            type: "LOGIN" | "OAUTH" | "USER" | "SYSTEM";
+            /**
+             * @description the start of the token to recognize it
+             * @example qk_key_7Fh2…
+             */
+            prefix: string;
+            requestCount: number;
+            playCount: number;
+            /**
+             * @description credits of all plays made with this key over its whole life (beta)
+             * @example 214
+             */
+            creditsUsed: number;
+            lastRequestAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        SonosAccount: {
+            /** Format: uuid */
+            id: string;
+            /** @description identifies the account in /v1/sonos/:id; a Sonos account is a connection, not a target for `to` */
+            slug: string;
+            /** @description the first location's name, unique per workspace ("KaMiSuRy", "KaMiSuRy 2", "Sonos" without a location), until renamed */
+            name: string;
+            /** @description the account's locations (a Sonos household each: home, office, branch), the first one names the account; each is a target for `to` (type LOCATION) */
+            locations: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            }[];
+            playerCount: number;
+            supportedPlayerCount: number;
+            lastSyncedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        Integration: {
+            /**
+             * @example slack
+             * @example ifttt
+             */
+            provider: string;
+            /**
+             * @example Slack
+             * @example IFTTT
+             */
+            name: string;
+            /** @description false when this server has no setup for the provider: hide it */
+            available: boolean;
+            connected: boolean;
+            connectedAt: string | null;
+            details: {
+                [key: string]: unknown;
+            } | null;
+        };
     };
     responses: never;
     parameters: never;
     requestBodies: never;
-    headers: never;
+    headers: {
+        /** @description what is left in the window, e.g. `"tts";r=29;t=42` (29 left, the window ends in 42 s) */
+        RateLimit: string;
+        /** @description the limit of the group, e.g. `"tts";q=30;w=60` (30 requests per 60 s) */
+        "RateLimit-Policy": string;
+        /** @description seconds until the next window */
+        "Retry-After": number;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -1925,6 +2547,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -1932,6 +2556,18 @@ export interface operations {
                         /** @enum {string} */
                         status: "ok" | "error";
                     };
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
                 };
             };
             /** @description A service behind Quak failed, try again later */
@@ -1948,7 +2584,7 @@ export interface operations {
             };
         };
     };
-    postV1UserSignup: {
+    signUp: {
         parameters: {
             query?: never;
             header?: never;
@@ -2005,6 +2641,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2021,6 +2659,20 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2029,7 +2681,7 @@ export interface operations {
             };
         };
     };
-    postV1UserLogin: {
+    logIn: {
         parameters: {
             query?: never;
             header?: never;
@@ -2056,6 +2708,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2069,9 +2723,21 @@ export interface operations {
                     };
                 };
             };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
-    postV1UserLoginKey: {
+    getLoginKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -2110,6 +2776,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2127,6 +2795,8 @@ export interface operations {
             /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2143,6 +2813,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2152,6 +2824,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2160,7 +2846,7 @@ export interface operations {
             };
         };
     };
-    getV1UserProfile: {
+    getProfile: {
         parameters: {
             query?: never;
             header?: never;
@@ -2172,47 +2858,33 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description your display name (members list, invitations, greeting in mails) */
-                            name: string;
-                            emailToVerify: string | null;
-                            newsletter: boolean;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** @description your time zone for display and mails; quiet hours use the workspace's */
-                            timeZone: string;
-                            /** @description your language (stored, not used yet: everything is English for now) */
-                            language: string;
-                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /** @example mike */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                            } | null;
-                        };
+                        data: components["schemas"]["Profile"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2221,7 +2893,7 @@ export interface operations {
             };
         };
     };
-    patchV1UserProfile: {
+    updateProfile: {
         parameters: {
             query?: never;
             header?: never;
@@ -2257,47 +2929,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description your display name (members list, invitations, greeting in mails) */
-                            name: string;
-                            emailToVerify: string | null;
-                            newsletter: boolean;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** @description your time zone for display and mails; quiet hours use the workspace's */
-                            timeZone: string;
-                            /** @description your language (stored, not used yet: everything is English for now) */
-                            language: string;
-                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /** @example mike */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                            } | null;
-                        };
+                        data: components["schemas"]["Profile"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2307,6 +2953,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2316,6 +2964,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2324,7 +2986,7 @@ export interface operations {
             };
         };
     };
-    "getV1UserTime-zones": {
+    listTimeZones: {
         parameters: {
             query?: never;
             header?: never;
@@ -2336,6 +2998,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2350,6 +3014,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2358,7 +3036,7 @@ export interface operations {
             };
         };
     };
-    patchV1UserEmail: {
+    updateEmail: {
         parameters: {
             query?: never;
             header?: never;
@@ -2394,47 +3072,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description your display name (members list, invitations, greeting in mails) */
-                            name: string;
-                            emailToVerify: string | null;
-                            newsletter: boolean;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** @description your time zone for display and mails; quiet hours use the workspace's */
-                            timeZone: string;
-                            /** @description your language (stored, not used yet: everything is English for now) */
-                            language: string;
-                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /** @example mike */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                            } | null;
-                        };
+                        data: components["schemas"]["Profile"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2444,6 +3096,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2453,6 +3107,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2461,7 +3129,7 @@ export interface operations {
             };
         };
     };
-    patchV1UserNewsletter: {
+    updateNewsletter: {
         parameters: {
             query?: never;
             header?: never;
@@ -2488,47 +3156,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description your display name (members list, invitations, greeting in mails) */
-                            name: string;
-                            emailToVerify: string | null;
-                            newsletter: boolean;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** @description your time zone for display and mails; quiet hours use the workspace's */
-                            timeZone: string;
-                            /** @description your language (stored, not used yet: everything is English for now) */
-                            language: string;
-                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /** @example mike */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                            } | null;
-                        };
+                        data: components["schemas"]["Profile"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2538,6 +3180,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2547,6 +3191,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2555,7 +3213,7 @@ export interface operations {
             };
         };
     };
-    "patchV1UserTime-zone": {
+    updateTimeZone: {
         parameters: {
             query?: never;
             header?: never;
@@ -2591,47 +3249,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description your display name (members list, invitations, greeting in mails) */
-                            name: string;
-                            emailToVerify: string | null;
-                            newsletter: boolean;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** @description your time zone for display and mails; quiet hours use the workspace's */
-                            timeZone: string;
-                            /** @description your language (stored, not used yet: everything is English for now) */
-                            language: string;
-                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /** @example mike */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                            } | null;
-                        };
+                        data: components["schemas"]["Profile"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2641,6 +3273,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2650,6 +3284,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2658,7 +3306,7 @@ export interface operations {
             };
         };
     };
-    getV1UserLogins: {
+    listLogins: {
         parameters: {
             query?: never;
             header?: never;
@@ -2670,59 +3318,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * Format: uuid
-                             * @description id of the login, for DELETE /v1/user/logins/:id
-                             */
-                            id: string;
-                            /** @enum {string} */
-                            type: "LOGIN" | "OAUTH";
-                            /**
-                             * @description the app's own name (OAUTH only)
-                             * @example Claude
-                             */
-                            name: string | null;
-                            /** @description the workspace an app works in (OAUTH only, a login chooses it per request) */
-                            workspace: {
-                                slug: string;
-                                name: string;
-                            } | null;
-                            /**
-                             * @description start of the key to recognize it
-                             * @example qk_key_7Fh2…
-                             */
-                            prefix: string;
-                            /**
-                             * @description where the login was made
-                             * @example CLI
-                             * @example WEB
-                             * @example MCP
-                             */
-                            platform: string;
-                            /** @description the Quak client last seen with this login (User-Agent quak-<name>/<version> or X-Quak-Client) */
-                            client: {
-                                /** @example cli */
-                                name: string;
-                                /** @example 0.9.8 */
-                                version: string | null;
-                            } | null;
-                            /**
-                             * @description rough device of a browser login, never the full User-Agent
-                             * @example Chrome on macOS
-                             */
-                            device: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            lastRequestAt: string | null;
-                            requestCount: number;
-                            /** @description the login of this request */
-                            current: boolean;
-                        }[];
+                        data: components["schemas"]["Login"][];
                         meta: {
                             total: number;
                         };
@@ -2732,6 +3334,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2741,6 +3345,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2749,7 +3367,7 @@ export interface operations {
             };
         };
     };
-    deleteV1UserLogins: {
+    signOutEverywhere: {
         parameters: {
             query?: {
                 except?: string;
@@ -2763,6 +3381,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2776,6 +3396,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2785,6 +3407,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2794,6 +3418,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2802,7 +3440,7 @@ export interface operations {
             };
         };
     };
-    deleteV1UserLoginsById: {
+    signOutLogin: {
         parameters: {
             query?: never;
             header?: never;
@@ -2816,6 +3454,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -2823,6 +3463,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2832,6 +3474,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2841,6 +3485,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2849,7 +3507,7 @@ export interface operations {
             };
         };
     };
-    getV1UserExport: {
+    exportData: {
         parameters: {
             query?: never;
             header?: never;
@@ -2861,6 +3519,8 @@ export interface operations {
             /** @description the export as a JSON file (Content-Disposition: attachment) */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2872,6 +3532,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2881,6 +3543,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2889,7 +3565,7 @@ export interface operations {
             };
         };
     };
-    deleteV1User: {
+    deleteAccount: {
         parameters: {
             query?: never;
             header?: never;
@@ -2901,6 +3577,8 @@ export interface operations {
             /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2937,6 +3615,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2946,6 +3626,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2955,6 +3637,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -2963,7 +3659,7 @@ export interface operations {
             };
         };
     };
-    getV1Workspace: {
+    getWorkspace: {
         parameters: {
             query?: never;
             header?: never;
@@ -2975,148 +3671,33 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description unique, from the owner's email at sign-up
-                             * @example mike
-                             */
-                            slug: string;
-                            /** @example Mike's Space */
-                            name: string;
-                            /**
-                             * @description quiet hours (and later schedules) run in this time zone
-                             * @example Europe/Berlin
-                             */
-                            timeZone: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            credits: {
-                                total: number;
-                                /** @description one time, free and promo credits, never expire */
-                                wallet: number;
-                                /** @description credits of the plan for the current period */
-                                plan: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
-                                lowThreshold: number;
-                            };
-                            subscription: {
-                                id: string | null;
-                                /** @description none, trialing, active, past_due, canceled or inactive */
-                                state: string;
-                                /**
-                                 * @description the plan; plans are bought and changed in the Quak web app
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                interval: ("month" | "year") | null;
-                            };
-                            defaults: {
-                                voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                language: string;
-                                volume: number;
-                                intro: string | null;
-                                outro: string | null;
-                                /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                speakers: string[];
-                                gap: number;
-                                /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                effect: string;
-                                /**
-                                 * @description strength of the voice effect: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                effectIntensity: "weak" | "medium" | "strong";
-                                /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                ambience: string;
-                                /**
-                                 * @description strength of the ambience: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                ambienceIntensity: "weak" | "medium" | "strong";
-                                /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                quietHours: string;
-                            };
-                            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                            audioCacheMinutes: number;
-                            /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
-                            features: {
-                                /** @description talk live (GET /v1/play/talk/live), from the family plan */
-                                talkLive: boolean;
-                                /** @description the Slack app, from the team plan */
-                                slack: boolean;
-                            };
-                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                            limits: {
-                                /**
-                                 * @description max. characters of a text play
-                                 * @example 1000
-                                 */
-                                textCharacters: number;
-                                /**
-                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                 * @example 180
-                                 */
-                                talkSeconds: number;
-                                /**
-                                 * @description max. seconds of talk live, a warning comes 30 s before
-                                 * @example 180
-                                 */
-                                liveSeconds: number;
-                                /**
-                                 * @description max. seconds of a file, a processed url and an own clip
-                                 * @example 180
-                                 */
-                                audioSeconds: number;
-                                /**
-                                 * @description max. bytes of an upload (file, talk, clip) and a url download
-                                 * @example 10485760
-                                 */
-                                uploadBytes: number;
-                            };
-                            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                            planLimits?: {
-                                /** @description active Sonos households (locations) */
-                                locations: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description members and open invitations */
-                                users: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description trigger URLs */
-                                triggers: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                            };
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Workspace"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3125,7 +3706,7 @@ export interface operations {
             };
         };
     };
-    deleteV1Workspace: {
+    deleteWorkspace: {
         parameters: {
             query?: never;
             header?: never;
@@ -3137,6 +3718,8 @@ export interface operations {
             /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3173,6 +3756,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3182,6 +3767,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3191,6 +3778,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3199,7 +3800,7 @@ export interface operations {
             };
         };
     };
-    patchV1Workspace: {
+    updateWorkspace: {
         parameters: {
             query?: never;
             header?: never;
@@ -3283,148 +3884,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description unique, from the owner's email at sign-up
-                             * @example mike
-                             */
-                            slug: string;
-                            /** @example Mike's Space */
-                            name: string;
-                            /**
-                             * @description quiet hours (and later schedules) run in this time zone
-                             * @example Europe/Berlin
-                             */
-                            timeZone: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            credits: {
-                                total: number;
-                                /** @description one time, free and promo credits, never expire */
-                                wallet: number;
-                                /** @description credits of the plan for the current period */
-                                plan: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
-                                lowThreshold: number;
-                            };
-                            subscription: {
-                                id: string | null;
-                                /** @description none, trialing, active, past_due, canceled or inactive */
-                                state: string;
-                                /**
-                                 * @description the plan; plans are bought and changed in the Quak web app
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                interval: ("month" | "year") | null;
-                            };
-                            defaults: {
-                                voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                language: string;
-                                volume: number;
-                                intro: string | null;
-                                outro: string | null;
-                                /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                speakers: string[];
-                                gap: number;
-                                /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                effect: string;
-                                /**
-                                 * @description strength of the voice effect: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                effectIntensity: "weak" | "medium" | "strong";
-                                /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                ambience: string;
-                                /**
-                                 * @description strength of the ambience: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                ambienceIntensity: "weak" | "medium" | "strong";
-                                /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                quietHours: string;
-                            };
-                            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                            audioCacheMinutes: number;
-                            /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
-                            features: {
-                                /** @description talk live (GET /v1/play/talk/live), from the family plan */
-                                talkLive: boolean;
-                                /** @description the Slack app, from the team plan */
-                                slack: boolean;
-                            };
-                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                            limits: {
-                                /**
-                                 * @description max. characters of a text play
-                                 * @example 1000
-                                 */
-                                textCharacters: number;
-                                /**
-                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                 * @example 180
-                                 */
-                                talkSeconds: number;
-                                /**
-                                 * @description max. seconds of talk live, a warning comes 30 s before
-                                 * @example 180
-                                 */
-                                liveSeconds: number;
-                                /**
-                                 * @description max. seconds of a file, a processed url and an own clip
-                                 * @example 180
-                                 */
-                                audioSeconds: number;
-                                /**
-                                 * @description max. bytes of an upload (file, talk, clip) and a url download
-                                 * @example 10485760
-                                 */
-                                uploadBytes: number;
-                            };
-                            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                            planLimits?: {
-                                /** @description active Sonos households (locations) */
-                                locations: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description members and open invitations */
-                                users: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description trigger URLs */
-                                triggers: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                            };
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Workspace"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3434,6 +3908,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3443,6 +3919,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3452,6 +3930,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3460,7 +3952,7 @@ export interface operations {
             };
         };
     };
-    patchV1WorkspaceDefaults: {
+    updateDefaults: {
         parameters: {
             query?: never;
             header?: never;
@@ -3670,148 +4162,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description unique, from the owner's email at sign-up
-                             * @example mike
-                             */
-                            slug: string;
-                            /** @example Mike's Space */
-                            name: string;
-                            /**
-                             * @description quiet hours (and later schedules) run in this time zone
-                             * @example Europe/Berlin
-                             */
-                            timeZone: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            credits: {
-                                total: number;
-                                /** @description one time, free and promo credits, never expire */
-                                wallet: number;
-                                /** @description credits of the plan for the current period */
-                                plan: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
-                                lowThreshold: number;
-                            };
-                            subscription: {
-                                id: string | null;
-                                /** @description none, trialing, active, past_due, canceled or inactive */
-                                state: string;
-                                /**
-                                 * @description the plan; plans are bought and changed in the Quak web app
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                interval: ("month" | "year") | null;
-                            };
-                            defaults: {
-                                voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                language: string;
-                                volume: number;
-                                intro: string | null;
-                                outro: string | null;
-                                /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                speakers: string[];
-                                gap: number;
-                                /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                effect: string;
-                                /**
-                                 * @description strength of the voice effect: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                effectIntensity: "weak" | "medium" | "strong";
-                                /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                ambience: string;
-                                /**
-                                 * @description strength of the ambience: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                ambienceIntensity: "weak" | "medium" | "strong";
-                                /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                quietHours: string;
-                            };
-                            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                            audioCacheMinutes: number;
-                            /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
-                            features: {
-                                /** @description talk live (GET /v1/play/talk/live), from the family plan */
-                                talkLive: boolean;
-                                /** @description the Slack app, from the team plan */
-                                slack: boolean;
-                            };
-                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                            limits: {
-                                /**
-                                 * @description max. characters of a text play
-                                 * @example 1000
-                                 */
-                                textCharacters: number;
-                                /**
-                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                 * @example 180
-                                 */
-                                talkSeconds: number;
-                                /**
-                                 * @description max. seconds of talk live, a warning comes 30 s before
-                                 * @example 180
-                                 */
-                                liveSeconds: number;
-                                /**
-                                 * @description max. seconds of a file, a processed url and an own clip
-                                 * @example 180
-                                 */
-                                audioSeconds: number;
-                                /**
-                                 * @description max. bytes of an upload (file, talk, clip) and a url download
-                                 * @example 10485760
-                                 */
-                                uploadBytes: number;
-                            };
-                            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                            planLimits?: {
-                                /** @description active Sonos households (locations) */
-                                locations: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description members and open invitations */
-                                users: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description trigger URLs */
-                                triggers: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                            };
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Workspace"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3821,6 +4186,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3830,6 +4197,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3839,6 +4208,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3856,7 +4239,7 @@ export interface operations {
             };
         };
     };
-    getV1WorkspaceMembers: {
+    listMembers: {
         parameters: {
             query?: never;
             header?: never;
@@ -3868,33 +4251,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * Format: uuid
-                             * @description the user's id
-                             */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description the member's display name */
-                            name: string;
-                            /**
-                             * @description ADMIN runs the workspace, MEMBER plays
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** Format: date-time */
-                            joinedAt: string;
-                            /** @description the member's last request in this workspace, with any of their keys; updated at most every 10 minutes, null when unknown */
-                            lastActiveAt: string | null;
-                            /** @description plays this member started in this workspace in the last 30 days, previews not counted */
-                            playsLast30Days: number;
-                        }[];
+                        data: components["schemas"]["Member"][];
                         meta: {
                             total: number;
                         };
@@ -3904,6 +4267,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3912,7 +4289,7 @@ export interface operations {
             };
         };
     };
-    deleteV1WorkspaceMembersById: {
+    removeMember: {
         parameters: {
             query?: never;
             header?: never;
@@ -3926,6 +4303,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -3933,6 +4312,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3942,6 +4323,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3951,6 +4334,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3960,6 +4345,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -3968,7 +4367,7 @@ export interface operations {
             };
         };
     };
-    patchV1WorkspaceMembersById: {
+    updateMemberRole: {
         parameters: {
             query?: never;
             header?: never;
@@ -4009,39 +4408,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * Format: uuid
-                             * @description the user's id
-                             */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /** @description the member's display name */
-                            name: string;
-                            /**
-                             * @description ADMIN runs the workspace, MEMBER plays
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** Format: date-time */
-                            joinedAt: string;
-                            /** @description the member's last request in this workspace, with any of their keys; updated at most every 10 minutes, null when unknown */
-                            lastActiveAt: string | null;
-                            /** @description plays this member started in this workspace in the last 30 days, previews not counted */
-                            playsLast30Days: number;
-                        };
+                        data: components["schemas"]["Member"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4051,6 +4432,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4060,6 +4443,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4069,6 +4454,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4078,6 +4465,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4086,7 +4487,7 @@ export interface operations {
             };
         };
     };
-    getV1WorkspaceInvites: {
+    listInvitations: {
         parameters: {
             query?: never;
             header?: never;
@@ -4098,25 +4499,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /**
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** Format: date-time */
-                            expiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["Invitation"][];
                         meta: {
                             total: number;
                         };
@@ -4126,6 +4515,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4135,6 +4526,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4143,7 +4548,7 @@ export interface operations {
             };
         };
     };
-    postV1WorkspaceInvites: {
+    createInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -4200,31 +4605,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /**
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** Format: date-time */
-                            expiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Invitation"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4234,6 +4629,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4243,6 +4640,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4252,6 +4651,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4260,7 +4673,7 @@ export interface operations {
             };
         };
     };
-    deleteV1WorkspaceInvitesById: {
+    withdrawInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -4274,6 +4687,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -4281,6 +4696,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4290,6 +4707,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4299,6 +4718,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4307,7 +4740,7 @@ export interface operations {
             };
         };
     };
-    postV1WorkspaceInvitesByIdResend: {
+    resendInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -4321,31 +4754,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: email */
-                            email: string;
-                            /**
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** Format: date-time */
-                            expiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Invitation"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4355,6 +4778,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4364,6 +4789,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4373,6 +4800,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4382,6 +4811,8 @@ export interface operations {
             /** @description Rate limit, wait Retry-After seconds */
             429: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4390,7 +4821,7 @@ export interface operations {
             };
         };
     };
-    getV1WorkspaceBilling: {
+    getBilling: {
         parameters: {
             query?: never;
             header?: never;
@@ -4402,6 +4833,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4493,6 +4926,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4502,6 +4937,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4510,7 +4959,7 @@ export interface operations {
             };
         };
     };
-    patchV1WorkspaceBilling: {
+    updateBilling: {
         parameters: {
             query?: never;
             header?: never;
@@ -4546,6 +4995,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4637,6 +5088,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4646,6 +5099,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4655,6 +5110,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4672,7 +5141,7 @@ export interface operations {
             };
         };
     };
-    postV1WorkspaceBillingCheckout: {
+    startCheckout: {
         parameters: {
             query?: never;
             header?: never;
@@ -4780,6 +5249,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4800,6 +5271,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4809,6 +5282,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4818,6 +5293,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4827,6 +5304,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4844,7 +5335,7 @@ export interface operations {
             };
         };
     };
-    getV1WorkspaceBillingChange: {
+    previewPlanChange: {
         parameters: {
             query: {
                 plan: "home" | "family" | "team" | "business";
@@ -4859,6 +5350,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4970,6 +5463,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4979,6 +5474,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4988,6 +5485,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -4997,6 +5496,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5014,7 +5527,7 @@ export interface operations {
             };
         };
     };
-    postV1WorkspaceBillingChange: {
+    changePlan: {
         parameters: {
             query?: never;
             header?: never;
@@ -5065,6 +5578,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5091,6 +5606,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5100,6 +5617,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5109,6 +5628,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5118,6 +5639,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5135,7 +5670,7 @@ export interface operations {
             };
         };
     };
-    deleteV1WorkspaceBillingChange: {
+    undoPlanChange: {
         parameters: {
             query?: never;
             header?: never;
@@ -5147,6 +5682,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5238,6 +5775,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5247,6 +5786,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5256,6 +5797,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5273,7 +5828,7 @@ export interface operations {
             };
         };
     };
-    postV1WorkspaceBillingPortal: {
+    openBillingPortal: {
         parameters: {
             query?: never;
             header?: never;
@@ -5339,6 +5894,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5353,6 +5910,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5362,6 +5921,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5371,6 +5932,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5388,7 +5963,7 @@ export interface operations {
             };
         };
     };
-    getV1WorkspaceCreditsGrants: {
+    listCreditGrants: {
         parameters: {
             query?: {
                 limit?: number;
@@ -5403,6 +5978,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5439,6 +6016,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5448,6 +6027,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5456,7 +6049,7 @@ export interface operations {
             };
         };
     };
-    getV1Workspaces: {
+    listWorkspaces: {
         parameters: {
             query?: never;
             header?: never;
@@ -5468,29 +6061,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description use it in X-Quak-Workspace to work in this workspace
-                             * @example office
-                             */
-                            slug: string;
-                            /** @example Office */
-                            name: string;
-                            /**
-                             * @description your role: ADMIN runs the workspace, MEMBER plays
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            /** @description the workspace this request works in */
-                            current: boolean;
-                        }[];
+                        data: components["schemas"]["WorkspaceSummary"][];
                         meta: {
                             total: number;
                         };
@@ -5500,6 +6077,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5508,7 +6099,7 @@ export interface operations {
             };
         };
     };
-    postV1Workspaces: {
+    createWorkspace: {
         parameters: {
             query?: never;
             header?: never;
@@ -5544,148 +6135,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /**
-                             * @description unique, from the owner's email at sign-up
-                             * @example mike
-                             */
-                            slug: string;
-                            /** @example Mike's Space */
-                            name: string;
-                            /**
-                             * @description quiet hours (and later schedules) run in this time zone
-                             * @example Europe/Berlin
-                             */
-                            timeZone: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                            credits: {
-                                total: number;
-                                /** @description one time, free and promo credits, never expire */
-                                wallet: number;
-                                /** @description credits of the plan for the current period */
-                                plan: number;
-                                /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
-                                lowThreshold: number;
-                            };
-                            subscription: {
-                                id: string | null;
-                                /** @description none, trialing, active, past_due, canceled or inactive */
-                                state: string;
-                                /**
-                                 * @description the plan; plans are bought and changed in the Quak web app
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                interval: ("month" | "year") | null;
-                            };
-                            defaults: {
-                                voice: string;
-                                /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                language: string;
-                                volume: number;
-                                intro: string | null;
-                                outro: string | null;
-                                /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                speakers: string[];
-                                gap: number;
-                                /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                effect: string;
-                                /**
-                                 * @description strength of the voice effect: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                effectIntensity: "weak" | "medium" | "strong";
-                                /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                ambience: string;
-                                /**
-                                 * @description strength of the ambience: weak, medium or strong
-                                 * @default weak
-                                 * @enum {string}
-                                 */
-                                ambienceIntensity: "weak" | "medium" | "strong";
-                                /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                quietHours: string;
-                            };
-                            /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                            audioCacheMinutes: number;
-                            /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
-                            features: {
-                                /** @description talk live (GET /v1/play/talk/live), from the family plan */
-                                talkLive: boolean;
-                                /** @description the Slack app, from the team plan */
-                                slack: boolean;
-                            };
-                            /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                            limits: {
-                                /**
-                                 * @description max. characters of a text play
-                                 * @example 1000
-                                 */
-                                textCharacters: number;
-                                /**
-                                 * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                 * @example 180
-                                 */
-                                talkSeconds: number;
-                                /**
-                                 * @description max. seconds of talk live, a warning comes 30 s before
-                                 * @example 180
-                                 */
-                                liveSeconds: number;
-                                /**
-                                 * @description max. seconds of a file, a processed url and an own clip
-                                 * @example 180
-                                 */
-                                audioSeconds: number;
-                                /**
-                                 * @description max. bytes of an upload (file, talk, clip) and a url download
-                                 * @example 10485760
-                                 */
-                                uploadBytes: number;
-                            };
-                            /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                            planLimits?: {
-                                /** @description active Sonos households (locations) */
-                                locations: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description members and open invitations */
-                                users: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                                /** @description trigger URLs */
-                                triggers: {
-                                    used: number;
-                                    /** @description 0: not in this plan */
-                                    allowed: number;
-                                };
-                            };
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Workspace"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5695,6 +6159,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5704,6 +6170,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5713,6 +6181,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5721,7 +6203,7 @@ export interface operations {
             };
         };
     };
-    getV1InvitesByToken: {
+    getInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -5735,6 +6217,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5763,6 +6247,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5772,6 +6258,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5781,6 +6269,20 @@ export interface operations {
             /** @description Gone */
             410: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5789,7 +6291,7 @@ export interface operations {
             };
         };
     };
-    postV1InvitesByTokenAccept: {
+    acceptInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -5827,6 +6329,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5851,6 +6355,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5860,6 +6366,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5869,6 +6377,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5878,6 +6388,20 @@ export interface operations {
             /** @description Gone */
             410: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5886,7 +6410,7 @@ export interface operations {
             };
         };
     };
-    getV1Speakers: {
+    listSpeakers: {
         parameters: {
             query?: {
                 type?: string;
@@ -5901,64 +6425,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            slug: string;
-                            /** @enum {string} */
-                            type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                            name: string;
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
-                            details?: {
-                                model: string | null;
-                                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
-                                /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
-                                devices: {
-                                    model: string | null;
-                                    /** @description LF/RF for a stereo pair, LR/RR for surrounds, empty for one speaker */
-                                    channels: string[];
-                                    connected: boolean;
-                                }[];
-                                audioClip: {
-                                    /** @description whether it plays announcements (the audioClip capability of Sonos) */
-                                    supported: boolean;
-                                    reason: "NO_AUDIO_CLIP_CAPABILITY" | null;
-                                };
-                                stereoPair: boolean;
-                                homeTheater: boolean;
-                                /** @description as Sonos reports them, e.g. AUDIO_CLIP, HT_PLAYBACK, VOICE, LINE_IN */
-                                capabilities: string[];
-                                softwareVersion: string | null;
-                                location: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                };
-                                sonosAccount: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                    lastSyncedAt: string | null;
-                                };
-                            } | {
-                                sonosAccount: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                    lastSyncedAt: string | null;
-                                };
-                            };
-                        }[];
+                        data: components["schemas"]["Speaker"][];
                         meta: {
                             total: number;
                         };
@@ -5968,6 +6441,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5977,6 +6452,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -5985,7 +6474,7 @@ export interface operations {
             };
         };
     };
-    putV1SpeakersOrder: {
+    orderSpeakers: {
         parameters: {
             query?: never;
             header?: never;
@@ -6069,64 +6558,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            slug: string;
-                            /** @enum {string} */
-                            type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                            name: string;
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
-                            details?: {
-                                model: string | null;
-                                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
-                                /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
-                                devices: {
-                                    model: string | null;
-                                    /** @description LF/RF for a stereo pair, LR/RR for surrounds, empty for one speaker */
-                                    channels: string[];
-                                    connected: boolean;
-                                }[];
-                                audioClip: {
-                                    /** @description whether it plays announcements (the audioClip capability of Sonos) */
-                                    supported: boolean;
-                                    reason: "NO_AUDIO_CLIP_CAPABILITY" | null;
-                                };
-                                stereoPair: boolean;
-                                homeTheater: boolean;
-                                /** @description as Sonos reports them, e.g. AUDIO_CLIP, HT_PLAYBACK, VOICE, LINE_IN */
-                                capabilities: string[];
-                                softwareVersion: string | null;
-                                location: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                };
-                                sonosAccount: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                    lastSyncedAt: string | null;
-                                };
-                            } | {
-                                sonosAccount: {
-                                    /** Format: uuid */
-                                    id: string;
-                                    name: string;
-                                    lastSyncedAt: string | null;
-                                };
-                            };
-                        }[];
+                        data: components["schemas"]["Speaker"][];
                         meta: {
                             total: number;
                         };
@@ -6136,6 +6574,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6145,6 +6585,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6154,6 +6596,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6162,7 +6618,7 @@ export interface operations {
             };
         };
     };
-    patchV1LocationsById: {
+    updateLocation: {
         parameters: {
             query?: never;
             header?: never;
@@ -6215,6 +6671,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6233,6 +6691,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6242,6 +6702,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6251,6 +6713,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6260,6 +6724,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6268,9 +6746,12 @@ export interface operations {
             };
         };
     };
-    getV1Groups: {
+    listGroups: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -6280,39 +6761,17 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        }[];
+                        data: components["schemas"]["Group"][];
                         meta: {
                             total: number;
+                            limit: number;
+                            offset: number;
                         };
                     };
                 };
@@ -6320,6 +6779,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6328,7 +6801,7 @@ export interface operations {
             };
         };
     };
-    postV1Groups: {
+    createGroup: {
         parameters: {
             query?: never;
             header?: never;
@@ -6394,43 +6867,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Group"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6440,6 +6891,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6449,6 +6902,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6457,7 +6924,7 @@ export interface operations {
             };
         };
     };
-    getV1GroupsById: {
+    getGroup: {
         parameters: {
             query?: never;
             header?: never;
@@ -6471,43 +6938,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Group"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6517,6 +6962,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6525,7 +6984,7 @@ export interface operations {
             };
         };
     };
-    deleteV1GroupsById: {
+    deleteGroup: {
         parameters: {
             query?: never;
             header?: never;
@@ -6539,6 +6998,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -6546,6 +7007,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6555,6 +7018,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6563,7 +7040,7 @@ export interface operations {
             };
         };
     };
-    patchV1GroupsById: {
+    updateGroup: {
         parameters: {
             query?: never;
             header?: never;
@@ -6622,43 +7099,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Group"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6668,6 +7123,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6677,6 +7134,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6686,6 +7145,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6694,7 +7167,7 @@ export interface operations {
             };
         };
     };
-    postV1GroupsByIdSpeakers: {
+    addGroupSpeakers: {
         parameters: {
             query?: never;
             header?: never;
@@ -6741,43 +7214,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Group"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6787,6 +7238,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6796,6 +7249,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6804,7 +7271,7 @@ export interface operations {
             };
         };
     };
-    deleteV1GroupsByIdSpeakers: {
+    removeGroupSpeakers: {
         parameters: {
             query?: never;
             header?: never;
@@ -6851,43 +7318,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description usable in `to` like any speaker */
-                            slug: string;
-                            name: string;
-                            /** @description what the group contains: rooms, locations or all, never groups */
-                            speakers: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                /** @enum {string} */
-                                type: "WORKSPACE" | "LOCATION" | "PLAYER" | "GROUP";
-                                name: string;
-                            }[];
-                            /** @description every player of the group once */
-                            players: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Group"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6897,6 +7342,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6906,6 +7353,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6914,7 +7375,7 @@ export interface operations {
             };
         };
     };
-    getV1Sounds: {
+    listSounds: {
         parameters: {
             query?: {
                 q?: string;
@@ -6931,35 +7392,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            slug: string;
-                            name: string;
-                            /** Format: uri */
-                            audioUrl: string;
-                            /** @description length in seconds */
-                            seconds: number;
-                            tags: ("INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC")[];
-                            description: string | null;
-                            /**
-                             * @description Lowercase English search words: kind of sound, source, mood, occasions.
-                             * @example [
-                             *       "fanfare",
-                             *       "brass",
-                             *       "celebration",
-                             *       "win",
-                             *       "birthday"
-                             *     ]
-                             */
-                            keywords: string[];
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["Sound"][];
                         meta: {
                             total: number;
                             limit: number;
@@ -6971,6 +7410,20 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -6979,7 +7432,7 @@ export interface operations {
             };
         };
     };
-    getV1SoundsTags: {
+    listSoundTags: {
         parameters: {
             query?: never;
             header?: never;
@@ -6991,24 +7444,34 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** @enum {string} */
-                            tag: "INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC";
-                            name: string;
-                        }[];
+                        data: components["schemas"]["SoundTag"][];
                         meta: {
                             total: number;
                         };
                     };
                 };
             };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
         };
     };
-    getV1Voices: {
+    listVoices: {
         parameters: {
             query?: {
                 provider?: string;
@@ -7027,27 +7490,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            slug: string;
-                            /** @enum {string} */
-                            provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
-                            model: string;
-                            /** @enum {string} */
-                            latency: "fast" | "normal" | "slow";
-                            multiLanguage: boolean;
-                            name: string;
-                            locale: string;
-                            language: string;
-                            languageName: string;
-                            languageNativeName: string;
-                            gender: string;
-                            /** @description credits per started 100 characters, plus the base fee of a play */
-                            credits: number;
-                        }[];
+                        data: components["schemas"]["Voice"][];
                         meta: {
                             total: number;
                         };
@@ -7057,6 +7506,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7066,6 +7517,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7083,7 +7548,7 @@ export interface operations {
             };
         };
     };
-    getV1VoicesLocales: {
+    listVoiceLocales: {
         parameters: {
             query?: {
                 language?: string;
@@ -7097,16 +7562,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            locale: string;
-                            language: string;
-                            languageName: string;
-                            languageNativeName: string;
-                        }[];
+                        data: components["schemas"]["VoiceLocale"][];
                         meta: {
                             total: number;
                         };
@@ -7116,6 +7578,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7133,7 +7609,7 @@ export interface operations {
             };
         };
     };
-    getV1VoicesLanguages: {
+    listVoiceLanguages: {
         parameters: {
             query?: never;
             header?: never;
@@ -7145,6 +7621,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7163,6 +7641,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7180,7 +7672,7 @@ export interface operations {
             };
         };
     };
-    getV1VoicesModels: {
+    listVoiceModels: {
         parameters: {
             query?: never;
             header?: never;
@@ -7192,6 +7684,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7219,6 +7713,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7236,7 +7744,7 @@ export interface operations {
             };
         };
     };
-    getV1Effects: {
+    listEffects: {
         parameters: {
             query?: {
                 kind?: "effect" | "ambience";
@@ -7250,6 +7758,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7294,6 +7804,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7303,6 +7815,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7311,7 +7837,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayText: {
+    playText: {
         parameters: {
             query?: never;
             header?: never;
@@ -7326,7 +7852,7 @@ export interface operations {
                      * @example Dinner is ready!
                      */
                     text: string;
-                    /** @description voice slug from /v1/voices, default: the user default */
+                    /** @description voice slug from /v1/voices, default: the workspace default */
                     voice?: string;
                     /**
                      * @description multi-language voices only: the language to speak, e.g. en or en-GB
@@ -7334,18 +7860,18 @@ export interface operations {
                      */
                     language?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number;
@@ -7410,7 +7936,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -7437,7 +7963,7 @@ export interface operations {
                      * @example Dinner is ready!
                      */
                     text: string;
-                    /** @description voice slug from /v1/voices, default: the user default */
+                    /** @description voice slug from /v1/voices, default: the workspace default */
                     voice?: string;
                     /**
                      * @description multi-language voices only: the language to speak, e.g. en or en-GB
@@ -7445,18 +7971,18 @@ export interface operations {
                      */
                     language?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -7521,7 +8047,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -7548,7 +8074,7 @@ export interface operations {
                      * @example Dinner is ready!
                      */
                     text: string;
-                    /** @description voice slug from /v1/voices, default: the user default */
+                    /** @description voice slug from /v1/voices, default: the workspace default */
                     voice?: string;
                     /**
                      * @description multi-language voices only: the language to speak, e.g. en or en-GB
@@ -7556,18 +8082,18 @@ export interface operations {
                      */
                     language?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -7632,7 +8158,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -7659,309 +8185,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7971,6 +8235,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7980,6 +8246,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7989,6 +8257,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -7998,6 +8268,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8015,7 +8299,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayTalk: {
+    playTalk: {
         parameters: {
             query?: never;
             header?: never;
@@ -8032,18 +8316,18 @@ export interface operations {
                      */
                     file: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -8122,7 +8406,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -8149,309 +8433,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8461,6 +8483,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8470,6 +8494,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8479,6 +8505,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8488,6 +8516,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -8505,7 +8547,7 @@ export interface operations {
             };
         };
     };
-    wsV1PlayTalkLive: {
+    talkLive: {
         parameters: {
             query?: never;
             header?: never;
@@ -8523,7 +8565,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaySound: {
+    playSound: {
         parameters: {
             query?: never;
             header?: never;
@@ -8539,23 +8581,23 @@ export interface operations {
                      */
                     sound: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number;
@@ -8615,7 +8657,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -8643,23 +8685,23 @@ export interface operations {
                      */
                     sound: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -8719,7 +8761,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -8747,23 +8789,23 @@ export interface operations {
                      */
                     sound: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -8823,7 +8865,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -8850,309 +8892,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9162,6 +8942,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9171,6 +8953,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9180,6 +8964,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9189,6 +8975,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9206,7 +9006,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayClip: {
+    playClip: {
         parameters: {
             query?: never;
             header?: never;
@@ -9222,23 +9022,23 @@ export interface operations {
                      */
                     clip: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number;
@@ -9298,7 +9098,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -9326,23 +9126,23 @@ export interface operations {
                      */
                     clip: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -9402,7 +9202,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -9430,23 +9230,23 @@ export interface operations {
                      */
                     clip: string;
                     /**
-                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The account defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
+                     * @description true: intro, outro, gap, effect and ambience like a processed URL, mixed on the server and cached (2 credits). The workspace defaults (intro, outro, gap, effect, ambience) apply, fields in the request override them, none turns one off. Default false: played as stored, Sonos fetches it from the CDN (1 credit), processing fields are ignored
                      * @example false
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -9506,7 +9306,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -9533,309 +9333,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9845,6 +9383,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9854,6 +9394,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9863,6 +9405,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9872,6 +9416,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -9889,7 +9447,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayFile: {
+    playFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -9906,18 +9464,18 @@ export interface operations {
                      */
                     file: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -9982,7 +9540,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -10009,309 +9567,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10321,6 +9617,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10330,6 +9628,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10339,6 +9639,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10348,6 +9650,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -10365,7 +9681,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayUrl: {
+    playUrl: {
         parameters: {
             query?: never;
             header?: never;
@@ -10387,18 +9703,18 @@ export interface operations {
                      */
                     process?: boolean;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number;
@@ -10458,7 +9774,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -10492,18 +9808,18 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -10563,7 +9879,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -10597,18 +9913,18 @@ export interface operations {
                      */
                     process?: boolean | ("true" | "false");
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example quakquak
                      * @example clip:front-door
                      */
                     intro?: string;
                     /**
-                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the user default
+                     * @description sound slug, "clip:<slug>" for one of your clips or "none", default: the workspace default
                      * @example none
                      */
                     outro?: string;
                     /**
-                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the user default
+                     * @description pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default
                      * @example 200
                      */
                     gap?: number | string;
@@ -10668,7 +9984,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -10695,309 +10011,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11007,6 +10061,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11016,6 +10072,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11025,6 +10083,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11034,6 +10094,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11051,7 +10125,7 @@ export interface operations {
             };
         };
     };
-    postV1PlayStop: {
+    stopSpeakers: {
         parameters: {
             query?: never;
             header?: never;
@@ -11093,29 +10167,17 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
+            /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
                         data: {
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
+                            players: components["schemas"]["PlayPlayer"][];
                         };
                     };
                 };
@@ -11123,6 +10185,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11132,6 +10196,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11141,6 +10207,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11149,7 +10229,7 @@ export interface operations {
             };
         };
     };
-    wsV1PlaysWatch: {
+    watchPlays: {
         parameters: {
             query?: never;
             header?: never;
@@ -11167,7 +10247,7 @@ export interface operations {
             };
         };
     };
-    getV1Plays: {
+    listPlays: {
         parameters: {
             query?: {
                 limit?: number;
@@ -11186,101 +10266,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["Play"][];
                         meta: {
                             total: number;
                             limit: number;
@@ -11292,6 +10284,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11301,6 +10295,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11309,7 +10317,7 @@ export interface operations {
             };
         };
     };
-    getV1PlaysById: {
+    getPlay: {
         parameters: {
             query?: {
                 type?: string;
@@ -11328,107 +10336,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11438,6 +10360,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11446,7 +10382,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByIdStop: {
+    stopPlay: {
         parameters: {
             query?: {
                 type?: string;
@@ -11465,107 +10401,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11575,6 +10425,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11584,6 +10436,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11592,7 +10458,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByIdSave: {
+    savePlayAsClip: {
         parameters: {
             query?: {
                 type?: string;
@@ -11632,32 +10498,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            slug: string;
-                            name: string;
-                            /** @description length in seconds */
-                            seconds: number;
-                            /** @description the audio (MP3), a signed link that works for 15 minutes */
-                            audioUrl: string;
-                            /**
-                             * Format: date-time
-                             * @description when audioUrl stops working, list again for a new one
-                             */
-                            audioUrlExpiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Clip"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11667,6 +10522,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11676,6 +10533,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11685,6 +10544,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11694,6 +10555,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -11702,7 +10577,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByIdReplay: {
+    replayPlay: {
         parameters: {
             query?: {
                 type?: string;
@@ -11743,7 +10618,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -11786,7 +10661,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -11829,7 +10704,7 @@ export interface operations {
                      */
                     to?: string[] | string;
                     /**
-                     * @description when nothing plays, overrides the user default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
+                     * @description when nothing plays, overrides the workspace default (22-7), e.g. "22-7", "su-th 22-7, fr-sa 23-9" or "none"
                      * @example none
                      * @example 22-7
                      */
@@ -11853,309 +10728,47 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            /**
-                             * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                             * @enum {string}
-                             */
-                            type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                            /**
-                             * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                             * @enum {string}
-                             */
-                            status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                            /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                            skipReason: "QUIET_HOURS" | "BUSY" | null;
-                            preview: boolean;
-                            /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                            params: {
-                                [key: string]: unknown;
-                            };
-                            players: {
-                                id: string;
-                                slug: string;
-                                name: string;
-                                /**
-                                 * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                 * @enum {string}
-                                 */
-                                status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                error: string | null;
-                                /** @description when Sonos started the clip (Sonos event), else null */
-                                startedAt: string | null;
-                                /** @description when the clip ended (Sonos event or stop), else null */
-                                endedAt: string | null;
-                            }[];
-                            /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                            audioUrl: string | null;
-                            /** @description length in seconds, rounded up */
-                            seconds: number | null;
-                            creditsUsed: number;
-                            /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                            fromCache: boolean;
-                            /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                            test: boolean;
-                            /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                            startsAt: string | null;
-                            /** @description who sent the play */
-                            client: {
-                                /**
-                                 * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                 * @enum {string}
-                                 */
-                                platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                name: string | null;
-                                /** @description its version, e.g. "0.9.0" */
-                                version: string | null;
-                            };
-                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                            canReplay: boolean;
-                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                            canSave: boolean;
-                            /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                            user: {
-                                /** @example Mike */
-                                name: string | null;
-                                /** @example mike@example.com */
-                                email: string;
-                            } | null;
-                            /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                            key: {
-                                /**
-                                 * @description the name of an own API key, null for other keys
-                                 * @example Doorbell
-                                 */
-                                name: string | null;
-                                /**
-                                 * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                 * @enum {string}
-                                 */
-                                type: "LOGIN" | "API" | "OAUTH";
-                                /**
-                                 * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                 * @example Claude
-                                 */
-                                app: string | null;
-                            } | null;
-                            /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                            requestId: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Play"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12165,6 +10778,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12174,6 +10789,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12183,6 +10800,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12192,6 +10811,8 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12201,6 +10822,20 @@ export interface operations {
             /** @description Sonos did not take it */
             424: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12209,9 +10844,12 @@ export interface operations {
             };
         };
     };
-    getV1Clips: {
+    listClips: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -12221,28 +10859,17 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            slug: string;
-                            name: string;
-                            /** @description length in seconds */
-                            seconds: number;
-                            /** @description the audio (MP3), a signed link that works for 15 minutes */
-                            audioUrl: string;
-                            /**
-                             * Format: date-time
-                             * @description when audioUrl stops working, list again for a new one
-                             */
-                            audioUrlExpiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["Clip"][];
                         meta: {
                             total: number;
+                            limit: number;
+                            offset: number;
                         };
                     };
                 };
@@ -12250,6 +10877,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12258,7 +10899,7 @@ export interface operations {
             };
         };
     };
-    postV1Clips: {
+    createClip: {
         parameters: {
             query?: never;
             header?: never;
@@ -12291,32 +10932,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            slug: string;
-                            name: string;
-                            /** @description length in seconds */
-                            seconds: number;
-                            /** @description the audio (MP3), a signed link that works for 15 minutes */
-                            audioUrl: string;
-                            /**
-                             * Format: date-time
-                             * @description when audioUrl stops working, list again for a new one
-                             */
-                            audioUrlExpiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Clip"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12326,6 +10956,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12335,6 +10967,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12344,6 +10978,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12352,7 +11000,7 @@ export interface operations {
             };
         };
     };
-    deleteV1ClipsById: {
+    deleteClip: {
         parameters: {
             query?: never;
             header?: never;
@@ -12366,6 +11014,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -12373,6 +11023,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12382,6 +11034,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12390,7 +11056,7 @@ export interface operations {
             };
         };
     };
-    patchV1ClipsById: {
+    updateClip: {
         parameters: {
             query?: never;
             header?: never;
@@ -12425,32 +11091,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            id: string;
-                            slug: string;
-                            name: string;
-                            /** @description length in seconds */
-                            seconds: number;
-                            /** @description the audio (MP3), a signed link that works for 15 minutes */
-                            audioUrl: string;
-                            /**
-                             * Format: date-time
-                             * @description when audioUrl stops working, list again for a new one
-                             */
-                            audioUrlExpiresAt: string;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Clip"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12460,6 +11115,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12469,6 +11126,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12478,6 +11137,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12486,7 +11159,7 @@ export interface operations {
             };
         };
     };
-    getV1Triggers: {
+    listTriggers: {
         parameters: {
             query?: never;
             header?: never;
@@ -12498,87 +11171,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** @description a switched-off trigger answers 404 */
-                            enabled: boolean;
-                            /** @description how the URL reads its caller: generic or unifi_access */
-                            profile: string;
-                            type: string | null;
-                            text: string | null;
-                            fallbackText: string | null;
-                            sound: string | null;
-                            clip: string | null;
-                            to: string[] | null;
-                            voice: string | null;
-                            effect: string | null;
-                            effectIntensity: string | null;
-                            ambience: string | null;
-                            ambienceIntensity: string | null;
-                            intro: string | null;
-                            outro: string | null;
-                            gap: number | null;
-                            volume: number | null;
-                            priority: boolean;
-                            quietHours: string | null;
-                            /** @description only these events play; empty = the profile decides */
-                            events: string[];
-                            /** @description the caller's signature is checked (unifi_access) */
-                            hasSigningSecret: boolean;
-                            /** @description calls within this time after a play are skipped */
-                            cooldownSeconds: number;
-                            /** @description a caller's value in a text is cut to this length */
-                            maxValueLength: number;
-                            dailyLimit: number | null;
-                            /** @description plays today, for the daily limit */
-                            playsToday: number;
-                            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
-                            allowedOrigins: string[];
-                            rules: {
-                                name: string | null;
-                                when: {
-                                    events: string[] | null;
-                                    match: {
-                                        [key: string]: string | string[] | {
-                                            contains: string;
-                                        } | {
-                                            exists: boolean;
-                                        };
-                                    } | null;
-                                    time: string | null;
-                                };
-                                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
-                                play: ({
-                                    sound: string;
-                                } | {
-                                    clip: string;
-                                } | {
-                                    text: string;
-                                })[];
-                                to: string[] | null;
-                                volume: number | null;
-                            }[];
-                            /** @description the start of the token, to recognize the URL */
-                            tokenPrefix: string;
-                            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
-                            token: string;
-                            /** @description the URL to call with GET or POST */
-                            url: string;
-                            /** @description false when its maker left the workspace: make it again */
-                            working: boolean;
-                            fireCount: number;
-                            lastFiredAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        }[];
+                        data: components["schemas"]["Trigger"][];
                         meta: {
                             total: number;
                         };
@@ -12588,6 +11187,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12596,7 +11209,7 @@ export interface operations {
             };
         };
     };
-    postV1Triggers: {
+    createTrigger: {
         parameters: {
             query?: never;
             header?: never;
@@ -12899,93 +11512,21 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** @description a switched-off trigger answers 404 */
-                            enabled: boolean;
-                            /** @description how the URL reads its caller: generic or unifi_access */
-                            profile: string;
-                            type: string | null;
-                            text: string | null;
-                            fallbackText: string | null;
-                            sound: string | null;
-                            clip: string | null;
-                            to: string[] | null;
-                            voice: string | null;
-                            effect: string | null;
-                            effectIntensity: string | null;
-                            ambience: string | null;
-                            ambienceIntensity: string | null;
-                            intro: string | null;
-                            outro: string | null;
-                            gap: number | null;
-                            volume: number | null;
-                            priority: boolean;
-                            quietHours: string | null;
-                            /** @description only these events play; empty = the profile decides */
-                            events: string[];
-                            /** @description the caller's signature is checked (unifi_access) */
-                            hasSigningSecret: boolean;
-                            /** @description calls within this time after a play are skipped */
-                            cooldownSeconds: number;
-                            /** @description a caller's value in a text is cut to this length */
-                            maxValueLength: number;
-                            dailyLimit: number | null;
-                            /** @description plays today, for the daily limit */
-                            playsToday: number;
-                            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
-                            allowedOrigins: string[];
-                            rules: {
-                                name: string | null;
-                                when: {
-                                    events: string[] | null;
-                                    match: {
-                                        [key: string]: string | string[] | {
-                                            contains: string;
-                                        } | {
-                                            exists: boolean;
-                                        };
-                                    } | null;
-                                    time: string | null;
-                                };
-                                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
-                                play: ({
-                                    sound: string;
-                                } | {
-                                    clip: string;
-                                } | {
-                                    text: string;
-                                })[];
-                                to: string[] | null;
-                                volume: number | null;
-                            }[];
-                            /** @description the start of the token, to recognize the URL */
-                            tokenPrefix: string;
-                            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
-                            token: string;
-                            /** @description the URL to call with GET or POST */
-                            url: string;
-                            /** @description false when its maker left the workspace: make it again */
-                            working: boolean;
-                            fireCount: number;
-                            lastFiredAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Trigger"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -12995,6 +11536,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13004,6 +11547,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13012,7 +11569,7 @@ export interface operations {
             };
         };
     };
-    getV1TriggersById: {
+    getTrigger: {
         parameters: {
             query?: never;
             header?: never;
@@ -13026,93 +11583,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** @description a switched-off trigger answers 404 */
-                            enabled: boolean;
-                            /** @description how the URL reads its caller: generic or unifi_access */
-                            profile: string;
-                            type: string | null;
-                            text: string | null;
-                            fallbackText: string | null;
-                            sound: string | null;
-                            clip: string | null;
-                            to: string[] | null;
-                            voice: string | null;
-                            effect: string | null;
-                            effectIntensity: string | null;
-                            ambience: string | null;
-                            ambienceIntensity: string | null;
-                            intro: string | null;
-                            outro: string | null;
-                            gap: number | null;
-                            volume: number | null;
-                            priority: boolean;
-                            quietHours: string | null;
-                            /** @description only these events play; empty = the profile decides */
-                            events: string[];
-                            /** @description the caller's signature is checked (unifi_access) */
-                            hasSigningSecret: boolean;
-                            /** @description calls within this time after a play are skipped */
-                            cooldownSeconds: number;
-                            /** @description a caller's value in a text is cut to this length */
-                            maxValueLength: number;
-                            dailyLimit: number | null;
-                            /** @description plays today, for the daily limit */
-                            playsToday: number;
-                            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
-                            allowedOrigins: string[];
-                            rules: {
-                                name: string | null;
-                                when: {
-                                    events: string[] | null;
-                                    match: {
-                                        [key: string]: string | string[] | {
-                                            contains: string;
-                                        } | {
-                                            exists: boolean;
-                                        };
-                                    } | null;
-                                    time: string | null;
-                                };
-                                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
-                                play: ({
-                                    sound: string;
-                                } | {
-                                    clip: string;
-                                } | {
-                                    text: string;
-                                })[];
-                                to: string[] | null;
-                                volume: number | null;
-                            }[];
-                            /** @description the start of the token, to recognize the URL */
-                            tokenPrefix: string;
-                            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
-                            token: string;
-                            /** @description the URL to call with GET or POST */
-                            url: string;
-                            /** @description false when its maker left the workspace: make it again */
-                            working: boolean;
-                            fireCount: number;
-                            lastFiredAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Trigger"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13122,6 +11607,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13130,7 +11629,7 @@ export interface operations {
             };
         };
     };
-    deleteV1TriggersById: {
+    deleteTrigger: {
         parameters: {
             query?: never;
             header?: never;
@@ -13144,6 +11643,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -13151,6 +11652,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13160,6 +11663,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13168,7 +11685,7 @@ export interface operations {
             };
         };
     };
-    patchV1TriggersById: {
+    updateTrigger: {
         parameters: {
             query?: never;
             header?: never;
@@ -13473,93 +11990,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** @description a switched-off trigger answers 404 */
-                            enabled: boolean;
-                            /** @description how the URL reads its caller: generic or unifi_access */
-                            profile: string;
-                            type: string | null;
-                            text: string | null;
-                            fallbackText: string | null;
-                            sound: string | null;
-                            clip: string | null;
-                            to: string[] | null;
-                            voice: string | null;
-                            effect: string | null;
-                            effectIntensity: string | null;
-                            ambience: string | null;
-                            ambienceIntensity: string | null;
-                            intro: string | null;
-                            outro: string | null;
-                            gap: number | null;
-                            volume: number | null;
-                            priority: boolean;
-                            quietHours: string | null;
-                            /** @description only these events play; empty = the profile decides */
-                            events: string[];
-                            /** @description the caller's signature is checked (unifi_access) */
-                            hasSigningSecret: boolean;
-                            /** @description calls within this time after a play are skipped */
-                            cooldownSeconds: number;
-                            /** @description a caller's value in a text is cut to this length */
-                            maxValueLength: number;
-                            dailyLimit: number | null;
-                            /** @description plays today, for the daily limit */
-                            playsToday: number;
-                            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
-                            allowedOrigins: string[];
-                            rules: {
-                                name: string | null;
-                                when: {
-                                    events: string[] | null;
-                                    match: {
-                                        [key: string]: string | string[] | {
-                                            contains: string;
-                                        } | {
-                                            exists: boolean;
-                                        };
-                                    } | null;
-                                    time: string | null;
-                                };
-                                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
-                                play: ({
-                                    sound: string;
-                                } | {
-                                    clip: string;
-                                } | {
-                                    text: string;
-                                })[];
-                                to: string[] | null;
-                                volume: number | null;
-                            }[];
-                            /** @description the start of the token, to recognize the URL */
-                            tokenPrefix: string;
-                            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
-                            token: string;
-                            /** @description the URL to call with GET or POST */
-                            url: string;
-                            /** @description false when its maker left the workspace: make it again */
-                            working: boolean;
-                            fireCount: number;
-                            lastFiredAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Trigger"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13569,6 +12014,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13578,6 +12025,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13586,7 +12047,7 @@ export interface operations {
             };
         };
     };
-    postV1TriggersByIdRotate: {
+    rotateTriggerUrl: {
         parameters: {
             query?: never;
             header?: never;
@@ -13600,93 +12061,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            name: string;
-                            /** @description a switched-off trigger answers 404 */
-                            enabled: boolean;
-                            /** @description how the URL reads its caller: generic or unifi_access */
-                            profile: string;
-                            type: string | null;
-                            text: string | null;
-                            fallbackText: string | null;
-                            sound: string | null;
-                            clip: string | null;
-                            to: string[] | null;
-                            voice: string | null;
-                            effect: string | null;
-                            effectIntensity: string | null;
-                            ambience: string | null;
-                            ambienceIntensity: string | null;
-                            intro: string | null;
-                            outro: string | null;
-                            gap: number | null;
-                            volume: number | null;
-                            priority: boolean;
-                            quietHours: string | null;
-                            /** @description only these events play; empty = the profile decides */
-                            events: string[];
-                            /** @description the caller's signature is checked (unifi_access) */
-                            hasSigningSecret: boolean;
-                            /** @description calls within this time after a play are skipped */
-                            cooldownSeconds: number;
-                            /** @description a caller's value in a text is cut to this length */
-                            maxValueLength: number;
-                            dailyLimit: number | null;
-                            /** @description plays today, for the daily limit */
-                            playsToday: number;
-                            /** @description websites a browser may call it from, empty = any; callers without a browser are not stopped */
-                            allowedOrigins: string[];
-                            rules: {
-                                name: string | null;
-                                when: {
-                                    events: string[] | null;
-                                    match: {
-                                        [key: string]: string | string[] | {
-                                            contains: string;
-                                        } | {
-                                            exists: boolean;
-                                        };
-                                    } | null;
-                                    time: string | null;
-                                };
-                                /** @description the pool: one entry at random, not the same twice in a row; [] plays nothing */
-                                play: ({
-                                    sound: string;
-                                } | {
-                                    clip: string;
-                                } | {
-                                    text: string;
-                                })[];
-                                to: string[] | null;
-                                volume: number | null;
-                            }[];
-                            /** @description the start of the token, to recognize the URL */
-                            tokenPrefix: string;
-                            /** @description qk_trg_…, the secret of the URL; POST /v1/triggers/:id/rotate makes a new one */
-                            token: string;
-                            /** @description the URL to call with GET or POST */
-                            url: string;
-                            /** @description false when its maker left the workspace: make it again */
-                            working: boolean;
-                            fireCount: number;
-                            lastFiredAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                            /** Format: date-time */
-                            updatedAt: string;
-                        };
+                        data: components["schemas"]["Trigger"];
                     };
                 };
             };
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13696,6 +12085,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13704,7 +12107,7 @@ export interface operations {
             };
         };
     };
-    postV1TriggersByIdTest: {
+    testTrigger: {
         parameters: {
             query?: never;
             header?: never;
@@ -13793,6 +12196,8 @@ export interface operations {
             /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13808,97 +12213,7 @@ export interface operations {
                             } | null;
                             played: unknown | null;
                             text: string | null;
-                            play: {
-                                id: string;
-                                /**
-                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                                 * @enum {string}
-                                 */
-                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                                /**
-                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                                 * @enum {string}
-                                 */
-                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                                skipReason: "QUIET_HOURS" | "BUSY" | null;
-                                preview: boolean;
-                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                                params: {
-                                    [key: string]: unknown;
-                                };
-                                players: {
-                                    id: string;
-                                    slug: string;
-                                    name: string;
-                                    /**
-                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                     * @enum {string}
-                                     */
-                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                    error: string | null;
-                                    /** @description when Sonos started the clip (Sonos event), else null */
-                                    startedAt: string | null;
-                                    /** @description when the clip ended (Sonos event or stop), else null */
-                                    endedAt: string | null;
-                                }[];
-                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                                audioUrl: string | null;
-                                /** @description length in seconds, rounded up */
-                                seconds: number | null;
-                                creditsUsed: number;
-                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                                fromCache: boolean;
-                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                                test: boolean;
-                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                                startsAt: string | null;
-                                /** @description who sent the play */
-                                client: {
-                                    /**
-                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                     * @enum {string}
-                                     */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                    name: string | null;
-                                    /** @description its version, e.g. "0.9.0" */
-                                    version: string | null;
-                                };
-                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                                canReplay: boolean;
-                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                                canSave: boolean;
-                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                                user: {
-                                    /** @example Mike */
-                                    name: string | null;
-                                    /** @example mike@example.com */
-                                    email: string;
-                                } | null;
-                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                                key: {
-                                    /**
-                                     * @description the name of an own API key, null for other keys
-                                     * @example Doorbell
-                                     */
-                                    name: string | null;
-                                    /**
-                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                     * @enum {string}
-                                     */
-                                    type: "LOGIN" | "API" | "OAUTH";
-                                    /**
-                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                     * @example Claude
-                                     */
-                                    app: string | null;
-                                } | null;
-                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                                requestId: string | null;
-                                /** Format: date-time */
-                                createdAt: string;
-                            } | null;
+                            play: components["schemas"]["Play"] | null;
                             callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
@@ -13914,6 +12229,8 @@ export interface operations {
             /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -13929,97 +12246,7 @@ export interface operations {
                             } | null;
                             played: unknown | null;
                             text: string | null;
-                            play: {
-                                id: string;
-                                /**
-                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                                 * @enum {string}
-                                 */
-                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                                /**
-                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                                 * @enum {string}
-                                 */
-                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                                skipReason: "QUIET_HOURS" | "BUSY" | null;
-                                preview: boolean;
-                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                                params: {
-                                    [key: string]: unknown;
-                                };
-                                players: {
-                                    id: string;
-                                    slug: string;
-                                    name: string;
-                                    /**
-                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                     * @enum {string}
-                                     */
-                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                    error: string | null;
-                                    /** @description when Sonos started the clip (Sonos event), else null */
-                                    startedAt: string | null;
-                                    /** @description when the clip ended (Sonos event or stop), else null */
-                                    endedAt: string | null;
-                                }[];
-                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                                audioUrl: string | null;
-                                /** @description length in seconds, rounded up */
-                                seconds: number | null;
-                                creditsUsed: number;
-                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                                fromCache: boolean;
-                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                                test: boolean;
-                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                                startsAt: string | null;
-                                /** @description who sent the play */
-                                client: {
-                                    /**
-                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                     * @enum {string}
-                                     */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                    name: string | null;
-                                    /** @description its version, e.g. "0.9.0" */
-                                    version: string | null;
-                                };
-                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                                canReplay: boolean;
-                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                                canSave: boolean;
-                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                                user: {
-                                    /** @example Mike */
-                                    name: string | null;
-                                    /** @example mike@example.com */
-                                    email: string;
-                                } | null;
-                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                                key: {
-                                    /**
-                                     * @description the name of an own API key, null for other keys
-                                     * @example Doorbell
-                                     */
-                                    name: string | null;
-                                    /**
-                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                     * @enum {string}
-                                     */
-                                    type: "LOGIN" | "API" | "OAUTH";
-                                    /**
-                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                     * @example Claude
-                                     */
-                                    app: string | null;
-                                } | null;
-                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                                requestId: string | null;
-                                /** Format: date-time */
-                                createdAt: string;
-                            } | null;
+                            play: components["schemas"]["Play"] | null;
                             callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
@@ -14035,6 +12262,8 @@ export interface operations {
             /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14050,97 +12279,7 @@ export interface operations {
                             } | null;
                             played: unknown | null;
                             text: string | null;
-                            play: {
-                                id: string;
-                                /**
-                                 * @description TEXT, TALK (params.live: true for talk live), SOUND, CLIP, FILE or URL
-                                 * @enum {string}
-                                 */
-                                type: "TEXT" | "FILE" | "URL" | "SOUND" | "CLIP" | "TALK";
-                                /**
-                                 * @description SCHEDULED (startIn, waits for its start), PENDING, ACTIVE, DONE, STOPPED, FAILED or SKIPPED (see skipReason), the best outcome of its speakers
-                                 * @enum {string}
-                                 */
-                                status: "FAILED" | "SKIPPED" | "PENDING" | "ACTIVE" | "PARTIALLY_DONE" | "DONE" | "STOPPED" | "SCHEDULED";
-                                /** @description SKIPPED only: QUIET_HOURS, or BUSY when every speaker plays a clip with higher priority */
-                                skipReason: "QUIET_HOURS" | "BUSY" | null;
-                                preview: boolean;
-                                /** @description the parameters of the play, defaults resolved. Text plays: text while their audio exists, then masked with textExpired: true. Talk: speechSeconds, and effects when the effect or the ambience changed during the take (instead of effect, effectIntensity, ambience and ambienceIntensity) */
-                                params: {
-                                    [key: string]: unknown;
-                                };
-                                players: {
-                                    id: string;
-                                    slug: string;
-                                    name: string;
-                                    /**
-                                     * @description PENDING (Sonos took the clip), ACTIVE (playing), DONE, STOPPED (ended early), FAILED or SKIPPED (busy with a clip of higher priority)
-                                     * @enum {string}
-                                     */
-                                    status: "PENDING" | "ACTIVE" | "DONE" | "STOPPED" | "FAILED" | "SKIPPED";
-                                    error: string | null;
-                                    /** @description when Sonos started the clip (Sonos event), else null */
-                                    startedAt: string | null;
-                                    /** @description when the clip ended (Sonos event or stop), else null */
-                                    endedAt: string | null;
-                                }[];
-                                /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
-                                audioUrl: string | null;
-                                /** @description length in seconds, rounded up */
-                                seconds: number | null;
-                                creditsUsed: number;
-                                /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
-                                fromCache: boolean;
-                                /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
-                                test: boolean;
-                                /** @description startIn: when the play goes (or went) to Sonos, null for plays that start right away */
-                                startsAt: string | null;
-                                /** @description who sent the play */
-                                client: {
-                                    /**
-                                     * @description where the play came from: a known client (X-Quak-Client or User-Agent, e.g. RAYCAST, HOME_ASSISTANT), else the origin of the key (API, WEB, CLI); SLACK, IFTTT, MCP and TRIGGER (a trigger URL) for plays made on our side
-                                     * @enum {string}
-                                     */
-                                    platform: "API" | "JS" | "WEB" | "CLI" | "MACOS" | "IOS" | "IPADOS" | "RAYCAST" | "STREAM_DECK" | "HOME_ASSISTANT" | "BOARD" | "GITHUB" | "SLACK" | "ZAPIER" | "IFTTT" | "MCP" | "TRIGGER";
-                                    /** @description the client that sent the play, from User-Agent "quak-<name>/<version>" or X-Quak-Client, e.g. "cli" */
-                                    name: string | null;
-                                    /** @description its version, e.g. "0.9.0" */
-                                    version: string | null;
-                                };
-                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
-                                canReplay: boolean;
-                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
-                                canSave: boolean;
-                                /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
-                                user: {
-                                    /** @example Mike */
-                                    name: string | null;
-                                    /** @example mike@example.com */
-                                    email: string;
-                                } | null;
-                                /** @description Beta, may change without notice. the key the play was made with, never its token; null when the key is gone */
-                                key: {
-                                    /**
-                                     * @description the name of an own API key, null for other keys
-                                     * @example Doorbell
-                                     */
-                                    name: string | null;
-                                    /**
-                                     * @description a login (web app, CLI), an own API key or an app connected with OAuth
-                                     * @enum {string}
-                                     */
-                                    type: "LOGIN" | "API" | "OAUTH";
-                                    /**
-                                     * @description for OAUTH the app, e.g. "Claude" or "IFTTT"
-                                     * @example Claude
-                                     */
-                                    app: string | null;
-                                } | null;
-                                /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
-                                requestId: string | null;
-                                /** Format: date-time */
-                                createdAt: string;
-                            } | null;
+                            play: components["schemas"]["Play"] | null;
                             callId: string | null;
                             /** @description tests only: every rule and whether it held */
                             rules?: {
@@ -14156,6 +12295,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14165,6 +12306,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14174,6 +12317,8 @@ export interface operations {
             /** @description Not enough credits */
             402: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14183,6 +12328,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14192,6 +12339,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14209,7 +12370,7 @@ export interface operations {
             };
         };
     };
-    getV1TriggersByIdCalls: {
+    listTriggerCalls: {
         parameters: {
             query?: {
                 limit?: number | string;
@@ -14226,41 +12387,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** Format: uuid */
-                            triggerId: string;
-                            /** @description a test from the app */
-                            test: boolean;
-                            /** @description a test that only decided, nothing played */
-                            dryRun: boolean;
-                            /** @description played, skipped, dry_run or failed */
-                            status: string;
-                            reason: string | null;
-                            /** @description what the caller got */
-                            httpStatus: number;
-                            event: string | null;
-                            /** @description query and body as they came in, cut to 4 KB; null after the audio cache time (inputExpiresAt) */
-                            input: unknown;
-                            /** @description the names of the fields that came in, e.g. data.actor.name */
-                            inputFields: string[];
-                            inputExpiresAt: string | null;
-                            rule: {
-                                index: number;
-                                name: string | null;
-                            } | null;
-                            played: unknown | null;
-                            text: string | null;
-                            playId: string | null;
-                            creditsUsed: number | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["TriggerCall"][];
                         meta: {
                             total: number;
                             limit: number;
@@ -14272,6 +12405,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14281,6 +12416,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14289,7 +12438,7 @@ export interface operations {
             };
         };
     };
-    getV1KeysCurrent: {
+    getCurrentKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -14301,6 +12450,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14328,138 +12479,7 @@ export interface operations {
                                 name: string;
                                 version: string | null;
                             } | null;
-                            workspace: {
-                                /** Format: uuid */
-                                id: string;
-                                /**
-                                 * @description unique, from the owner's email at sign-up
-                                 * @example mike
-                                 */
-                                slug: string;
-                                /** @example Mike's Space */
-                                name: string;
-                                /**
-                                 * @description quiet hours (and later schedules) run in this time zone
-                                 * @example Europe/Berlin
-                                 */
-                                timeZone: string;
-                                /**
-                                 * @description your role in the workspace
-                                 * @default ADMIN
-                                 * @enum {string}
-                                 */
-                                role: "ADMIN" | "MEMBER";
-                                credits: {
-                                    total: number;
-                                    /** @description one time, free and promo credits, never expire */
-                                    wallet: number;
-                                    /** @description credits of the plan for the current period */
-                                    plan: number;
-                                    /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
-                                    lowThreshold: number;
-                                };
-                                subscription: {
-                                    id: string | null;
-                                    /** @description none, trialing, active, past_due, canceled or inactive */
-                                    state: string;
-                                    /**
-                                     * @description the plan; plans are bought and changed in the Quak web app
-                                     * @default none
-                                     * @enum {string}
-                                     */
-                                    plan: "none" | "home" | "family" | "team" | "business";
-                                    interval: ("month" | "year") | null;
-                                };
-                                defaults: {
-                                    voice: string;
-                                    /** @description TTS language of multi-language voices when a play names none, e.g. en-GB */
-                                    language: string;
-                                    volume: number;
-                                    intro: string | null;
-                                    outro: string | null;
-                                    /** @description the default of `to` in plays, speaker slugs from GET /v1/speakers */
-                                    speakers: string[];
-                                    gap: number;
-                                    /** @description Beta, may change without notice. voice effect for text, talk, files and processed URLs, none = off */
-                                    effect: string;
-                                    /**
-                                     * @description strength of the voice effect: weak, medium or strong
-                                     * @default weak
-                                     * @enum {string}
-                                     */
-                                    effectIntensity: "weak" | "medium" | "strong";
-                                    /** @description Beta, may change without notice. ambience for text, talk, files and processed URLs, none = off */
-                                    ambience: string;
-                                    /**
-                                     * @description strength of the ambience: weak, medium or strong
-                                     * @default weak
-                                     * @enum {string}
-                                     */
-                                    ambienceIntensity: "weak" | "medium" | "strong";
-                                    /** @description when nothing plays, in the workspace time zone, e.g. "22-7" or "none" */
-                                    quietHours: string;
-                                };
-                                /** @description How long generated play audio stays on the server after its last use, in minutes: 1440 (default), 720, 180, 60 or 5. */
-                                audioCacheMinutes: number;
-                                /** @description what the running plan unlocks; without it the route answers 403 ERROR_PLAN_REQUIRED with details.requiredPlan. Effects and ambiences: available in GET /v1/effects */
-                                features: {
-                                    /** @description talk live (GET /v1/play/talk/live), from the family plan */
-                                    talkLive: boolean;
-                                    /** @description the Slack app, from the team plan */
-                                    slack: boolean;
-                                };
-                                /** @description What a play may be in this workspace. Read it instead of hard-coding the numbers: they may change and later depend on the plan. */
-                                limits: {
-                                    /**
-                                     * @description max. characters of a text play
-                                     * @example 1000
-                                     */
-                                    textCharacters: number;
-                                    /**
-                                     * @description max. seconds of speech in a recorded talk, longer takes are cut
-                                     * @example 180
-                                     */
-                                    talkSeconds: number;
-                                    /**
-                                     * @description max. seconds of talk live, a warning comes 30 s before
-                                     * @example 180
-                                     */
-                                    liveSeconds: number;
-                                    /**
-                                     * @description max. seconds of a file, a processed url and an own clip
-                                     * @example 180
-                                     */
-                                    audioSeconds: number;
-                                    /**
-                                     * @description max. bytes of an upload (file, talk, clip) and a url download
-                                     * @example 10485760
-                                     */
-                                    uploadBytes: number;
-                                };
-                                /** @description In GET /v1/workspace and GET /v1/keys/current. What the plan allows and what is used. allowed is the smaller of the running plan and a scheduled downgrade; adding above it answers 403 ERROR_PLAN_LIMIT_REACHED, what is there already stays usable. */
-                                planLimits?: {
-                                    /** @description active Sonos households (locations) */
-                                    locations: {
-                                        used: number;
-                                        /** @description 0: not in this plan */
-                                        allowed: number;
-                                    };
-                                    /** @description members and open invitations */
-                                    users: {
-                                        used: number;
-                                        /** @description 0: not in this plan */
-                                        allowed: number;
-                                    };
-                                    /** @description trigger URLs */
-                                    triggers: {
-                                        used: number;
-                                        /** @description 0: not in this plan */
-                                        allowed: number;
-                                    };
-                                };
-                                /** Format: date-time */
-                                createdAt: string;
-                            };
+                            workspace: components["schemas"]["Workspace"];
                             user: {
                                 /** Format: uuid */
                                 id: string;
@@ -14473,6 +12493,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14481,7 +12515,7 @@ export interface operations {
             };
         };
     };
-    deleteV1KeysCurrent: {
+    deleteCurrentKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -14493,6 +12527,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -14500,6 +12536,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14508,7 +12558,7 @@ export interface operations {
             };
         };
     };
-    getV1Keys: {
+    listKeys: {
         parameters: {
             query?: {
                 limit?: number;
@@ -14523,45 +12573,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * Format: uuid
-                             * @description use it (or the slug) in /v1/keys/{id}
-                             */
-                            id: string;
-                            /**
-                             * @description unique among the keys of the workspace, from the name, use it in /v1/keys/{id}
-                             * @example home-assistant
-                             */
-                            slug: string | null;
-                            name: string | null;
-                            /** @enum {string} */
-                            scope: "play" | "create" | "manage";
-                            /**
-                             * @description USER for keys made with /v1/keys, LOGIN for the keys of the apps, OAUTH for apps connected with OAuth
-                             * @enum {string}
-                             */
-                            type: "LOGIN" | "OAUTH" | "USER" | "SYSTEM";
-                            /**
-                             * @description the start of the token to recognize it
-                             * @example qk_key_7Fh2…
-                             */
-                            prefix: string;
-                            requestCount: number;
-                            playCount: number;
-                            /**
-                             * @description credits of all plays made with this key over its whole life (beta)
-                             * @example 214
-                             */
-                            creditsUsed: number;
-                            lastRequestAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["Key"][];
                         meta: {
                             total: number;
                             limit: number;
@@ -14573,6 +12591,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14582,6 +12602,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14591,6 +12613,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14599,7 +12635,7 @@ export interface operations {
             };
         };
     };
-    postV1Keys: {
+    createKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -14653,6 +12689,8 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14703,6 +12741,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14712,6 +12752,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14721,6 +12763,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14730,6 +12774,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14738,7 +12796,7 @@ export interface operations {
             };
         };
     };
-    deleteV1KeysById: {
+    deleteKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -14752,6 +12810,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -14759,6 +12819,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14768,6 +12830,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14777,6 +12841,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14785,7 +12863,7 @@ export interface operations {
             };
         };
     };
-    patchV1KeysById: {
+    updateKey: {
         parameters: {
             query?: never;
             header?: never;
@@ -14844,51 +12922,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * Format: uuid
-                             * @description use it (or the slug) in /v1/keys/{id}
-                             */
-                            id: string;
-                            /**
-                             * @description unique among the keys of the workspace, from the name, use it in /v1/keys/{id}
-                             * @example home-assistant
-                             */
-                            slug: string | null;
-                            name: string | null;
-                            /** @enum {string} */
-                            scope: "play" | "create" | "manage";
-                            /**
-                             * @description USER for keys made with /v1/keys, LOGIN for the keys of the apps, OAUTH for apps connected with OAuth
-                             * @enum {string}
-                             */
-                            type: "LOGIN" | "OAUTH" | "USER" | "SYSTEM";
-                            /**
-                             * @description the start of the token to recognize it
-                             * @example qk_key_7Fh2…
-                             */
-                            prefix: string;
-                            requestCount: number;
-                            playCount: number;
-                            /**
-                             * @description credits of all plays made with this key over its whole life (beta)
-                             * @example 214
-                             */
-                            creditsUsed: number;
-                            lastRequestAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["Key"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14898,6 +12946,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14907,6 +12957,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14916,6 +12968,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14925,6 +12979,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14933,7 +13001,7 @@ export interface operations {
             };
         };
     };
-    getV1Sonos: {
+    listSonosAccounts: {
         parameters: {
             query?: {
                 limit?: number;
@@ -14948,30 +13016,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description identifies the account in /v1/sonos/:id; a Sonos account is a connection, not a target for `to` */
-                            slug: string;
-                            /** @description the first location's name, unique per workspace ("KaMiSuRy", "KaMiSuRy 2", "Sonos" without a location), until renamed */
-                            name: string;
-                            /** @description the account's locations (a Sonos household each: home, office, branch), the first one names the account; each is a target for `to` (type LOCATION) */
-                            locations: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            playerCount: number;
-                            supportedPlayerCount: number;
-                            lastSyncedAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["SonosAccount"][];
                         meta: {
                             total: number;
                             limit: number;
@@ -14983,6 +13034,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -14992,6 +13045,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15000,7 +13067,7 @@ export interface operations {
             };
         };
     };
-    postV1SonosSync: {
+    syncSonos: {
         parameters: {
             query?: never;
             header?: never;
@@ -15012,30 +13079,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description identifies the account in /v1/sonos/:id; a Sonos account is a connection, not a target for `to` */
-                            slug: string;
-                            /** @description the first location's name, unique per workspace ("KaMiSuRy", "KaMiSuRy 2", "Sonos" without a location), until renamed */
-                            name: string;
-                            /** @description the account's locations (a Sonos household each: home, office, branch), the first one names the account; each is a target for `to` (type LOCATION) */
-                            locations: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            playerCount: number;
-                            supportedPlayerCount: number;
-                            lastSyncedAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        }[];
+                        data: components["schemas"]["SonosAccount"][];
                         meta: {
                             total: number;
                         };
@@ -15045,6 +13095,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15062,7 +13126,7 @@ export interface operations {
             };
         };
     };
-    getV1SonosConnect: {
+    connectSonos: {
         parameters: {
             query?: {
                 redirect?: string;
@@ -15076,6 +13140,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15101,6 +13167,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15109,7 +13189,7 @@ export interface operations {
             };
         };
     };
-    deleteV1SonosById: {
+    disconnectSonosAccount: {
         parameters: {
             query?: never;
             header?: never;
@@ -15123,6 +13203,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -15130,6 +13212,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15139,6 +13223,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15147,7 +13245,7 @@ export interface operations {
             };
         };
     };
-    patchV1SonosById: {
+    updateSonosAccount: {
         parameters: {
             query?: never;
             header?: never;
@@ -15203,36 +13301,21 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /** Format: uuid */
-                            id: string;
-                            /** @description identifies the account in /v1/sonos/:id; a Sonos account is a connection, not a target for `to` */
-                            slug: string;
-                            /** @description the first location's name, unique per workspace ("KaMiSuRy", "KaMiSuRy 2", "Sonos" without a location), until renamed */
-                            name: string;
-                            /** @description the account's locations (a Sonos household each: home, office, branch), the first one names the account; each is a target for `to` (type LOCATION) */
-                            locations: {
-                                /** Format: uuid */
-                                id: string;
-                                slug: string;
-                                name: string;
-                            }[];
-                            playerCount: number;
-                            supportedPlayerCount: number;
-                            lastSyncedAt: string | null;
-                            /** Format: date-time */
-                            createdAt: string;
-                        };
+                        data: components["schemas"]["SonosAccount"];
                     };
                 };
             };
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15242,6 +13325,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15251,6 +13336,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15260,6 +13347,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15268,7 +13369,7 @@ export interface operations {
             };
         };
     };
-    getV1Integrations: {
+    listIntegrations: {
         parameters: {
             query?: never;
             header?: never;
@@ -15280,29 +13381,13 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        data: {
-                            /**
-                             * @example slack
-                             * @example ifttt
-                             */
-                            provider: string;
-                            /**
-                             * @example Slack
-                             * @example IFTTT
-                             */
-                            name: string;
-                            /** @description false when this server has no setup for the provider: hide it */
-                            available: boolean;
-                            connected: boolean;
-                            connectedAt: string | null;
-                            details: {
-                                [key: string]: unknown;
-                            } | null;
-                        }[];
+                        data: components["schemas"]["Integration"][];
                         meta: {
                             total: number;
                         };
@@ -15312,6 +13397,20 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15320,7 +13419,7 @@ export interface operations {
             };
         };
     };
-    postV1IntegrationsByProviderConnect: {
+    connectIntegration: {
         parameters: {
             query?: never;
             header?: never;
@@ -15349,6 +13448,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15365,6 +13466,8 @@ export interface operations {
             /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15374,6 +13477,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15383,6 +13488,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15392,6 +13499,8 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15401,6 +13510,20 @@ export interface operations {
             /** @description Conflicts with the current state */
             409: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15418,7 +13541,7 @@ export interface operations {
             };
         };
     };
-    deleteV1IntegrationsByProvider: {
+    disconnectIntegration: {
         parameters: {
             query?: never;
             header?: never;
@@ -15432,6 +13555,8 @@ export interface operations {
             /** @description Done, no body */
             204: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content?: never;
@@ -15439,6 +13564,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15448,6 +13575,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15457,6 +13586,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15465,7 +13608,7 @@ export interface operations {
             };
         };
     };
-    "postV1Upload-tickets": {
+    createUploadTicket: {
         parameters: {
             query?: never;
             header?: never;
@@ -15477,6 +13620,8 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15503,6 +13648,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15512,6 +13659,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15520,7 +13681,7 @@ export interface operations {
             };
         };
     };
-    "postV1Play-tokens": {
+    createPlayToken: {
         parameters: {
             query?: never;
             header?: never;
@@ -15532,6 +13693,8 @@ export interface operations {
             /** @description Created */
             201: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15566,6 +13729,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15575,6 +13740,20 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15583,7 +13762,7 @@ export interface operations {
             };
         };
     };
-    getV1OauthRequestsById: {
+    getAuthorizationRequest: {
         parameters: {
             query?: never;
             header?: never;
@@ -15597,6 +13776,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15628,6 +13809,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15637,6 +13820,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15646,6 +13831,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15654,7 +13853,7 @@ export interface operations {
             };
         };
     };
-    postV1OauthRequestsByIdApprove: {
+    approveAuthorizationRequest: {
         parameters: {
             query?: never;
             header?: never;
@@ -15683,6 +13882,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15697,6 +13898,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15706,6 +13909,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15715,6 +13920,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15723,7 +13942,7 @@ export interface operations {
             };
         };
     };
-    postV1OauthRequestsByIdDeny: {
+    denyAuthorizationRequest: {
         parameters: {
             query?: never;
             header?: never;
@@ -15737,6 +13956,8 @@ export interface operations {
             /** @description OK */
             200: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15751,6 +13972,8 @@ export interface operations {
             /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15760,6 +13983,8 @@ export interface operations {
             /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {
@@ -15769,6 +13994,20 @@ export interface operations {
             /** @description Not found, or not in this workspace */
             404: {
                 headers: {
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Rate limit, wait Retry-After seconds */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["Retry-After"];
+                    RateLimit: components["headers"]["RateLimit"];
+                    "RateLimit-Policy": components["headers"]["RateLimit-Policy"];
                     [name: string]: unknown;
                 };
                 content: {

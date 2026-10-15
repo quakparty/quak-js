@@ -42,61 +42,65 @@ type UploadFields = { file: Upload; filename?: string };
 
 // Play kinds, always in this order: text, talk, sound, clip, file, url
 
-export type PlayTextParams = JsonBody<"postV1PlayText">;
-export type PlayTalkParams = Omit<MultipartBody<"postV1PlayTalk">, "file"> & UploadFields;
-export type PlaySoundParams = JsonBody<"postV1PlaySound">;
-export type PlayClipParams = JsonBody<"postV1PlayClip">;
-export type PlayFileParams = Omit<MultipartBody<"postV1PlayFile">, "file"> & UploadFields;
-export type PlayUrlParams = JsonBody<"postV1PlayUrl">;
+export type PlayTextParams = JsonBody<"playText">;
+export type PlayTalkParams = Omit<MultipartBody<"playTalk">, "file"> & UploadFields;
+export type PlaySoundParams = JsonBody<"playSound">;
+export type PlayClipParams = JsonBody<"playClip">;
+export type PlayFileParams = Omit<MultipartBody<"playFile">, "file"> & UploadFields;
+export type PlayUrlParams = JsonBody<"playUrl">;
 
 /** The answer of every play route: `{ data: Play }`. */
-export type PlayResponse = Success<"postV1PlayText">;
+export type PlayResponse = Success<"playText">;
 /** One play, as in the history (`GET /v1/plays/{id}`). */
-export type Play = PlayResponse["data"];
+export type Play = components["schemas"]["Play"];
+/** One speaker of a play, with its own status. */
+export type PlayPlayer = components["schemas"]["PlayPlayer"];
 
-export type StopParams = JsonBody<"postV1PlayStop">;
-export type StopResponse = Success<"postV1PlayStop">;
+export type StopParams = JsonBody<"stopSpeakers">;
+export type StopResponse = Success<"stopSpeakers">;
 
 // Lookups: what to name in a play
 
-export type SpeakersQuery = Query<"getV1Speakers">;
-export type SpeakersResponse = Success<"getV1Speakers">;
-export type Speaker = SpeakersResponse["data"][number];
+export type SpeakersQuery = Query<"listSpeakers">;
+export type SpeakersResponse = Success<"listSpeakers">;
+export type Speaker = components["schemas"]["Speaker"];
+/** One player (a Sonos speaker) of a speaker. */
+export type SpeakerPlayer = components["schemas"]["SpeakerPlayer"];
 
-export type VoicesQuery = Query<"getV1Voices">;
-export type VoicesResponse = Success<"getV1Voices">;
-export type Voice = VoicesResponse["data"][number];
-export type VoiceLanguagesResponse = Success<"getV1VoicesLanguages">;
-export type VoiceLocalesQuery = Query<"getV1VoicesLocales">;
-export type VoiceLocalesResponse = Success<"getV1VoicesLocales">;
-export type VoiceModelsResponse = Success<"getV1VoicesModels">;
+export type VoicesQuery = Query<"listVoices">;
+export type VoicesResponse = Success<"listVoices">;
+export type Voice = components["schemas"]["Voice"];
+export type VoiceLanguagesResponse = Success<"listVoiceLanguages">;
+export type VoiceLocalesQuery = Query<"listVoiceLocales">;
+export type VoiceLocalesResponse = Success<"listVoiceLocales">;
+export type VoiceModelsResponse = Success<"listVoiceModels">;
 
-export type SoundsQuery = Query<"getV1Sounds">;
-export type SoundsResponse = Success<"getV1Sounds">;
-export type Sound = SoundsResponse["data"][number];
-export type SoundTagsResponse = Success<"getV1SoundsTags">;
+export type SoundsQuery = Query<"listSounds">;
+export type SoundsResponse = Success<"listSounds">;
+export type Sound = components["schemas"]["Sound"];
+export type SoundTagsResponse = Success<"listSoundTags">;
 
-export type ClipsResponse = Success<"getV1Clips">;
-export type Clip = ClipsResponse["data"][number];
+export type ClipsResponse = Success<"listClips">;
+export type Clip = components["schemas"]["Clip"];
 
-export type EffectsQuery = Query<"getV1Effects">;
-export type EffectsResponse = Success<"getV1Effects">;
+export type EffectsQuery = Query<"listEffects">;
+export type EffectsResponse = Success<"listEffects">;
 
-export type PlaysQuery = Query<"getV1Plays">;
-export type PlaysResponse = Success<"getV1Plays">;
-export type PlayQuery = Query<"getV1PlaysById">;
-export type PlayItemResponse = Success<"getV1PlaysById">;
-export type PlayStopResponse = Success<"postV1PlaysByIdStop">;
-export type ReplayParams = JsonBody<"postV1PlaysByIdReplay">;
-export type ReplayResponse = Success<"postV1PlaysByIdReplay">;
-export type SaveParams = JsonBody<"postV1PlaysByIdSave">;
-export type SaveResponse = Success<"postV1PlaysByIdSave">;
+export type PlaysQuery = Query<"listPlays">;
+export type PlaysResponse = Success<"listPlays">;
+export type PlayQuery = Query<"getPlay">;
+export type PlayItemResponse = Success<"getPlay">;
+export type PlayStopResponse = Success<"stopPlay">;
+export type ReplayParams = JsonBody<"replayPlay">;
+export type ReplayResponse = Success<"replayPlay">;
+export type SaveParams = JsonBody<"savePlayAsClip">;
+export type SaveResponse = Success<"savePlayAsClip">;
 
 // The workspace of the key
 
-export type WorkspaceResponse = Success<"getV1Workspace">;
-export type Workspace = WorkspaceResponse["data"];
-export type CurrentKeyResponse = Success<"getV1KeysCurrent">;
+export type WorkspaceResponse = Success<"getWorkspace">;
+export type Workspace = components["schemas"]["Workspace"];
+export type CurrentKeyResponse = Success<"getCurrentKey">;
 
 /** The error body every route answers with on 4xx and 5xx. */
 export type ErrorBody = components["schemas"]["Error"];
