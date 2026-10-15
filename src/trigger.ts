@@ -4,7 +4,7 @@ import { QuakError } from "./errors.js";
 import type { components } from "./generated/schema.js";
 
 export type TriggerResponse = components["schemas"]["TriggerCallResult"];
-/** What a trigger did: `played` with its play, or `skipped` with the `reason` (cooldown, quiet hours etc.). */
+/** What a trigger did: `PLAYED` with its play, or `SKIPPED` with the `reason` (cooldown, quiet hours etc.). */
 export type TriggerResult = TriggerResponse["data"];
 
 export type FireTriggerOptions = {

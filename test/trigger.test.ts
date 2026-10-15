@@ -13,7 +13,7 @@ function recorder(respond: () => Response) {
 }
 
 const played = () =>
-  json({ data: { status: "played", reason: null, event: null, text: "Ben is at the door", play: play() } }, 201);
+  json({ data: { status: "PLAYED", reason: null, event: null, text: "Ben is at the door", play: play() } }, 201);
 
 describe("fireTrigger", () => {
   test("a URL as it is, the body as JSON, the query along, no key", async () => {
@@ -30,12 +30,12 @@ describe("fireTrigger", () => {
     expect(request.headers.get("content-type")).toBe("application/json");
     expect(request.headers.get("x-quak-client")).toStartWith(`js/${VERSION}`);
     expect(request.headers.has("authorization")).toBe(false);
-    expect(data.status).toBe("played");
+    expect(data.status).toBe("PLAYED");
     expect(data.play?.id).toBe(play().id);
   });
 
   test("a bare token goes to the default API or to baseUrl, without a body", async () => {
-    const { calls, fetch } = recorder(() => json({ data: { status: "skipped", reason: "COOLDOWN", play: null } }));
+    const { calls, fetch } = recorder(() => json({ data: { status: "SKIPPED", reason: "COOLDOWN", play: null } }));
     const { data } = await fireTrigger("qk_trg_abc", { fetch });
     await fireTrigger(" qk_trg_abc ", { baseUrl: "http://localhost:3000/", fetch });
 

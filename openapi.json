@@ -28,12 +28,12 @@
             "type": "object",
             "properties": {
               "status": {
-                "description": "played (201), skipped (200, see reason) or dry_run (tests only)",
+                "description": "PLAYED (201), SKIPPED (200, see reason) or DRY_RUN (tests only)",
                 "type": "string",
                 "enum": [
-                  "played",
-                  "skipped",
-                  "dry_run"
+                  "PLAYED",
+                  "SKIPPED",
+                  "DRY_RUN"
                 ]
               },
               "reason": {
@@ -733,7 +733,14 @@
                 ]
               },
               "state": {
-                "description": "none, trialing, active, past_due, canceled or inactive",
+                "enum": [
+                  "NONE",
+                  "TRIALING",
+                  "ACTIVE",
+                  "PAST_DUE",
+                  "CANCELED",
+                  "INACTIVE"
+                ],
                 "type": "string"
               },
               "plan": {
@@ -1148,11 +1155,11 @@
                         "description": "a kind of device for an icon, from the model; null for a model we do not know",
                         "type": "string",
                         "enum": [
-                          "speaker",
-                          "soundbar",
-                          "sub",
-                          "amp",
-                          "portable"
+                          "SPEAKER",
+                          "SOUNDBAR",
+                          "SUB",
+                          "AMP",
+                          "PORTABLE"
                         ]
                       },
                       {
@@ -1572,9 +1579,9 @@
           "latency": {
             "type": "string",
             "enum": [
-              "fast",
-              "normal",
-              "slow"
+              "FAST",
+              "NORMAL",
+              "SLOW"
             ]
           },
           "multiLanguage": {
@@ -1678,16 +1685,16 @@
           "status": {
             "type": "string",
             "enum": [
-              "ga",
-              "preview"
+              "GA",
+              "PREVIEW"
             ]
           },
           "latency": {
             "type": "string",
             "enum": [
-              "fast",
-              "normal",
-              "slow"
+              "FAST",
+              "NORMAL",
+              "SLOW"
             ]
           },
           "multiLanguage": {
@@ -1731,8 +1738,8 @@
           "kind": {
             "type": "string",
             "enum": [
-              "effect",
-              "ambience"
+              "EFFECT",
+              "AMBIENCE"
             ]
           },
           "name": {
@@ -2283,7 +2290,12 @@
           "type": {
             "anyOf": [
               {
-                "description": "what it plays: text, sound or clip; null = only its rules",
+                "enum": [
+                  "TEXT",
+                  "SOUND",
+                  "CLIP"
+                ],
+                "description": "what it plays; null = only its rules",
                 "type": "string"
               },
               {
@@ -2779,7 +2791,12 @@
             "type": "boolean"
           },
           "status": {
-            "description": "played, skipped, dry_run or failed",
+            "enum": [
+              "PLAYED",
+              "SKIPPED",
+              "DRY_RUN",
+              "FAILED"
+            ],
             "type": "string"
           },
           "reason": {
@@ -3951,7 +3968,7 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "const": "pending",
+                          "const": "PENDING",
                           "type": "string"
                         },
                         "message": {
@@ -5788,7 +5805,7 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "const": "confirmation_sent",
+                          "const": "CONFIRMATION_SENT",
                           "type": "string"
                         },
                         "expiresInMinutes": {
@@ -5808,8 +5825,8 @@
                               "action": {
                                 "type": "string",
                                 "enum": [
-                                  "delete",
-                                  "leave"
+                                  "DELETE",
+                                  "LEAVE"
                                 ]
                               },
                               "billing": {
@@ -5827,15 +5844,15 @@
                                     ]
                                   },
                                   "status": {
-                                    "default": "none",
+                                    "default": "NONE",
                                     "type": "string",
                                     "enum": [
-                                      "none",
-                                      "trialing",
-                                      "active",
-                                      "past_due",
-                                      "canceled",
-                                      "inactive"
+                                      "NONE",
+                                      "TRIALING",
+                                      "ACTIVE",
+                                      "PAST_DUE",
+                                      "CANCELED",
+                                      "INACTIVE"
                                     ]
                                   },
                                   "currentPeriodEnd": {
@@ -5890,7 +5907,7 @@
                     "summary": "The confirmation mail is on its way",
                     "value": {
                       "data": {
-                        "status": "confirmation_sent",
+                        "status": "CONFIRMATION_SENT",
                         "expiresInMinutes": 60,
                         "workspaces": [
                           {
@@ -6077,7 +6094,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -6364,7 +6382,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -6544,7 +6563,7 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "const": "confirmation_sent",
+                          "const": "CONFIRMATION_SENT",
                           "type": "string"
                         },
                         "expiresInMinutes": {
@@ -6586,15 +6605,15 @@
                               ]
                             },
                             "status": {
-                              "default": "none",
+                              "default": "NONE",
                               "type": "string",
                               "enum": [
-                                "none",
-                                "trialing",
-                                "active",
-                                "past_due",
-                                "canceled",
-                                "inactive"
+                                "NONE",
+                                "TRIALING",
+                                "ACTIVE",
+                                "PAST_DUE",
+                                "CANCELED",
+                                "INACTIVE"
                               ]
                             },
                             "currentPeriodEnd": {
@@ -6643,7 +6662,7 @@
                     "summary": "The confirmation mail is on its way",
                     "value": {
                       "data": {
-                        "status": "confirmation_sent",
+                        "status": "CONFIRMATION_SENT",
                         "expiresInMinutes": 60,
                         "workspace": {
                           "slug": "office",
@@ -6653,7 +6672,7 @@
                         "accountToo": false,
                         "billing": {
                           "plan": "none",
-                          "status": "none",
+                          "status": "NONE",
                           "currentPeriodEnd": null,
                           "walletCredits": 480,
                           "subscriptionCredits": 0
@@ -7390,7 +7409,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -9065,16 +9085,16 @@
                           ]
                         },
                         "status": {
-                          "default": "none",
+                          "default": "NONE",
                           "description": "the state of the subscription, none without one",
                           "type": "string",
                           "enum": [
-                            "none",
-                            "trialing",
-                            "active",
-                            "past_due",
-                            "canceled",
-                            "inactive"
+                            "NONE",
+                            "TRIALING",
+                            "ACTIVE",
+                            "PAST_DUE",
+                            "CANCELED",
+                            "INACTIVE"
                           ]
                         },
                         "currentPeriodEnd": {
@@ -9291,8 +9311,8 @@
                         "packTax": {
                           "type": "string",
                           "enum": [
-                            "inclusive",
-                            "exclusive"
+                            "INCLUSIVE",
+                            "EXCLUSIVE"
                           ]
                         },
                         "portal": {
@@ -9375,7 +9395,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -9580,16 +9601,16 @@
                           ]
                         },
                         "status": {
-                          "default": "none",
+                          "default": "NONE",
                           "description": "the state of the subscription, none without one",
                           "type": "string",
                           "enum": [
-                            "none",
-                            "trialing",
-                            "active",
-                            "past_due",
-                            "canceled",
-                            "inactive"
+                            "NONE",
+                            "TRIALING",
+                            "ACTIVE",
+                            "PAST_DUE",
+                            "CANCELED",
+                            "INACTIVE"
                           ]
                         },
                         "currentPeriodEnd": {
@@ -9806,8 +9827,8 @@
                         "packTax": {
                           "type": "string",
                           "enum": [
-                            "inclusive",
-                            "exclusive"
+                            "INCLUSIVE",
+                            "EXCLUSIVE"
                           ]
                         },
                         "portal": {
@@ -9890,7 +9911,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -10524,12 +10546,12 @@
                       "type": "object",
                       "properties": {
                         "kind": {
-                          "default": "upgrade",
+                          "default": "UPGRADE",
                           "description": "upgrade: a bigger plan or monthly → yearly, at once; downgrade: a smaller plan or yearly → monthly, at the end of the period",
                           "type": "string",
                           "enum": [
-                            "upgrade",
-                            "downgrade"
+                            "UPGRADE",
+                            "DOWNGRADE"
                           ]
                         },
                         "fromPlan": {
@@ -10587,12 +10609,12 @@
                           ]
                         },
                         "effective": {
-                          "default": "now",
+                          "default": "NOW",
                           "description": "at once (upgrades, any change in the trial) or at the end of the period (downgrades)",
                           "type": "string",
                           "enum": [
-                            "now",
-                            "period_end"
+                            "NOW",
+                            "PERIOD_END"
                           ]
                         },
                         "at": {
@@ -10626,12 +10648,12 @@
                               ]
                             },
                             "tax": {
-                              "default": "inclusive",
+                              "default": "INCLUSIVE",
                               "description": "inclusive: VAT included; exclusive: plus VAT (Team, Business)",
                               "type": "string",
                               "enum": [
-                                "inclusive",
-                                "exclusive"
+                                "INCLUSIVE",
+                                "EXCLUSIVE"
                               ]
                             }
                           },
@@ -11080,21 +11102,21 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "default": "changed",
+                          "default": "CHANGED",
                           "description": "changed: done now; scheduled: at the end of the period; payment_required: the payment needs the customer (3D Secure, a failed card), send them to url, the plan changes once it is paid",
                           "type": "string",
                           "enum": [
-                            "changed",
-                            "scheduled",
-                            "payment_required"
+                            "CHANGED",
+                            "SCHEDULED",
+                            "PAYMENT_REQUIRED"
                           ]
                         },
                         "effective": {
-                          "default": "now",
+                          "default": "NOW",
                           "type": "string",
                           "enum": [
-                            "now",
-                            "period_end"
+                            "NOW",
+                            "PERIOD_END"
                           ]
                         },
                         "at": {
@@ -11361,16 +11383,16 @@
                           ]
                         },
                         "status": {
-                          "default": "none",
+                          "default": "NONE",
                           "description": "the state of the subscription, none without one",
                           "type": "string",
                           "enum": [
-                            "none",
-                            "trialing",
-                            "active",
-                            "past_due",
-                            "canceled",
-                            "inactive"
+                            "NONE",
+                            "TRIALING",
+                            "ACTIVE",
+                            "PAST_DUE",
+                            "CANCELED",
+                            "INACTIVE"
                           ]
                         },
                         "currentPeriodEnd": {
@@ -11587,8 +11609,8 @@
                         "packTax": {
                           "type": "string",
                           "enum": [
-                            "inclusive",
-                            "exclusive"
+                            "INCLUSIVE",
+                            "EXCLUSIVE"
                           ]
                         },
                         "portal": {
@@ -11671,7 +11693,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -12190,17 +12213,17 @@
                             "type": "number"
                           },
                           "category": {
-                            "default": "signup",
+                            "default": "SIGNUP",
                             "description": "signup: starting credits; plan: of the subscription (trial, period, upgrade); pack: bought; promo and goodwill: given by Quak; service: SLA service credit for a month below the promised availability (Team, Business); refund: taken back after a refund or dispute",
                             "type": "string",
                             "enum": [
-                              "signup",
-                              "plan",
-                              "pack",
-                              "promo",
-                              "goodwill",
-                              "service",
-                              "refund"
+                              "SIGNUP",
+                              "PLAN",
+                              "PACK",
+                              "PROMO",
+                              "GOODWILL",
+                              "SERVICE",
+                              "REFUND"
                             ]
                           },
                           "description": {
@@ -12275,7 +12298,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -12603,7 +12627,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -12803,7 +12828,7 @@
                       "type": "object",
                       "properties": {
                         "status": {
-                          "const": "pending",
+                          "const": "PENDING",
                           "type": "string"
                         },
                         "email": {
@@ -13352,7 +13377,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "Everything you can play on": {
@@ -13691,7 +13717,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -16420,8 +16447,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               }
             },
@@ -16845,7 +16871,8 @@
                   "required": [
                     "data",
                     "meta"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -27943,9 +27970,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -28307,9 +28334,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -28733,9 +28760,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -29456,9 +29483,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -29817,9 +29844,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -30240,9 +30267,9 @@
                   "type": {
                     "type": "string",
                     "enum": [
-                      "text",
-                      "sound",
-                      "clip"
+                      "TEXT",
+                      "SOUND",
+                      "CLIP"
                     ],
                     "description": "what it plays when no rule takes the call; optional with rules"
                   },
@@ -31217,9 +31244,9 @@
                         "status": {
                           "type": "string",
                           "enum": [
-                            "played",
-                            "skipped",
-                            "dry_run"
+                            "PLAYED",
+                            "SKIPPED",
+                            "DRY_RUN"
                           ]
                         },
                         "reason": {
@@ -31407,9 +31434,9 @@
                         "status": {
                           "type": "string",
                           "enum": [
-                            "played",
-                            "skipped",
-                            "dry_run"
+                            "PLAYED",
+                            "SKIPPED",
+                            "DRY_RUN"
                           ]
                         },
                         "reason": {
@@ -31597,9 +31624,9 @@
                         "status": {
                           "type": "string",
                           "enum": [
-                            "played",
-                            "skipped",
-                            "dry_run"
+                            "PLAYED",
+                            "SKIPPED",
+                            "DRY_RUN"
                           ]
                         },
                         "reason": {
@@ -32323,7 +32350,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 }
               }
             },
@@ -35347,7 +35375,8 @@
                   },
                   "required": [
                     "data"
-                  ]
+                  ],
+                  "additionalProperties": false
                 },
                 "examples": {
                   "A token for the browser, valid for 5 minutes": {

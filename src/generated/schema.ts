@@ -1777,10 +1777,10 @@ export interface components {
         TriggerCallResult: {
             data: {
                 /**
-                 * @description played (201), skipped (200, see reason) or dry_run (tests only)
+                 * @description PLAYED (201), SKIPPED (200, see reason) or DRY_RUN (tests only)
                  * @enum {string}
                  */
-                status: "played" | "skipped" | "dry_run";
+                status: "PLAYED" | "SKIPPED" | "DRY_RUN";
                 reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
                 event: string | null;
                 rule: {
@@ -1962,8 +1962,8 @@ export interface components {
             };
             subscription: {
                 id: string | null;
-                /** @description none, trialing, active, past_due, canceled or inactive */
-                state: string;
+                /** @enum {string} */
+                state: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                 /**
                  * @description the plan; plans are bought and changed in the Quak web app
                  * @default none
@@ -2117,7 +2117,7 @@ export interface components {
             /** @description only with details=true: for PLAYER the device, whether it plays announcements, its location and Sonos account; for LOCATION the Sonos account and its last sync */
             details?: {
                 model: string | null;
-                icon: ("speaker" | "soundbar" | "sub" | "amp" | "portable") | null;
+                icon: ("SPEAKER" | "SOUNDBAR" | "SUB" | "AMP" | "PORTABLE") | null;
                 /** @description every device of the room: a pair has two, a home theatre with surrounds three or more */
                 devices: {
                     model: string | null;
@@ -2218,7 +2218,7 @@ export interface components {
             provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
             model: string;
             /** @enum {string} */
-            latency: "fast" | "normal" | "slow";
+            latency: "FAST" | "NORMAL" | "SLOW";
             multiLanguage: boolean;
             name: string;
             locale: string;
@@ -2245,9 +2245,9 @@ export interface components {
             provider: "AWS" | "GOOGLE" | "OPENAI" | "ELEVENLABS";
             model: string;
             /** @enum {string} */
-            status: "ga" | "preview";
+            status: "GA" | "PREVIEW";
             /** @enum {string} */
-            latency: "fast" | "normal" | "slow";
+            latency: "FAST" | "NORMAL" | "SLOW";
             multiLanguage: boolean;
             voices: number;
             languages: string[];
@@ -2261,7 +2261,7 @@ export interface components {
              */
             id: string;
             /** @enum {string} */
-            kind: "effect" | "ambience";
+            kind: "EFFECT" | "AMBIENCE";
             /** @example Robot */
             name: string;
             /** @description what it sounds like and what it fits */
@@ -2404,7 +2404,7 @@ export interface components {
             enabled: boolean;
             /** @description how the URL reads its caller: generic or unifi_access */
             profile: string;
-            type: string | null;
+            type: ("TEXT" | "SOUND" | "CLIP") | null;
             text: string | null;
             fallbackText: string | null;
             sound: string | null;
@@ -2482,8 +2482,8 @@ export interface components {
             test: boolean;
             /** @description a test that only decided, nothing played */
             dryRun: boolean;
-            /** @description played, skipped, dry_run or failed */
-            status: string;
+            /** @enum {string} */
+            status: "PLAYED" | "SKIPPED" | "DRY_RUN" | "FAILED";
             reason: string | null;
             /** @description what the caller got */
             httpStatus: number;
@@ -2852,7 +2852,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @constant */
-                            status: "pending";
+                            status: "PENDING";
                             /** @example Waiting for the link in the mail to be clicked. */
                             message: string;
                         };
@@ -3634,13 +3634,13 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @constant */
-                            status: "confirmation_sent";
+                            status: "CONFIRMATION_SENT";
                             expiresInMinutes: number;
                             workspaces: {
                                 slug: string;
                                 name: string;
                                 /** @enum {string} */
-                                action: "delete" | "leave";
+                                action: "DELETE" | "LEAVE";
                                 billing: {
                                     /**
                                      * @default none
@@ -3648,10 +3648,10 @@ export interface operations {
                                      */
                                     plan: "none" | "home" | "family" | "team" | "business";
                                     /**
-                                     * @default none
+                                     * @default NONE
                                      * @enum {string}
                                      */
-                                    status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                                    status: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                                     currentPeriodEnd: string | null;
                                     walletCredits: number;
                                     subscriptionCredits: number;
@@ -3775,7 +3775,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @constant */
-                            status: "confirmation_sent";
+                            status: "CONFIRMATION_SENT";
                             expiresInMinutes: number;
                             workspace: {
                                 slug: string;
@@ -3790,10 +3790,10 @@ export interface operations {
                                  */
                                 plan: "none" | "home" | "family" | "team" | "business";
                                 /**
-                                 * @default none
+                                 * @default NONE
                                  * @enum {string}
                                  */
-                                status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                                status: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                                 currentPeriodEnd: string | null;
                                 walletCredits: number;
                                 subscriptionCredits: number;
@@ -4900,10 +4900,10 @@ export interface operations {
                             interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
-                             * @default none
+                             * @default NONE
                              * @enum {string}
                              */
-                            status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                            status: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                             currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
                             cancelAt: string | null;
@@ -4954,7 +4954,7 @@ export interface operations {
                              */
                             packDiscount: number;
                             /** @enum {string} */
-                            packTax: "inclusive" | "exclusive";
+                            packTax: "INCLUSIVE" | "EXCLUSIVE";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
                             billingEmail: string | null;
@@ -5062,10 +5062,10 @@ export interface operations {
                             interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
-                             * @default none
+                             * @default NONE
                              * @enum {string}
                              */
-                            status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                            status: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                             currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
                             cancelAt: string | null;
@@ -5116,7 +5116,7 @@ export interface operations {
                              */
                             packDiscount: number;
                             /** @enum {string} */
-                            packTax: "inclusive" | "exclusive";
+                            packTax: "INCLUSIVE" | "EXCLUSIVE";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
                             billingEmail: string | null;
@@ -5408,10 +5408,10 @@ export interface operations {
                         data: {
                             /**
                              * @description upgrade: a bigger plan or monthly → yearly, at once; downgrade: a smaller plan or yearly → monthly, at the end of the period
-                             * @default upgrade
+                             * @default UPGRADE
                              * @enum {string}
                              */
-                            kind: "upgrade" | "downgrade";
+                            kind: "UPGRADE" | "DOWNGRADE";
                             fromPlan: {
                                 /**
                                  * @default home
@@ -5438,10 +5438,10 @@ export interface operations {
                             };
                             /**
                              * @description at once (upgrades, any change in the trial) or at the end of the period (downgrades)
-                             * @default now
+                             * @default NOW
                              * @enum {string}
                              */
-                            effective: "now" | "period_end";
+                            effective: "NOW" | "PERIOD_END";
                             /**
                              * Format: date-time
                              * @description when the change takes effect
@@ -5463,10 +5463,10 @@ export interface operations {
                                 interval: "month" | "year";
                                 /**
                                  * @description inclusive: VAT included; exclusive: plus VAT (Team, Business)
-                                 * @default inclusive
+                                 * @default INCLUSIVE
                                  * @enum {string}
                                  */
-                                tax: "inclusive" | "exclusive";
+                                tax: "INCLUSIVE" | "EXCLUSIVE";
                             };
                             dueNow: {
                                 /** @description in cents, with tax, proration and discount */
@@ -5636,15 +5636,15 @@ export interface operations {
                         data: {
                             /**
                              * @description changed: done now; scheduled: at the end of the period; payment_required: the payment needs the customer (3D Secure, a failed card), send them to url, the plan changes once it is paid
-                             * @default changed
+                             * @default CHANGED
                              * @enum {string}
                              */
-                            status: "changed" | "scheduled" | "payment_required";
+                            status: "CHANGED" | "SCHEDULED" | "PAYMENT_REQUIRED";
                             /**
-                             * @default now
+                             * @default NOW
                              * @enum {string}
                              */
-                            effective: "now" | "period_end";
+                            effective: "NOW" | "PERIOD_END";
                             /** Format: date-time */
                             at: string;
                             url?: string | null;
@@ -5749,10 +5749,10 @@ export interface operations {
                             interval: ("month" | "year") | null;
                             /**
                              * @description the state of the subscription, none without one
-                             * @default none
+                             * @default NONE
                              * @enum {string}
                              */
-                            status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                            status: "NONE" | "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "INACTIVE";
                             currentPeriodEnd: string | null;
                             cancelAtPeriodEnd: boolean;
                             cancelAt: string | null;
@@ -5803,7 +5803,7 @@ export interface operations {
                              */
                             packDiscount: number;
                             /** @enum {string} */
-                            packTax: "inclusive" | "exclusive";
+                            packTax: "INCLUSIVE" | "EXCLUSIVE";
                             /** @description whether the customer portal is available (the workspace bought something) */
                             portal: boolean;
                             billingEmail: string | null;
@@ -6043,10 +6043,10 @@ export interface operations {
                             amount: number;
                             /**
                              * @description signup: starting credits; plan: of the subscription (trial, period, upgrade); pack: bought; promo and goodwill: given by Quak; service: SLA service credit for a month below the promised availability (Team, Business); refund: taken back after a refund or dispute
-                             * @default signup
+                             * @default SIGNUP
                              * @enum {string}
                              */
-                            category: "signup" | "plan" | "pack" | "promo" | "goodwill" | "service" | "refund";
+                            category: "SIGNUP" | "PLAN" | "PACK" | "PROMO" | "GOODWILL" | "SERVICE" | "REFUND";
                             description: string | null;
                             /** @description true for plan credits, they end with the period; all others stay */
                             expires: boolean;
@@ -6274,7 +6274,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @constant */
-                            status: "pending";
+                            status: "PENDING";
                             /** @description the invited address */
                             email: string;
                             /** @example MEMBER */
@@ -11230,7 +11230,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -11326,7 +11326,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -11422,7 +11422,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -11708,7 +11708,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -11804,7 +11804,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -11900,7 +11900,7 @@ export interface operations {
                      * @description what it plays when no rule takes the call; optional with rules
                      * @enum {string}
                      */
-                    type?: "text" | "sound" | "clip";
+                    type?: "TEXT" | "SOUND" | "CLIP";
                     /**
                      * @description for type text: the text, with {{variables}}
                      * @example {{name}} is here
@@ -12201,7 +12201,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @enum {string} */
-                            status: "played" | "skipped" | "dry_run";
+                            status: "PLAYED" | "SKIPPED" | "DRY_RUN";
                             reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
                             event: string | null;
                             rule: {
@@ -12234,7 +12234,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @enum {string} */
-                            status: "played" | "skipped" | "dry_run";
+                            status: "PLAYED" | "SKIPPED" | "DRY_RUN";
                             reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
                             event: string | null;
                             rule: {
@@ -12267,7 +12267,7 @@ export interface operations {
                     "application/json": {
                         data: {
                             /** @enum {string} */
-                            status: "played" | "skipped" | "dry_run";
+                            status: "PLAYED" | "SKIPPED" | "DRY_RUN";
                             reason: ("EVENT_IGNORED" | "EVENT_FILTERED" | "NO_RULE" | "RULE_SILENT" | "COOLDOWN" | "DAILY_LIMIT" | "EMPTY_TEXT" | "QUIET_HOURS" | "BUSY") | null;
                             event: string | null;
                             rule: {

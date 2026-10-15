@@ -500,7 +500,7 @@ import { fireTrigger } from "@quak/js";
 
 // the URL or just the token; body fields fill the trigger's {{variables}}
 const { data } = await fireTrigger(process.env.QUAK_TRIGGER_URL!, { body: { name: "Ben" } });
-if (data.status === "skipped") {
+if (data.status === "SKIPPED") {
   console.log(data.reason); // COOLDOWN, QUIET_HOURS, DAILY_LIMIT etc., not an error
 }
 ```
