@@ -106,21 +106,21 @@ describe("talkLive", () => {
       source,
       onReady: ({ maxSeconds }) => events.push(`ready ${maxSeconds}`),
       onUpdated: ({ muted }) => events.push(`updated ${muted}`),
-      onDone: ({ credits, endedBy }) => events.push(`done ${credits} ${endedBy}`),
+      onDone: ({ creditsUsed, endedBy }) => events.push(`done ${creditsUsed} ${endedBy}`),
       onClose: ({ code }) => events.push(`close ${code}`),
     });
     last().open();
     expect(last().sent[0]).toMatchObject({ type: "start", format: { encoding: "opus", sampleRate: 48000 } });
     expect(events).toEqual([]);
 
-    last().message({ type: "ready", play: play(), credits: 2, balance: 98, maxSeconds: 180 });
+    last().message({ type: "ready", play: play(), creditsUsed: 2, balance: 98, maxSeconds: 180 });
     expect(live.state).toBe("live");
     send!(new Uint8Array([1]).buffer);
     live.update({ muted: true });
     last().message({ type: "updated", muted: true });
     await live.end();
     expect(live.state).toBe("ending");
-    last().message({ type: "done", play: play(), credits: 3, balance: 97, endedBy: "client" });
+    last().message({ type: "done", play: play(), creditsUsed: 3, balance: 97, endedBy: "client" });
     last().drop(1000);
 
     expect(last().sent.slice(1)).toEqual([
@@ -163,7 +163,7 @@ describe("talkLive", () => {
       onError: (error) => events.push(error.code),
     });
     last().open();
-    last().message({ type: "skipped", play: play(), credits: 0 });
+    last().message({ type: "skipped", play: play(), creditsUsed: 0 });
     last().drop(1000);
     expect(events).toEqual(["skipped"]);
   });

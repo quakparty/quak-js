@@ -51,7 +51,7 @@ export type PlayUrlParams = JsonBody<"postV1PlayUrl">;
 
 /** The answer of every play route: `{ data: Play }`. */
 export type PlayResponse = Success<"postV1PlayText">;
-/** One play, as in the history (`GET /v1/plays/{uuid}`). */
+/** One play, as in the history (`GET /v1/plays/{id}`). */
 export type Play = PlayResponse["data"];
 
 export type StopParams = JsonBody<"postV1PlayStop">;
@@ -84,13 +84,13 @@ export type EffectsResponse = Success<"getV1Effects">;
 
 export type PlaysQuery = Query<"getV1Plays">;
 export type PlaysResponse = Success<"getV1Plays">;
-export type PlayQuery = Query<"getV1PlaysByUuid">;
-export type PlayItemResponse = Success<"getV1PlaysByUuid">;
-export type PlayStopResponse = Success<"postV1PlaysByUuidStop">;
-export type ReplayParams = JsonBody<"postV1PlaysByUuidReplay">;
-export type ReplayResponse = Success<"postV1PlaysByUuidReplay">;
-export type SaveParams = JsonBody<"postV1PlaysByUuidSave">;
-export type SaveResponse = Success<"postV1PlaysByUuidSave">;
+export type PlayQuery = Query<"getV1PlaysById">;
+export type PlayItemResponse = Success<"getV1PlaysById">;
+export type PlayStopResponse = Success<"postV1PlaysByIdStop">;
+export type ReplayParams = JsonBody<"postV1PlaysByIdReplay">;
+export type ReplayResponse = Success<"postV1PlaysByIdReplay">;
+export type SaveParams = JsonBody<"postV1PlaysByIdSave">;
+export type SaveResponse = Success<"postV1PlaysByIdSave">;
 
 // The workspace of the key
 

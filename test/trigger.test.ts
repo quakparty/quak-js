@@ -49,11 +49,9 @@ describe("fireTrigger", () => {
   });
 
   test("errors are QuakErrors", async () => {
-    const { fetch } = recorder(() =>
-      json({ error: { code: "ERROR_TRIGGER_NOT_FOUND", message: "no such trigger" } }, 404),
-    );
+    const { fetch } = recorder(() => json({ error: { code: "ERROR_NOT_FOUND", message: "no such trigger" } }, 404));
     const error = await fireTrigger("qk_trg_gone", { fetch }).catch((error: unknown) => error);
-    expect(error).toMatchObject({ status: 404, code: "ERROR_TRIGGER_NOT_FOUND" });
+    expect(error).toMatchObject({ status: 404, code: "ERROR_NOT_FOUND" });
 
     const offline = (async () => {
       throw new TypeError("fetch failed");

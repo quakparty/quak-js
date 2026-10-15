@@ -344,7 +344,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/workspace/members/{userId}": {
+    "/v1/workspace/members/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -358,14 +358,14 @@ export interface paths {
          * Remove a member or leave
          * @description Scope: `manage`. Admins remove anyone, everyone may leave. The member's own keys of this workspace stop working; the last admin cannot leave (`409 ERROR_LAST_ADMIN`).
          */
-        delete: operations["deleteV1WorkspaceMembersByUserId"];
+        delete: operations["deleteV1WorkspaceMembersById"];
         options?: never;
         head?: never;
         /**
          * Change a member's role
          * @description Scope: `manage`. Admins of the workspace only. Admins change roles. The last admin of a workspace cannot be demoted (409 ERROR_LAST_ADMIN).
          */
-        patch: operations["patchV1WorkspaceMembersByUserId"];
+        patch: operations["patchV1WorkspaceMembersById"];
         trace?: never;
     };
     "/v1/workspace/invites": {
@@ -582,7 +582,7 @@ export interface paths {
         };
         /**
          * Show invitation
-         * @description Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. `404 ERROR_INVITE_NOT_FOUND`, `410 ERROR_INVITE_EXPIRED` (details name the workspace and who invited, to ask for a new one), `409 ERROR_INVITE_ACCEPTED`.
+         * @description Beta, may change without notice. The invitation behind the link in an invitation mail: address, role, workspace, who invited and until when it is valid. No key needed. `404 ERROR_NOT_FOUND`, `410 ERROR_INVITE_EXPIRED` (details name the workspace and who invited, to ask for a new one), `409 ERROR_INVITE_ACCEPTED`.
          */
         get: operations["getV1InvitesByToken"];
         put?: never;
@@ -963,7 +963,7 @@ export interface paths {
          *
          *     ### 2. Talk
          *
-         *     The answer is `{"type":"ready","play":{…},"credits":2,"balance":…,"maxSeconds":180}` (`credits`: charged so far, `balance`: the workspace's credits). During quiet hours it is `{"type":"skipped",…}` instead and the socket closes, at no cost.
+         *     The answer is `{"type":"ready","play":{…},"creditsUsed":2,"balance":…,"maxSeconds":180}` (`creditsUsed`: charged so far, `balance`: the workspace's credits). During quiet hours it is `{"type":"skipped",…}` instead and the socket closes, at no cost.
          *
          *     Send the audio as binary frames, in the format of the start: Opus one raw 20 ms packet per frame, PCM mono little endian. Audio sent before `ready` is kept (up to 5 s).
          *
@@ -981,7 +981,7 @@ export interface paths {
          *     { "type": "end" }
          *     ```
          *
-         *     → `{"type":"done","play":{…},"credits":…,"balance":…,"endedBy":"client"}`, then the socket closes. `credits` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.
+         *     → `{"type":"done","play":{…},"creditsUsed":…,"balance":…,"endedBy":"client"}`, then the socket closes. `creditsUsed` is what the whole talk cost, `balance` the workspace's credits after the charge; `endedBy` is `client`, `disconnected`, `limit` or `credits`. Closing the socket also ends the talk.
          *
          *     ### Limits, errors, credits
          *
@@ -1098,7 +1098,7 @@ export interface paths {
         put?: never;
         /**
          * Stop the speakers
-         * @description Scope: `play`. Stops whatever plays on the speakers in to, on all speakers of the workspace without to (not only the default speakers), also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:uuid/stop.
+         * @description Scope: `play`. Stops whatever plays on the speakers in to, on all speakers of the workspace without to (not only the default speakers), also clips of other apps and clips with high priority: a short silent HIGH clip replaces the running one. Plays without priority are refused as busy for about a second afterwards (0.5-0.9 s measured), so wait a moment before the next one. Free, not part of the history. To stop one play, use POST /v1/plays/:id/stop.
          */
         post: operations["postV1PlayStop"];
         delete?: never;
@@ -1175,7 +1175,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/plays/{uuid}": {
+    "/v1/plays/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1186,7 +1186,7 @@ export interface paths {
          * Show a play
          * @description Scope: `play`. Returns one play with its status per speaker. "last" returns your newest play without listing the history.
          */
-        get: operations["getV1PlaysByUuid"];
+        get: operations["getV1PlaysById"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1195,7 +1195,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/plays/{uuid}/stop": {
+    "/v1/plays/{id}/stop": {
         parameters: {
             query?: never;
             header?: never;
@@ -1208,14 +1208,14 @@ export interface paths {
          * Stop a play
          * @description Scope: `play`. Stops a running play on all its speakers, with the play's own priority: a normal play is stopped with a LOW clip that does not block the next play, a priority play with a HIGH clip. Returns 409 when the play is not running any more.
          */
-        post: operations["postV1PlaysByUuidStop"];
+        post: operations["postV1PlaysByIdStop"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/plays/{uuid}/save": {
+    "/v1/plays/{id}/save": {
         parameters: {
             query?: never;
             header?: never;
@@ -1232,14 +1232,14 @@ export interface paths {
          *     - A sound or clip without processing is already in the library: `400 ERROR_UNABLE_TO_SAVE`.
          *     - Costs 2 credits, like uploading a clip.
          */
-        post: operations["postV1PlaysByUuidSave"];
+        post: operations["postV1PlaysByIdSave"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/v1/plays/{uuid}/replay": {
+    "/v1/plays/{id}/replay": {
         parameters: {
             query?: never;
             header?: never;
@@ -1257,7 +1257,7 @@ export interface paths {
          *     - Works for sounds and clips, and for text, talk, file and processed URL plays while their audio is there (the audio cache time), else `409 ERROR_AUDIO_GONE`. Not for talk live and URL plays without processing (`400 ERROR_NOT_REPLAYABLE`).
          *     - Credits: only the base fee, 1 for sounds and clips, 2 for the rest.
          */
-        post: operations["postV1PlaysByUuidReplay"];
+        post: operations["postV1PlaysByIdReplay"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1288,7 +1288,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/clips/{slug}": {
+    "/v1/clips/{id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1302,14 +1302,14 @@ export interface paths {
          * Delete a clip
          * @description Scope: `manage`. Admins of the workspace only. Deletes one of your clips and its audio.
          */
-        delete: operations["deleteV1ClipsBySlug"];
+        delete: operations["deleteV1ClipsById"];
         options?: never;
         head?: never;
         /**
          * Rename a clip
          * @description Scope: `manage`. Admins of the workspace only. Changes the name and/or slug of one of your clips. The audio stays. Free.
          */
-        patch: operations["patchV1ClipsBySlug"];
+        patch: operations["patchV1ClipsById"];
         trace?: never;
     };
     "/v1/triggers": {
@@ -1697,7 +1697,7 @@ export interface paths {
          *     2. It hands the token to the browser.
          *     3. The browser plays straight at the API with `Authorization: Bearer qk_ptk_…`, and on the WebSockets (talk live, live status) with `"token": "qk_ptk_…"` in the first message.
          *
-         *     - Opens only `POST /v1/play/text`, `/v1/play/sound`, `/v1/play/clip`, `/v1/play/url`, `/v1/play/file`, `/v1/play/talk`, `/v1/play/stop`, `/v1/plays/{uuid}/stop` and `/v1/plays/{uuid}/replay`. `GET /v1/play/talk/live` and `GET /v1/plays/watch` take it too. Any other route: `403 ERROR_INSUFFICIENT_SCOPE`.
+         *     - Opens only `POST /v1/play/text`, `/v1/play/sound`, `/v1/play/clip`, `/v1/play/url`, `/v1/play/file`, `/v1/play/talk`, `/v1/play/stop`, `/v1/plays/{id}/stop` and `/v1/plays/{id}/replay`. `GET /v1/play/talk/live` and `GET /v1/plays/watch` take it too. Any other route: `403 ERROR_INSUFFICIENT_SCOPE`.
          *     - Works any number of times for 5 minutes, in the workspace of this request (`X-Quak-Workspace`) and with the rights of this key. Plays count as plays of this key and, unless they name a client themselves, as plays of the client of this request (`User-Agent: quak-<name>/<version>` or `X-Quak-Client`): a browser behind the Home Assistant integration plays as `HOME_ASSISTANT`.
          *     - Expired, unknown, or the key was signed out: `401 ERROR_INVALID_TOKEN` (on a WebSocket: closes with `4401`). Get a new token and try once more.
          *     - Send it in the header or the first message, not in a URL: it works more than once, so it stays out of addresses and logs.
@@ -1825,9 +1825,9 @@ export interface components {
                     }[];
                     /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                     audioUrl: string | null;
-                    /** @description seconds, rounded up */
-                    length: number | null;
-                    credits: number;
+                    /** @description length in seconds, rounded up */
+                    seconds: number | null;
+                    creditsUsed: number;
                     /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                     fromCache: boolean;
                     /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -1846,9 +1846,9 @@ export interface components {
                         /** @description its version, e.g. "0.9.0" */
                         version: string | null;
                     };
-                    /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                    /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                     canReplay: boolean;
-                    /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                    /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                     canSave: boolean;
                     /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                     user: {
@@ -1896,7 +1896,7 @@ export interface components {
                  * @description what went wrong, stable for code to check; message is for people
                  * @enum {string}
                  */
-                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_RATE_LIMITED" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_NOT_VOTED" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_TESTERS" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
                 message: string;
                 field?: string;
                 details?: unknown;
@@ -1922,7 +1922,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -1934,7 +1934,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -2002,31 +2002,24 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        verifyToken: string;
-                        loginPhrase: string;
-                        /** Format: date-time */
-                        expiresAt: string;
+                        data: {
+                            verifyToken: string;
+                            loginPhrase: string;
+                            /** Format: date-time */
+                            expiresAt: string;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Response for status 422 */
-            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2060,27 +2053,20 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        verifyToken: string;
-                        loginPhrase: string;
-                        /** Format: date-time */
-                        expiresAt: string;
+                        data: {
+                            verifyToken: string;
+                            loginPhrase: string;
+                            /** Format: date-time */
+                            expiresAt: string;
+                        };
                     };
-                };
-            };
-            /** @description Response for status 422 */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
                 };
             };
         };
@@ -2121,44 +2107,40 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /**
-                         * @description the login key (qk_key_…, scope manage), shown only this once
-                         * @example qk_key_7Fh2kQ9xWm3LpR8vTz1YcN4bJd6sGe0aUi2H
-                         */
-                        apiKey: string;
+                        data: {
+                            /**
+                             * @description the login key (qk_key_…, scope manage), shown only this once
+                             * @example qk_key_7Fh2kQ9xWm3LpR8vTz1YcN4bJd6sGe0aUi2H
+                             */
+                            apiKey: string;
+                        };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        error: {
-                            /**
-                             * @description what went wrong, stable for code to check; message is for people
-                             * @enum {string}
-                             */
-                            code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_CLIP_EXISTS" | "ERROR_CONFLICT" | "ERROR_GROUP_EXISTS" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_NOT_FOUND" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_OR_EXPIRED_TOKEN" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TICKET" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_INVITE_NOT_FOUND" | "ERROR_KEY_NAME_TAKEN" | "ERROR_LAST_ADMIN" | "ERROR_LOGIN_CONFIRMATION_PENDING" | "ERROR_LOGIN_NOT_FOUND" | "ERROR_MISSING_API_KEY" | "ERROR_MISSING_PARAMS" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_REPLAYABLE" | "ERROR_NOT_VOTABLE" | "ERROR_RATE_LIMITED" | "ERROR_NOT_VOTED" | "ERROR_NO_PERMISSIONS" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_NO_TEST_CLOCK" | "ERROR_NO_TESTERS" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_SESSION_EXPIRED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NAME_TAKEN" | "ERROR_LOCATION_NAME_TAKEN" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TEST_CLOCK" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TRIGGER_NOT_FOUND" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_USER_NOT_FOUND" | "ERROR_WORKSPACE_FORBIDDEN" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH" | "ERROR_WORKSPACE_NOT_FOUND";
+                        data: {
+                            /** @constant */
+                            status: "pending";
+                            /** @example Waiting for the link in the mail to be clicked. */
                             message: string;
-                            field?: string;
-                            details?: unknown;
-                            /** @description the X-Request-Id of the answer, to find the request in our log */
-                            requestId?: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2167,17 +2149,8 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Error"];
-                };
-            };
-            /** @description Response for status 422 */
-            422: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -2196,46 +2169,48 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description your display name (members list, invitations, greeting in mails) */
-                        name: string;
-                        emailToVerify: string | null;
-                        newsletter: boolean;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** @description your time zone for display and mails; quiet hours use the workspace's */
-                        timeZone: string;
-                        /** @description your language (stored, not used yet: everything is English for now) */
-                        language: string;
-                        /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                        workspace: {
+                        data: {
                             /** Format: uuid */
                             id: string;
-                            /** @example mike */
-                            slug: string;
-                            /** @example Mike's Space */
+                            /** Format: email */
+                            email: string;
+                            /** @description your display name (members list, invitations, greeting in mails) */
                             name: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                        } | null;
+                            emailToVerify: string | null;
+                            newsletter: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description your time zone for display and mails; quiet hours use the workspace's */
+                            timeZone: string;
+                            /** @description your language (stored, not used yet: everything is English for now) */
+                            language: string;
+                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @example mike */
+                                slug: string;
+                                /** @example Mike's Space */
+                                name: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                            } | null;
+                        };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2279,46 +2254,48 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description your display name (members list, invitations, greeting in mails) */
-                        name: string;
-                        emailToVerify: string | null;
-                        newsletter: boolean;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** @description your time zone for display and mails; quiet hours use the workspace's */
-                        timeZone: string;
-                        /** @description your language (stored, not used yet: everything is English for now) */
-                        language: string;
-                        /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                        workspace: {
+                        data: {
                             /** Format: uuid */
                             id: string;
-                            /** @example mike */
-                            slug: string;
-                            /** @example Mike's Space */
+                            /** Format: email */
+                            email: string;
+                            /** @description your display name (members list, invitations, greeting in mails) */
                             name: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                        } | null;
+                            emailToVerify: string | null;
+                            newsletter: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description your time zone for display and mails; quiet hours use the workspace's */
+                            timeZone: string;
+                            /** @description your language (stored, not used yet: everything is English for now) */
+                            language: string;
+                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @example mike */
+                                slug: string;
+                                /** @example Mike's Space */
+                                name: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                            } | null;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2327,7 +2304,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2336,7 +2313,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2356,7 +2333,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2370,7 +2347,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2414,46 +2391,48 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description your display name (members list, invitations, greeting in mails) */
-                        name: string;
-                        emailToVerify: string | null;
-                        newsletter: boolean;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** @description your time zone for display and mails; quiet hours use the workspace's */
-                        timeZone: string;
-                        /** @description your language (stored, not used yet: everything is English for now) */
-                        language: string;
-                        /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                        workspace: {
+                        data: {
                             /** Format: uuid */
                             id: string;
-                            /** @example mike */
-                            slug: string;
-                            /** @example Mike's Space */
+                            /** Format: email */
+                            email: string;
+                            /** @description your display name (members list, invitations, greeting in mails) */
                             name: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                        } | null;
+                            emailToVerify: string | null;
+                            newsletter: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description your time zone for display and mails; quiet hours use the workspace's */
+                            timeZone: string;
+                            /** @description your language (stored, not used yet: everything is English for now) */
+                            language: string;
+                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @example mike */
+                                slug: string;
+                                /** @example Mike's Space */
+                                name: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                            } | null;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2462,7 +2441,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2471,7 +2450,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2506,46 +2485,48 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description your display name (members list, invitations, greeting in mails) */
-                        name: string;
-                        emailToVerify: string | null;
-                        newsletter: boolean;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** @description your time zone for display and mails; quiet hours use the workspace's */
-                        timeZone: string;
-                        /** @description your language (stored, not used yet: everything is English for now) */
-                        language: string;
-                        /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                        workspace: {
+                        data: {
                             /** Format: uuid */
                             id: string;
-                            /** @example mike */
-                            slug: string;
-                            /** @example Mike's Space */
+                            /** Format: email */
+                            email: string;
+                            /** @description your display name (members list, invitations, greeting in mails) */
                             name: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                        } | null;
+                            emailToVerify: string | null;
+                            newsletter: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description your time zone for display and mails; quiet hours use the workspace's */
+                            timeZone: string;
+                            /** @description your language (stored, not used yet: everything is English for now) */
+                            language: string;
+                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @example mike */
+                                slug: string;
+                                /** @example Mike's Space */
+                                name: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                            } | null;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2554,7 +2535,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2563,7 +2544,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2607,46 +2588,48 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** Format: uuid */
-                        id: string;
-                        /** Format: email */
-                        email: string;
-                        /** @description your display name (members list, invitations, greeting in mails) */
-                        name: string;
-                        emailToVerify: string | null;
-                        newsletter: boolean;
-                        /** Format: date-time */
-                        createdAt: string;
-                        /** @description your time zone for display and mails; quiet hours use the workspace's */
-                        timeZone: string;
-                        /** @description your language (stored, not used yet: everything is English for now) */
-                        language: string;
-                        /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
-                        workspace: {
+                        data: {
                             /** Format: uuid */
                             id: string;
-                            /** @example mike */
-                            slug: string;
-                            /** @example Mike's Space */
+                            /** Format: email */
+                            email: string;
+                            /** @description your display name (members list, invitations, greeting in mails) */
                             name: string;
-                            /**
-                             * @description your role in the workspace
-                             * @default ADMIN
-                             * @enum {string}
-                             */
-                            role: "ADMIN" | "MEMBER";
-                        } | null;
+                            emailToVerify: string | null;
+                            newsletter: boolean;
+                            /** Format: date-time */
+                            createdAt: string;
+                            /** @description your time zone for display and mails; quiet hours use the workspace's */
+                            timeZone: string;
+                            /** @description your language (stored, not used yet: everything is English for now) */
+                            language: string;
+                            /** @description null when you are not a member of any workspace yet: create one with POST /v1/workspaces */
+                            workspace: {
+                                /** Format: uuid */
+                                id: string;
+                                /** @example mike */
+                                slug: string;
+                                /** @example Mike's Space */
+                                name: string;
+                                /**
+                                 * @description your role in the workspace
+                                 * @default ADMIN
+                                 * @enum {string}
+                                 */
+                                role: "ADMIN" | "MEMBER";
+                            } | null;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2655,7 +2638,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2664,7 +2647,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2684,7 +2667,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -2740,10 +2723,13 @@ export interface operations {
                             /** @description the login of this request */
                             current: boolean;
                         }[];
+                        meta: {
+                            total: number;
+                        };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2752,7 +2738,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2774,18 +2760,20 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        revoked: number;
+                        data: {
+                            revoked: number;
+                        };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -2794,7 +2782,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2803,7 +2791,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2825,16 +2813,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    type: unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2843,7 +2829,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2852,7 +2838,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -2872,7 +2858,18 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 401 */
+            /** @description the export as a JSON file (Content-Disposition: attachment) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2881,7 +2878,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2901,41 +2898,43 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 202 */
+            /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        status: "confirmation_sent";
-                        expiresInMinutes: number;
-                        workspaces: {
-                            slug: string;
-                            name: string;
-                            /** @enum {string} */
-                            action: "delete" | "leave";
-                            billing: {
-                                /**
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                plan: "none" | "home" | "family" | "team" | "business";
-                                /**
-                                 * @default none
-                                 * @enum {string}
-                                 */
-                                status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                                currentPeriodEnd: (string | null) | null;
-                                walletCredits: number;
-                                subscriptionCredits: number;
-                            };
-                        }[];
+                        data: {
+                            /** @constant */
+                            status: "confirmation_sent";
+                            expiresInMinutes: number;
+                            workspaces: {
+                                slug: string;
+                                name: string;
+                                /** @enum {string} */
+                                action: "delete" | "leave";
+                                billing: {
+                                    /**
+                                     * @default none
+                                     * @enum {string}
+                                     */
+                                    plan: "none" | "home" | "family" | "team" | "business";
+                                    /**
+                                     * @default none
+                                     * @enum {string}
+                                     */
+                                    status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                                    currentPeriodEnd: (string | null) | null;
+                                    walletCredits: number;
+                                    subscriptionCredits: number;
+                                };
+                            }[];
+                        };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -2944,7 +2943,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -2953,7 +2952,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -2973,7 +2972,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3005,8 +3004,8 @@ export interface operations {
                                 total: number;
                                 /** @description one time, free and promo credits, never expire */
                                 wallet: number;
-                                /** @description credits of the current subscription period */
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
@@ -3115,7 +3114,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3135,41 +3134,43 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 202 */
+            /** @description Accepted, finished later (see the description) */
             202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
                     "application/json": {
-                        /** @constant */
-                        status: "confirmation_sent";
-                        expiresInMinutes: number;
-                        workspace: {
-                            slug: string;
-                            name: string;
-                        };
-                        otherMembers: number;
-                        accountToo: boolean;
-                        billing: {
-                            /**
-                             * @default none
-                             * @enum {string}
-                             */
-                            plan: "none" | "home" | "family" | "team" | "business";
-                            /**
-                             * @default none
-                             * @enum {string}
-                             */
-                            status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
-                            currentPeriodEnd: (string | null) | null;
-                            walletCredits: number;
-                            subscriptionCredits: number;
+                        data: {
+                            /** @constant */
+                            status: "confirmation_sent";
+                            expiresInMinutes: number;
+                            workspace: {
+                                slug: string;
+                                name: string;
+                            };
+                            otherMembers: number;
+                            accountToo: boolean;
+                            billing: {
+                                /**
+                                 * @default none
+                                 * @enum {string}
+                                 */
+                                plan: "none" | "home" | "family" | "team" | "business";
+                                /**
+                                 * @default none
+                                 * @enum {string}
+                                 */
+                                status: "none" | "trialing" | "active" | "past_due" | "canceled" | "inactive";
+                                currentPeriodEnd: (string | null) | null;
+                                walletCredits: number;
+                                subscriptionCredits: number;
+                            };
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3178,7 +3179,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3187,7 +3188,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3279,7 +3280,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3311,8 +3312,8 @@ export interface operations {
                                 total: number;
                                 /** @description one time, free and promo credits, never expire */
                                 wallet: number;
-                                /** @description credits of the current subscription period */
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
@@ -3421,7 +3422,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3430,7 +3431,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3439,7 +3440,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3448,7 +3449,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3666,7 +3667,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3698,8 +3699,8 @@ export interface operations {
                                 total: number;
                                 /** @description one time, free and promo credits, never expire */
                                 wallet: number;
-                                /** @description credits of the current subscription period */
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
@@ -3808,7 +3809,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -3817,7 +3818,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3826,7 +3827,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3835,7 +3836,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3844,7 +3845,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -3864,7 +3865,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -3872,8 +3873,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            /** Format: uuid */
-                            userId: string;
+                            /**
+                             * Format: uuid
+                             * @description the user's id
+                             */
+                            id: string;
                             /** Format: email */
                             email: string;
                             /** @description the member's display name */
@@ -3889,7 +3893,7 @@ export interface operations {
                             /** @description the member's last request in this workspace, with any of their keys; updated at most every 10 minutes, null when unknown */
                             lastActiveAt: string | null;
                             /** @description plays this member started in this workspace in the last 30 days, previews not counted */
-                            playCount30d: number;
+                            playsLast30Days: number;
                         }[];
                         meta: {
                             total: number;
@@ -3897,7 +3901,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3908,27 +3912,25 @@ export interface operations {
             };
         };
     };
-    deleteV1WorkspaceMembersByUserId: {
+    deleteV1WorkspaceMembersById: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                userId: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    type: unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -3937,7 +3939,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -3946,7 +3948,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -3955,7 +3957,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -3966,12 +3968,12 @@ export interface operations {
             };
         };
     };
-    patchV1WorkspaceMembersByUserId: {
+    patchV1WorkspaceMembersById: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                userId: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -4004,7 +4006,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4012,8 +4014,11 @@ export interface operations {
                 content: {
                     "application/json": {
                         data: {
-                            /** Format: uuid */
-                            userId: string;
+                            /**
+                             * Format: uuid
+                             * @description the user's id
+                             */
+                            id: string;
                             /** Format: email */
                             email: string;
                             /** @description the member's display name */
@@ -4029,12 +4034,12 @@ export interface operations {
                             /** @description the member's last request in this workspace, with any of their keys; updated at most every 10 minutes, null when unknown */
                             lastActiveAt: string | null;
                             /** @description plays this member started in this workspace in the last 30 days, previews not counted */
-                            playCount30d: number;
+                            playsLast30Days: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4043,7 +4048,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4052,7 +4057,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4061,7 +4066,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4070,7 +4075,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4090,7 +4095,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4118,7 +4123,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4127,7 +4132,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4192,7 +4197,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -4217,7 +4222,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4226,7 +4231,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4235,7 +4240,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4244,7 +4249,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4266,16 +4271,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    type: unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4284,7 +4287,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4293,7 +4296,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4315,7 +4318,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4340,7 +4343,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4349,7 +4352,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4358,7 +4361,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -4367,7 +4370,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4376,7 +4379,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 429 */
+            /** @description Rate limit, wait Retry-After seconds */
             429: {
                 headers: {
                     [name: string]: unknown;
@@ -4396,7 +4399,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4455,7 +4458,8 @@ export interface operations {
                             credits: {
                                 total: number;
                                 wallet: number;
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /**
                                  * @description below this many credits (total) the workspace counts as running low: 20% of the plan's monthly credits, 100 without a plan
                                  * @example 1000
@@ -4486,7 +4490,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4495,7 +4499,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4539,7 +4543,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4598,7 +4602,8 @@ export interface operations {
                             credits: {
                                 total: number;
                                 wallet: number;
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /**
                                  * @description below this many credits (total) the workspace counts as running low: 20% of the plan's monthly credits, 100 without a plan
                                  * @example 1000
@@ -4629,7 +4634,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4638,7 +4643,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4647,7 +4652,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4656,7 +4661,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4772,7 +4777,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4782,17 +4787,17 @@ export interface operations {
                         data: {
                             /** @description the Stripe Checkout page, send the browser there */
                             url: string;
-                            /** @description type plan: whether the subscription starts with the trial */
-                            trial?: boolean;
+                            /** @description type plan: days of trial the subscription starts with, 0 for none */
+                            trialDays?: number;
                             /** @description type pack: the discount in percent */
-                            discount?: number;
+                            discountPercent?: number;
                             /** @description whether the promotion code from the request is filled in */
                             code: boolean;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4801,7 +4806,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4810,7 +4815,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4819,7 +4824,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4828,7 +4833,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -4851,7 +4856,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -4865,7 +4870,7 @@ export interface operations {
                              * @enum {string}
                              */
                             kind: "upgrade" | "downgrade";
-                            from: {
+                            fromPlan: {
                                 /**
                                  * @default home
                                  * @enum {string}
@@ -4877,7 +4882,7 @@ export interface operations {
                                  */
                                 interval: "month" | "year";
                             };
-                            to: {
+                            toPlan: {
                                 /**
                                  * @default home
                                  * @enum {string}
@@ -4962,7 +4967,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -4971,7 +4976,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -4980,7 +4985,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -4989,7 +4994,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -4998,7 +5003,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5057,7 +5062,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5083,7 +5088,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5092,7 +5097,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5101,7 +5106,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5110,7 +5115,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5119,7 +5124,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5139,7 +5144,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5198,7 +5203,8 @@ export interface operations {
                             credits: {
                                 total: number;
                                 wallet: number;
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /**
                                  * @description below this many credits (total) the workspace counts as running low: 20% of the plan's monthly credits, 100 without a plan
                                  * @example 1000
@@ -5229,7 +5235,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5238,7 +5244,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5247,7 +5253,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5256,7 +5262,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5330,7 +5336,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5344,7 +5350,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5353,7 +5359,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5362,7 +5368,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5371,7 +5377,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -5394,7 +5400,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5424,14 +5430,13 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                            count: number;
                             limit: number;
                             offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5440,7 +5445,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5460,7 +5465,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5492,7 +5497,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5536,7 +5541,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -5568,8 +5573,8 @@ export interface operations {
                                 total: number;
                                 /** @description one time, free and promo credits, never expire */
                                 wallet: number;
-                                /** @description credits of the current subscription period */
-                                subscription: number;
+                                /** @description credits of the plan for the current period */
+                                plan: number;
                                 /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                 lowThreshold: number;
                             };
@@ -5678,7 +5683,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5687,7 +5692,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -5696,7 +5701,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -5705,7 +5710,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5727,7 +5732,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5755,7 +5760,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5764,7 +5769,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5773,7 +5778,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 410 */
+            /** @description Gone */
             410: {
                 headers: {
                     [name: string]: unknown;
@@ -5819,7 +5824,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5843,7 +5848,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5852,7 +5857,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -5861,7 +5866,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -5870,7 +5875,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 410 */
+            /** @description Gone */
             410: {
                 headers: {
                     [name: string]: unknown;
@@ -5893,7 +5898,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -5960,7 +5965,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -5969,7 +5974,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6061,7 +6066,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6128,7 +6133,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6137,7 +6142,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6146,7 +6151,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -6170,7 +6175,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description a name of its own, unique among the workspace's locations (409 ERROR_LOCATION_NAME_TAKEN); the sync keeps it instead of the Sonos name
+                     * @description a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name
                      * @example Home
                      */
                     name?: string;
@@ -6182,7 +6187,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description a name of its own, unique among the workspace's locations (409 ERROR_LOCATION_NAME_TAKEN); the sync keeps it instead of the Sonos name
+                     * @description a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name
                      * @example Home
                      */
                     name?: string;
@@ -6194,7 +6199,7 @@ export interface operations {
                 };
                 "multipart/form-data": {
                     /**
-                     * @description a name of its own, unique among the workspace's locations (409 ERROR_LOCATION_NAME_TAKEN); the sync keeps it instead of the Sonos name
+                     * @description a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name
                      * @example Home
                      */
                     name?: string;
@@ -6207,7 +6212,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6225,7 +6230,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6234,7 +6239,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6243,7 +6248,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6252,7 +6257,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6272,7 +6277,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6312,7 +6317,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6386,7 +6391,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -6423,7 +6428,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6432,7 +6437,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6441,7 +6446,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6463,7 +6468,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6500,7 +6505,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6509,7 +6514,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6531,7 +6536,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 401 */
+            /** @description Done, no body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6540,7 +6552,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6607,7 +6619,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6644,7 +6656,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6653,7 +6665,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6662,7 +6674,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6671,7 +6683,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -6726,7 +6738,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6763,7 +6775,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6772,7 +6784,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6781,7 +6793,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6836,7 +6848,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6873,7 +6885,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6882,7 +6894,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -6891,7 +6903,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -6916,7 +6928,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -6930,7 +6942,8 @@ export interface operations {
                             name: string;
                             /** Format: uri */
                             audioUrl: string;
-                            length: number;
+                            /** @description length in seconds */
+                            seconds: number;
                             tags: ("INTRO" | "OUTRO" | "REACTIONS" | "ANIMALS" | "CASH" | "VEHICLES" | "SCARY" | "MELODIES" | "MISC")[];
                             description: (string | null) | null;
                             /**
@@ -6949,14 +6962,13 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                            count: number;
                             limit: number;
                             offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -6976,7 +6988,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7012,7 +7024,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7042,7 +7054,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -7051,7 +7063,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7060,7 +7072,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7082,7 +7094,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7101,7 +7113,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7110,7 +7122,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7130,7 +7142,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7148,7 +7160,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7157,7 +7169,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7177,7 +7189,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7204,7 +7216,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7213,7 +7225,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -7235,7 +7247,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7279,7 +7291,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -7288,7 +7300,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7644,7 +7656,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -7687,9 +7699,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -7708,9 +7720,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -7739,12 +7751,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -7787,9 +7800,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -7808,9 +7821,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -7839,12 +7852,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -7887,9 +7901,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -7908,9 +7922,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -7939,12 +7953,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -7953,7 +7968,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -7962,7 +7977,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -7971,7 +7986,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -7980,7 +7995,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -7989,7 +8004,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8131,7 +8146,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -8174,9 +8189,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -8195,9 +8210,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -8226,12 +8241,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -8274,9 +8290,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -8295,9 +8311,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -8326,12 +8342,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -8374,9 +8391,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -8395,9 +8412,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -8426,12 +8443,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -8440,7 +8458,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -8449,7 +8467,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -8458,7 +8476,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -8467,7 +8485,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -8476,7 +8494,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -8829,7 +8847,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -8872,9 +8890,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -8893,9 +8911,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -8924,12 +8942,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -8972,9 +8991,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -8993,9 +9012,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -9024,12 +9043,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -9072,9 +9092,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -9093,9 +9113,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -9124,12 +9144,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9138,7 +9159,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -9147,7 +9168,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -9156,7 +9177,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -9165,7 +9186,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -9174,7 +9195,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -9509,7 +9530,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -9552,9 +9573,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -9573,9 +9594,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -9604,12 +9625,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -9652,9 +9674,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -9673,9 +9695,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -9704,12 +9726,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -9752,9 +9775,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -9773,9 +9796,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -9804,12 +9827,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -9818,7 +9842,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -9827,7 +9851,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -9836,7 +9860,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -9845,7 +9869,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -9854,7 +9878,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -9982,7 +10006,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -10025,9 +10049,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10046,9 +10070,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10077,12 +10101,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -10125,9 +10150,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10146,9 +10171,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10177,12 +10202,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -10225,9 +10251,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10246,9 +10272,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10277,12 +10303,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -10291,7 +10318,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -10300,7 +10327,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -10309,7 +10336,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -10318,7 +10345,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -10327,7 +10354,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -10665,7 +10692,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -10708,9 +10735,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10729,9 +10756,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10760,12 +10787,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -10808,9 +10836,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10829,9 +10857,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10860,12 +10888,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -10908,9 +10937,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -10929,9 +10958,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -10960,12 +10989,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -10974,7 +11004,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -10983,7 +11013,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -10992,7 +11022,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11001,7 +11031,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -11010,7 +11040,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -11063,7 +11093,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11090,7 +11120,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11099,7 +11129,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -11108,7 +11138,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -11153,7 +11183,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11196,9 +11226,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -11217,9 +11247,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -11248,18 +11278,18 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         }[];
                         meta: {
                             total: number;
-                            count: number;
                             limit: number;
                             offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11268,7 +11298,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -11279,7 +11309,7 @@ export interface operations {
             };
         };
     };
-    getV1PlaysByUuid: {
+    getV1PlaysById: {
         parameters: {
             query?: {
                 type?: string;
@@ -11289,13 +11319,13 @@ export interface operations {
             };
             header?: never;
             path: {
-                uuid: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11338,9 +11368,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -11359,9 +11389,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -11390,12 +11420,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -11404,7 +11435,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11415,7 +11446,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByUuidStop: {
+    postV1PlaysByIdStop: {
         parameters: {
             query?: {
                 type?: string;
@@ -11425,13 +11456,13 @@ export interface operations {
             };
             header?: never;
             path: {
-                uuid: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11474,9 +11505,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -11495,9 +11526,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -11526,12 +11557,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -11540,7 +11572,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11549,7 +11581,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11560,7 +11592,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByUuidSave: {
+    postV1PlaysByIdSave: {
         parameters: {
             query?: {
                 type?: string;
@@ -11570,7 +11602,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                uuid: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -11597,7 +11629,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -11608,8 +11640,8 @@ export interface operations {
                             id: string;
                             slug: string;
                             name: string;
-                            /** @description seconds */
-                            length: number;
+                            /** @description length in seconds */
+                            seconds: number;
                             /** @description the audio (MP3), a signed link that works for 15 minutes */
                             audioUrl: string;
                             /**
@@ -11617,12 +11649,13 @@ export interface operations {
                              * @description when audioUrl stops working, list again for a new one
                              */
                             audioUrlExpiresAt: string;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -11631,7 +11664,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -11640,7 +11673,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -11649,7 +11682,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -11658,7 +11691,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -11669,7 +11702,7 @@ export interface operations {
             };
         };
     };
-    postV1PlaysByUuidReplay: {
+    postV1PlaysByIdReplay: {
         parameters: {
             query?: {
                 type?: string;
@@ -11679,7 +11712,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                uuid: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -11817,7 +11850,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -11860,9 +11893,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -11881,9 +11914,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -11912,12 +11945,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -11960,9 +11994,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -11981,9 +12015,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -12012,12 +12046,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -12060,9 +12095,9 @@ export interface operations {
                             }[];
                             /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                             audioUrl: string | null;
-                            /** @description seconds, rounded up */
-                            length: number | null;
-                            credits: number;
+                            /** @description length in seconds, rounded up */
+                            seconds: number | null;
+                            creditsUsed: number;
                             /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                             fromCache: boolean;
                             /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -12081,9 +12116,9 @@ export interface operations {
                                 /** @description its version, e.g. "0.9.0" */
                                 version: string | null;
                             };
-                            /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                            /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                             canReplay: boolean;
-                            /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                            /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                             canSave: boolean;
                             /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                             user: {
@@ -12112,12 +12147,13 @@ export interface operations {
                             } | null;
                             /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                             requestId: string | null;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -12126,7 +12162,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12135,7 +12171,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -12144,7 +12180,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12153,7 +12189,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12162,7 +12198,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 424 */
+            /** @description Sonos did not take it */
             424: {
                 headers: {
                     [name: string]: unknown;
@@ -12182,7 +12218,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -12193,8 +12229,8 @@ export interface operations {
                             id: string;
                             slug: string;
                             name: string;
-                            /** @description seconds */
-                            length: number;
+                            /** @description length in seconds */
+                            seconds: number;
                             /** @description the audio (MP3), a signed link that works for 15 minutes */
                             audioUrl: string;
                             /**
@@ -12202,6 +12238,7 @@ export interface operations {
                              * @description when audioUrl stops working, list again for a new one
                              */
                             audioUrlExpiresAt: string;
+                            /** Format: date-time */
                             createdAt: string;
                         }[];
                         meta: {
@@ -12210,7 +12247,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12251,7 +12288,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -12262,8 +12299,8 @@ export interface operations {
                             id: string;
                             slug: string;
                             name: string;
-                            /** @description seconds */
-                            length: number;
+                            /** @description length in seconds */
+                            seconds: number;
                             /** @description the audio (MP3), a signed link that works for 15 minutes */
                             audioUrl: string;
                             /**
@@ -12271,12 +12308,13 @@ export interface operations {
                              * @description when audioUrl stops working, list again for a new one
                              */
                             audioUrlExpiresAt: string;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -12285,7 +12323,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12294,7 +12332,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -12303,7 +12341,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12314,18 +12352,25 @@ export interface operations {
             };
         };
     };
-    deleteV1ClipsBySlug: {
+    deleteV1ClipsById: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                slug: string;
+                id: string;
             };
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 401 */
+            /** @description Done, no body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12334,7 +12379,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12345,12 +12390,12 @@ export interface operations {
             };
         };
     };
-    patchV1ClipsBySlug: {
+    patchV1ClipsById: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                slug: string;
+                id: string;
             };
             cookie?: never;
         };
@@ -12377,7 +12422,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -12388,8 +12433,8 @@ export interface operations {
                             id: string;
                             slug: string;
                             name: string;
-                            /** @description seconds */
-                            length: number;
+                            /** @description length in seconds */
+                            seconds: number;
                             /** @description the audio (MP3), a signed link that works for 15 minutes */
                             audioUrl: string;
                             /**
@@ -12397,12 +12442,13 @@ export interface operations {
                              * @description when audioUrl stops working, list again for a new one
                              */
                             audioUrlExpiresAt: string;
+                            /** Format: date-time */
                             createdAt: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -12411,7 +12457,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12420,7 +12466,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -12429,7 +12475,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -12449,7 +12495,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -12539,7 +12585,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12850,7 +12896,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -12937,7 +12983,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -12946,7 +12992,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -12955,7 +13001,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -12977,7 +13023,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13064,7 +13110,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -13073,7 +13119,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13095,7 +13141,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 401 */
+            /** @description Done, no body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -13104,7 +13157,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13417,7 +13470,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13504,7 +13557,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -13513,7 +13566,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -13522,7 +13575,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13544,7 +13597,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13631,7 +13684,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -13640,7 +13693,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -13737,7 +13790,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description Not played and not charged: quiet hours (status SKIPPED) or all speakers busy with a higher priority */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -13791,9 +13844,9 @@ export interface operations {
                                 }[];
                                 /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                                 audioUrl: string | null;
-                                /** @description seconds, rounded up */
-                                length: number | null;
-                                credits: number;
+                                /** @description length in seconds, rounded up */
+                                seconds: number | null;
+                                creditsUsed: number;
                                 /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                                 fromCache: boolean;
                                 /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -13812,9 +13865,9 @@ export interface operations {
                                     /** @description its version, e.g. "0.9.0" */
                                     version: string | null;
                                 };
-                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                                 canReplay: boolean;
-                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                                 canSave: boolean;
                                 /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                                 user: {
@@ -13843,6 +13896,7 @@ export interface operations {
                                 } | null;
                                 /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                                 requestId: string | null;
+                                /** Format: date-time */
                                 createdAt: string;
                             } | null) | null;
                             callId: (string | null) | null;
@@ -13857,7 +13911,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 201 */
+            /** @description Played (or a preview made), the play with its speakers and credits */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -13911,9 +13965,9 @@ export interface operations {
                                 }[];
                                 /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                                 audioUrl: string | null;
-                                /** @description seconds, rounded up */
-                                length: number | null;
-                                credits: number;
+                                /** @description length in seconds, rounded up */
+                                seconds: number | null;
+                                creditsUsed: number;
                                 /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                                 fromCache: boolean;
                                 /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -13932,9 +13986,9 @@ export interface operations {
                                     /** @description its version, e.g. "0.9.0" */
                                     version: string | null;
                                 };
-                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                                 canReplay: boolean;
-                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                                 canSave: boolean;
                                 /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                                 user: {
@@ -13963,6 +14017,7 @@ export interface operations {
                                 } | null;
                                 /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                                 requestId: string | null;
+                                /** Format: date-time */
                                 createdAt: string;
                             } | null) | null;
                             callId: (string | null) | null;
@@ -13977,7 +14032,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 202 */
+            /** @description Scheduled with startIn: status SCHEDULED, plays at startsAt */
             202: {
                 headers: {
                     [name: string]: unknown;
@@ -14031,9 +14086,9 @@ export interface operations {
                                 }[];
                                 /** @description the audio Sonos plays, also for the preview; exists for the user's audio cache time (audioCacheMinutes) */
                                 audioUrl: string | null;
-                                /** @description seconds, rounded up */
-                                length: number | null;
-                                credits: number;
+                                /** @description length in seconds, rounded up */
+                                seconds: number | null;
+                                creditsUsed: number;
                                 /** @description true when no new TTS was needed (same text and voice, also with another effect, intro or outro) or the audio came from the cache (processed URL or file) */
                                 fromCache: boolean;
                                 /** @description a test of a trigger from the app (POST /v1/triggers/:id/test): it played, but is not in the history list */
@@ -14052,9 +14107,9 @@ export interface operations {
                                     /** @description its version, e.g. "0.9.0" */
                                     version: string | null;
                                 };
-                                /** @description whether POST /v1/plays/:uuid/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
+                                /** @description whether POST /v1/plays/:id/replay works now: sounds and clips while they exist, generated audio while it is in the audio cache, never talk live or a url without processing */
                                 canReplay: boolean;
-                                /** @description whether POST /v1/plays/:uuid/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
+                                /** @description whether POST /v1/plays/:id/save works now for your key: generated audio (text, talk, file, processed url, processed sound or clip) while it is in the audio cache, and only with a key of scope create or manage (false for play keys) */
                                 canSave: boolean;
                                 /** @description Beta, may change without notice. who triggered the play, visible to every member of the workspace; null when the user is gone */
                                 user: {
@@ -14083,6 +14138,7 @@ export interface operations {
                                 } | null;
                                 /** @description Beta, may change without notice. the X-Request-Id of the request that made the play, for support; null for plays made before 06.10.2026 */
                                 requestId: string | null;
+                                /** Format: date-time */
                                 createdAt: string;
                             } | null) | null;
                             callId: (string | null) | null;
@@ -14097,7 +14153,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14106,7 +14162,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14115,7 +14171,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 402 */
+            /** @description Not enough credits */
             402: {
                 headers: {
                     [name: string]: unknown;
@@ -14124,7 +14180,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14133,7 +14189,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14142,7 +14198,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -14157,7 +14213,7 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number | string;
-                before?: string;
+                offset?: number;
             };
             header?: never;
             path: {
@@ -14167,7 +14223,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14201,17 +14257,19 @@ export interface operations {
                             played: (unknown | null) | null;
                             text: (string | null) | null;
                             playId: (string | null) | null;
-                            credits: (number | null) | null;
+                            creditsUsed: (number | null) | null;
                             /** Format: date-time */
                             createdAt: string;
                         }[];
                         meta: {
                             total: number;
+                            limit: number;
+                            offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14220,7 +14278,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14240,7 +14298,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14295,8 +14353,8 @@ export interface operations {
                                     total: number;
                                     /** @description one time, free and promo credits, never expire */
                                     wallet: number;
-                                    /** @description credits of the current subscription period */
-                                    subscription: number;
+                                    /** @description credits of the plan for the current period */
+                                    plan: number;
                                     /** @description below this total the credits count as running low (20% of the plan's monthly credits, 100 without a plan) */
                                     lowThreshold: number;
                                 };
@@ -14412,7 +14470,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14432,16 +14490,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14464,7 +14520,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14508,14 +14564,13 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                            count: number;
                             limit: number;
                             offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14524,7 +14579,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14533,7 +14588,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14595,7 +14650,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 201 */
+            /** @description Created */
             201: {
                 headers: {
                     [name: string]: unknown;
@@ -14640,12 +14695,12 @@ export interface operations {
                              * @description the API key, shown only this once: store it now, it cannot be read again
                              * @example qk_key_7Fh2kQ9xWm3LpR8vTz1YcN4bJd6sGe0aUi2H
                              */
-                            key: string;
+                            apiKey: string;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14654,7 +14709,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14663,7 +14718,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14672,7 +14727,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14694,16 +14749,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14712,7 +14765,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14721,7 +14774,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14788,7 +14841,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14833,7 +14886,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14842,7 +14895,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14851,7 +14904,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -14860,7 +14913,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -14869,7 +14922,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -14892,7 +14945,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14921,14 +14974,13 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                            count: number;
                             limit: number;
                             offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -14937,7 +14989,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -14957,7 +15009,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -14986,14 +15038,11 @@ export interface operations {
                         }[];
                         meta: {
                             total: number;
-                            count: number;
-                            limit: number;
-                            offset: number;
                         };
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15002,7 +15051,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -15024,7 +15073,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15049,7 +15098,7 @@ export interface operations {
                     "application/json": unknown;
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15071,16 +15120,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15089,7 +15136,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15113,7 +15160,7 @@ export interface operations {
             content: {
                 "application/json": {
                     /**
-                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_SONOS_NAME_TAKEN); null goes back to the automatic name (the first location)
+                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_NAME_TAKEN); null goes back to the automatic name (the first location)
                      * @example Formrausch
                      * @example null
                      */
@@ -15126,7 +15173,7 @@ export interface operations {
                 };
                 "application/x-www-form-urlencoded": {
                     /**
-                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_SONOS_NAME_TAKEN); null goes back to the automatic name (the first location)
+                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_NAME_TAKEN); null goes back to the automatic name (the first location)
                      * @example Formrausch
                      * @example null
                      */
@@ -15139,7 +15186,7 @@ export interface operations {
                 };
                 "multipart/form-data": {
                     /**
-                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_SONOS_NAME_TAKEN); null goes back to the automatic name (the first location)
+                     * @description a name of its own, unique among the workspace's Sonos accounts (409 ERROR_NAME_TAKEN); null goes back to the automatic name (the first location)
                      * @example Formrausch
                      * @example null
                      */
@@ -15153,7 +15200,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15183,7 +15230,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15192,7 +15239,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15201,7 +15248,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15210,7 +15257,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -15230,7 +15277,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15262,7 +15309,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15299,7 +15346,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15315,7 +15362,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 400 */
+            /** @description A parameter is missing or not valid, `field` names it */
             400: {
                 headers: {
                     [name: string]: unknown;
@@ -15324,7 +15371,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15333,7 +15380,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15342,7 +15389,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15351,7 +15398,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 409 */
+            /** @description Conflicts with the current state */
             409: {
                 headers: {
                     [name: string]: unknown;
@@ -15360,7 +15407,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 503 */
+            /** @description A service behind Quak failed, try again later */
             503: {
                 headers: {
                     [name: string]: unknown;
@@ -15382,16 +15429,14 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 204 */
+            /** @description Done, no body */
             204: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/json": unknown;
-                };
+                content?: never;
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15400,7 +15445,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15409,7 +15454,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15429,8 +15474,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15455,7 +15500,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15464,7 +15509,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15484,8 +15529,8 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
-            200: {
+            /** @description Created */
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15509,8 +15554,8 @@ export interface operations {
                              *       "POST /v1/play/file",
                              *       "POST /v1/play/talk",
                              *       "POST /v1/play/stop",
-                             *       "POST /v1/plays/:uuid/stop",
-                             *       "POST /v1/plays/:uuid/replay"
+                             *       "POST /v1/plays/:id/stop",
+                             *       "POST /v1/plays/:id/replay"
                              *     ]
                              */
                             routes: string[];
@@ -15518,7 +15563,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15527,7 +15572,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15549,7 +15594,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15580,7 +15625,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15589,7 +15634,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15598,7 +15643,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15635,7 +15680,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15649,7 +15694,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15658,7 +15703,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15667,7 +15712,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;
@@ -15689,7 +15734,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Response for status 200 */
+            /** @description OK */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -15703,7 +15748,7 @@ export interface operations {
                     };
                 };
             };
-            /** @description Response for status 401 */
+            /** @description No API key, or the key or token is not valid */
             401: {
                 headers: {
                     [name: string]: unknown;
@@ -15712,7 +15757,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 403 */
+            /** @description The key may not do this (scope, role or plan) */
             403: {
                 headers: {
                     [name: string]: unknown;
@@ -15721,7 +15766,7 @@ export interface operations {
                     "application/json": components["schemas"]["Error"];
                 };
             };
-            /** @description Response for status 404 */
+            /** @description Not found, or not in this workspace */
             404: {
                 headers: {
                     [name: string]: unknown;

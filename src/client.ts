@@ -105,25 +105,25 @@ export class Quak {
   readonly plays: {
     /** List the plays of this key, newest first (`GET /v1/plays`); `keys: "all"` for the whole workspace. */
     list(query?: PlaysQuery): Promise<PlaysResponse>;
-    /** One play (`GET /v1/plays/{uuid}`). */
-    get(uuid: string, query?: PlayQuery): Promise<PlayItemResponse>;
+    /** One play (`GET /v1/plays/{id}`). */
+    get(id: string, query?: PlayQuery): Promise<PlayItemResponse>;
     /**
      * The newest play of this key (`GET /v1/plays/last`), `keys: "all"` for the workspace's; a 404 QuakError when there
      * is none.
      */
     last(query?: PlayQuery): Promise<PlayItemResponse>;
-    /** Stop one play while it runs (`POST /v1/plays/{uuid}/stop`). */
-    stop(uuid: string): Promise<PlayStopResponse>;
+    /** Stop one play while it runs (`POST /v1/plays/{id}/stop`). */
+    stop(id: string): Promise<PlayStopResponse>;
     /**
-     * Play a play's audio once more, on its speakers or the ones in `to` (`POST /v1/plays/{uuid}/replay`, `"last"`
+     * Play a play's audio once more, on its speakers or the ones in `to` (`POST /v1/plays/{id}/replay`, `"last"`
      * for your newest). While `canReplay` is true.
      */
-    replay(uuid: string, params?: ReplayParams): Promise<ReplayResponse>;
+    replay(id: string, params?: ReplayParams): Promise<ReplayResponse>;
     /**
-     * Keep a play's audio as a clip (`POST /v1/plays/{uuid}/save`, `"last"` for your newest). Needs a key with scope
+     * Keep a play's audio as a clip (`POST /v1/plays/{id}/save`, `"last"` for your newest). Needs a key with scope
      * `create`; while `canSave` is true.
      */
-    save(uuid: string, params?: SaveParams): Promise<SaveResponse>;
+    save(id: string, params?: SaveParams): Promise<SaveResponse>;
   };
 
   /** The key itself. */
@@ -229,13 +229,12 @@ export class Quak {
     };
     this.plays = {
       list: (query) => unwrap(api.GET("/v1/plays", { params: { query } })),
-      get: (uuid, query) => unwrap(api.GET("/v1/plays/{uuid}", { params: { path: { uuid }, query } })),
-      last: (query) => unwrap(api.GET("/v1/plays/{uuid}", { params: { path: { uuid: "last" }, query } })),
-      stop: (uuid) => unwrap(api.POST("/v1/plays/{uuid}/stop", { params: { path: { uuid } } })),
-      replay: (uuid, params = {}) =>
-        unwrap(api.POST("/v1/plays/{uuid}/replay", { params: { path: { uuid } }, body: params })),
-      save: (uuid, params = {}) =>
-        unwrap(api.POST("/v1/plays/{uuid}/save", { params: { path: { uuid } }, body: params })),
+      get: (id, query) => unwrap(api.GET("/v1/plays/{id}", { params: { path: { id }, query } })),
+      last: (query) => unwrap(api.GET("/v1/plays/{id}", { params: { path: { id: "last" }, query } })),
+      stop: (id) => unwrap(api.POST("/v1/plays/{id}/stop", { params: { path: { id } } })),
+      replay: (id, params = {}) =>
+        unwrap(api.POST("/v1/plays/{id}/replay", { params: { path: { id } }, body: params })),
+      save: (id, params = {}) => unwrap(api.POST("/v1/plays/{id}/save", { params: { path: { id } }, body: params })),
     };
     this.keys = {
       current: () => unwrap(api.GET("/v1/keys/current")),

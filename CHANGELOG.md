@@ -4,8 +4,15 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
-- Talk live: the warning before the credits run out is `ERROR_INSUFFICIENT_CREDITS` now, like the 402 of the other
-  plays; `ERROR_NOT_ENOUGH_CREDITS` is gone from the API
+**Breaking, following the API's cleanup of errors and answers (quak-api, 15.10.2026):**
+
+- Plays: `credits` is `creditsUsed`, `length` is `seconds` (also clips and sounds)
+- Talk live: `credits` in `onReady`, `onDone` and `onSkipped` is `creditsUsed`; the warning before the credits run out
+  is `ERROR_INSUFFICIENT_CREDITS` (was `ERROR_NOT_ENOUGH_CREDITS`)
+- Merged error codes, e.g. `ERROR_TRIGGER_NOT_FOUND` and the other `…_NOT_FOUND` are `ERROR_NOT_FOUND`, names taken are
+  `ERROR_NAME_TAKEN`, schema violations are 400 `ERROR_INVALID_PARAMS` (no 422 any more)
+- Raw client: the play routes are `/v1/plays/{id}`, clips `/v1/clips/{id}` (id or slug); lists have no `meta.count`;
+  `POST /v1/play-tokens` and `/v1/upload-tickets` answer 201; the user's routes answer in `{ data }`
 
 ## 0.9.15 - 2026-10-14
 

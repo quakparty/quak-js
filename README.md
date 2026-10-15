@@ -27,7 +27,7 @@ import { Quak } from "@quak/js";
 const quak = new Quak({ apiKey: process.env.QUAK_API_KEY });
 
 const { data: play } = await quak.play.text({ text: "Meeting in 5 minutes", to: "office" });
-console.log(play.status, play.credits, quak.credits);
+console.log(play.status, play.creditsUsed, quak.credits);
 ```
 
 Create an API key in the [web app](https://quak.party/app/settings/keys) under Settings → API keys (or with
@@ -133,7 +133,7 @@ const live = quak.talkLive({
   effect: "megaphone",
   source: await microphone({ onLevel: (level) => meter(level) }),
   onReady: ({ maxSeconds }) => console.log(`live, ${maxSeconds} s at most`),
-  onDone: ({ credits, balance }) => console.log(`${credits} credits, ${balance} left`),
+  onDone: ({ creditsUsed, balance }) => console.log(`${creditsUsed} credits, ${balance} left`),
   onError: (error) => console.error(error.code), // e.g. ERROR_PLAN_REQUIRED
 });
 
@@ -173,7 +173,7 @@ await quak.play.sound({
 ### clip
 
 Play one of the workspace's own clips from `quak.clips.list()`. A clip has to be there first: record or upload it in
-the [web app](https://quak.party/app/play/clip), save a play as a clip (`POST /v1/plays/{uuid}/save`), or upload one
+the [web app](https://quak.party/app/play/clip), save a play as a clip (`POST /v1/plays/{id}/save`), or upload one
 with the raw client (`POST /v1/clips`, see [Everything else](#everything-else-the-raw-client)).
 
 ```ts
@@ -505,13 +505,13 @@ if (data.status === "skipped") {
 ```
 
 Options: `body` (sent as JSON, wins over `query` on the same name), `query`, `baseUrl` (for a bare token) and
-`fetch`. Errors are QuakErrors, e.g. `ERROR_TRIGGER_NOT_FOUND` or `ERROR_ORIGIN_NOT_ALLOWED`. Triggers are managed in
+`fetch`. Errors are QuakErrors, e.g. `ERROR_NOT_FOUND` or `ERROR_ORIGIN_NOT_ALLOWED`. Triggers are managed in
 the web app only.
 
 ## Credits and limits
 
 Every authenticated answer carries the workspace's balance in `X-Quak-Credits`. The client keeps the latest one in
-`quak.credits` (`null` before the first request). What a play cost is in `play.credits`.
+`quak.credits` (`null` before the first request). What a play cost is in `play.creditsUsed`.
 
 When a client is set up, `quak.keys.current()` (`GET /v1/keys/current`, any key) checks the key in one call: its
 name and scope, the user and the workspace.

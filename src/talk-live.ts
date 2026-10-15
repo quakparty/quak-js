@@ -43,14 +43,15 @@ export type TalkLiveUpdate = Pick<TalkLiveParams, "effect" | "effectIntensity" |
 export type TalkLiveReady = {
   play: Play;
   /** Charged so far. */
-  credits: number;
+  creditsUsed: number;
   /** The workspace's credits. */
   balance: number;
   maxSeconds: number;
 };
 export type TalkLiveDone = {
   play: Play;
-  credits: number;
+  /** What the whole talk cost. */
+  creditsUsed: number;
   /** The workspace's credits after the charge. */
   balance: number;
   endedBy: "client" | "disconnected" | "limit" | "credits";
@@ -81,8 +82,8 @@ export type TalkLiveOptions = TalkLiveParams & {
   /** `LIMIT_SOON` 30 s before the time limit, `ERROR_INSUFFICIENT_CREDITS` before it ends for lack of credits. */
   onWarning?: ((warning: TalkLiveWarning) => void) | undefined;
   /** Quiet hours: nothing played, nothing charged, the socket closes. */
-  onSkipped?: ((skipped: { play: Play; credits: number }) => void) | undefined;
-  /** Reverb and outro are through: the play with its credits. */
+  onSkipped?: ((skipped: { play: Play; creditsUsed: number }) => void) | undefined;
+  /** Reverb and outro are through: the play with what it cost. */
   onDone?: ((done: TalkLiveDone) => void) | undefined;
   /** An error from the API (on start it also ends the talk, e.g. `ERROR_PLAN_REQUIRED`) or a dropped connection. */
   onError?: ((error: QuakError) => void) | undefined;
@@ -110,7 +111,7 @@ type Message =
   | ({ type: "ready" } & TalkLiveReady)
   | ({ type: "updated" } & TalkLiveUpdate)
   | ({ type: "warning" } & TalkLiveWarning)
-  | { type: "skipped"; play: Play; credits: number }
+  | { type: "skipped"; play: Play; creditsUsed: number }
   | ({ type: "done" } & TalkLiveDone)
   | { type: "error"; code: string; message: string; field?: string; requestId?: string }
   | { type: "ping" };
@@ -213,7 +214,7 @@ export function startTalkLive(url: string, apiKey: string | undefined, options: 
       case "skipped":
         finished = true;
         void stopSource();
-        onSkipped?.({ play: message.play, credits: message.credits });
+        onSkipped?.({ play: message.play, creditsUsed: message.creditsUsed });
         break;
       case "done": {
         finished = true;

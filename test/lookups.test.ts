@@ -39,7 +39,7 @@ describe("lookups", () => {
 
   test("throws a QuakError on errors", async () => {
     const { quak } = mockQuak({}, () =>
-      json({ error: { code: "ERROR_SERVICE_UNAVAILABLE", message: "voices are down" } }, 503),
+      json({ error: { code: "ERROR_TTS_VOICES_UNAVAILABLE", message: "voices are down" } }, 503),
     );
     const error = await quak.voices.list().catch((error: unknown) => error);
     expect(error).toMatchObject({ status: 503, message: "voices are down" });

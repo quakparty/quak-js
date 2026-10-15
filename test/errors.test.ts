@@ -85,7 +85,7 @@ describe("errors", () => {
         : json({ error: { code: "ERROR_NOT_FOUND", message: "no such clip" } }, 404),
     );
     expect((await unwrap(quak.api.GET("/v1/sounds"))).data).toEqual([]);
-    const error = (await unwrap(quak.api.DELETE("/v1/clips/{slug}", { params: { path: { slug: "x" } } })).catch(
+    const error = (await unwrap(quak.api.DELETE("/v1/clips/{id}", { params: { path: { id: "x" } } })).catch(
       (error: unknown) => error,
     )) as QuakError;
     expect(error.code).toBe("ERROR_NOT_FOUND");
