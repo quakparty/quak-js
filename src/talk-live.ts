@@ -78,7 +78,7 @@ export type TalkLiveOptions = TalkLiveParams & {
   onReady?: ((ready: TalkLiveReady) => void) | undefined;
   /** The current values after an `update()`. */
   onUpdated?: ((state: TalkLiveUpdate) => void) | undefined;
-  /** `LIMIT_SOON` 30 s before the time limit, `ERROR_NOT_ENOUGH_CREDITS` before it ends for lack of credits. */
+  /** `LIMIT_SOON` 30 s before the time limit, `ERROR_INSUFFICIENT_CREDITS` before it ends for lack of credits. */
   onWarning?: ((warning: TalkLiveWarning) => void) | undefined;
   /** Quiet hours: nothing played, nothing charged, the socket closes. */
   onSkipped?: ((skipped: { play: Play; credits: number }) => void) | undefined;

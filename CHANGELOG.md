@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- Talk live: the warning before the credits run out is `ERROR_INSUFFICIENT_CREDITS` now, like the 402 of the other
+  plays; `ERROR_NOT_ENOUGH_CREDITS` is gone from the API
+
 ## 0.9.15 - 2026-10-14
 
 - `QuakError.retryAfter`: the seconds from `Retry-After`, on 429 `ERROR_RATE_LIMITED` (the API's new rate limits)
