@@ -1810,7 +1810,8 @@ export interface components {
                 code: "ERROR_ALREADY_CONNECTED" | "ERROR_ALREADY_MEMBER" | "ERROR_AUDIO_FAILED" | "ERROR_AUDIO_GONE" | "ERROR_BILLING_ADDRESS_REQUIRED" | "ERROR_BILLING_UNAVAILABLE" | "ERROR_IDEMPOTENCY_IN_PROGRESS" | "ERROR_IDEMPOTENCY_KEY_REUSED" | "ERROR_INSUFFICIENT_CREDITS" | "ERROR_INSUFFICIENT_ROLE" | "ERROR_INSUFFICIENT_SCOPE" | "ERROR_INTEGRATION_UNAVAILABLE" | "ERROR_INTERNAL" | "ERROR_INVALID_API_KEY" | "ERROR_INVALID_MESSAGE" | "ERROR_INVALID_PARAMS" | "ERROR_INVALID_RETURN_TO" | "ERROR_INVALID_SIGNATURE" | "ERROR_INVALID_TOKEN" | "ERROR_INVITE_ACCEPTED" | "ERROR_INVITE_EXPIRED" | "ERROR_LAST_ADMIN" | "ERROR_MISSING_API_KEY" | "ERROR_NAME_TAKEN" | "ERROR_NOT_CONNECTED" | "ERROR_NOT_FOUND" | "ERROR_NOT_MEMBER" | "ERROR_NOT_REPLAYABLE" | "ERROR_NO_CHANGE" | "ERROR_NO_SCHEDULED_CHANGE" | "ERROR_NO_SUBSCRIPTION" | "ERROR_NO_WORKSPACE" | "ERROR_OAUTH_CANCELLED" | "ERROR_ORIGIN_NOT_ALLOWED" | "ERROR_OVER_PLAN_LIMITS" | "ERROR_PAYMENT_PAST_DUE" | "ERROR_PLAN_LIMIT_REACHED" | "ERROR_PLAN_REQUIRED" | "ERROR_PLAY_NOT_ACTIVE" | "ERROR_RATE_LIMITED" | "ERROR_SLACK_NOT_CONFIGURED" | "ERROR_SLUG_TAKEN" | "ERROR_SONOS_FAILED" | "ERROR_SONOS_NO_LOCATIONS" | "ERROR_SONOS_OAUTH_FAILED" | "ERROR_SONOS_RECONNECT_REQUIRED" | "ERROR_SONOS_SYNC_FAILED" | "ERROR_SUBSCRIPTION_CANCELLED" | "ERROR_SUBSCRIPTION_EXISTS" | "ERROR_TRIGGER_BROKEN" | "ERROR_TRIGGER_DISABLED" | "ERROR_TTS_FAILED" | "ERROR_TTS_VOICES_UNAVAILABLE" | "ERROR_UNABLE_TO_SAVE" | "ERROR_WORKSPACE_LIMIT" | "ERROR_WORKSPACE_MISMATCH";
                 message: string;
                 field?: string;
-                details?: unknown;
+                /** @description Extra facts for some codes, the shape depends on `code`: `ERROR_INSUFFICIENT_SCOPE` → `ErrorDetailsScope`, `ERROR_INSUFFICIENT_ROLE` → `ErrorDetailsRole`, `ERROR_PLAN_REQUIRED` → `ErrorDetailsPlanRequired`, `ERROR_PLAN_LIMIT_REACHED` → `ErrorDetailsPlanLimit`, `ERROR_OVER_PLAN_LIMITS` → `ErrorDetailsOverPlanLimits`, `ERROR_INVITE_EXPIRED` → `ErrorDetailsInviteExpired`, `ERROR_LAST_ADMIN` → `ErrorDetailsLastAdmin`, `ERROR_SONOS_RECONNECT_REQUIRED` → `ErrorDetailsSonosReconnect`, `ERROR_SONOS_FAILED` → `ErrorDetailsSonosFailed`. Other codes have none. */
+                details?: components["schemas"]["ErrorDetailsScope"] | components["schemas"]["ErrorDetailsRole"] | components["schemas"]["ErrorDetailsPlanRequired"] | components["schemas"]["ErrorDetailsPlanLimit"] | components["schemas"]["ErrorDetailsOverPlanLimits"] | components["schemas"]["ErrorDetailsInviteExpired"] | components["schemas"]["ErrorDetailsLastAdmin"] | components["schemas"]["ErrorDetailsSonosReconnect"] | components["schemas"]["ErrorDetailsSonosFailed"];
                 /** @description the X-Request-Id of the answer, to find the request in our log */
                 requestId?: string;
             };
@@ -2577,6 +2578,87 @@ export interface components {
             details: {
                 [key: string]: unknown;
             } | null;
+        };
+        ErrorDetailsScope: {
+            /**
+             * @description the scope the route needs, login: a login key
+             * @default play
+             * @enum {string}
+             */
+            required: "play" | "create" | "manage" | "login";
+        };
+        ErrorDetailsRole: {
+            /**
+             * @description the role the route needs
+             * @default MEMBER
+             * @enum {string}
+             */
+            required: "MEMBER" | "ADMIN";
+        };
+        ErrorDetailsPlanRequired: {
+            /** @description what needs the plan: an effect or ambience name, talkLive, slack */
+            feature: string;
+            /**
+             * @description the smallest plan with it
+             * @default home
+             * @enum {string}
+             */
+            requiredPlan: "home" | "family" | "team" | "business";
+        };
+        ErrorDetailsPlanLimit: {
+            /**
+             * @description what is counted
+             * @default locations
+             * @enum {string}
+             */
+            limit: "locations" | "users" | "triggers";
+            used: string | number;
+            allowed: string | number;
+            /** @description the smallest plan that allows more, null when none does */
+            requiredPlan: ("none" | "home" | "family" | "team" | "business") | null;
+        };
+        ErrorDetailsOverPlanLimits: {
+            /** @description what does not fit the smaller plan yet */
+            blockedBy: {
+                /**
+                 * @description what is counted
+                 * @default locations
+                 * @enum {string}
+                 */
+                limit: "locations" | "users" | "triggers";
+                used: string | number;
+                allowed: string | number;
+            }[];
+        };
+        ErrorDetailsInviteExpired: {
+            workspace: {
+                name: string;
+            };
+            /** @description whom to ask for a new one */
+            invitedBy: {
+                name: string;
+            } | null;
+        };
+        ErrorDetailsLastAdmin: {
+            /** @description the workspaces with you as the only admin */
+            workspaces: {
+                slug: string;
+                name: string;
+            }[];
+        };
+        ErrorDetailsSonosReconnect: {
+            /** @description the Sonos accounts to reconnect (GET /v1/sonos) */
+            sonos: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+            }[];
+        };
+        ErrorDetailsSonosFailed: {
+            play?: components["schemas"]["Play"];
+            /** @description POST /v1/play/stop: each speaker and its error */
+            players?: components["schemas"]["PlayPlayer"][];
         };
     };
     responses: never;

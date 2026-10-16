@@ -272,7 +272,38 @@
               "field": {
                 "type": "string"
               },
-              "details": {},
+              "details": {
+                "description": "Extra facts for some codes, the shape depends on `code`: `ERROR_INSUFFICIENT_SCOPE` → `ErrorDetailsScope`, `ERROR_INSUFFICIENT_ROLE` → `ErrorDetailsRole`, `ERROR_PLAN_REQUIRED` → `ErrorDetailsPlanRequired`, `ERROR_PLAN_LIMIT_REACHED` → `ErrorDetailsPlanLimit`, `ERROR_OVER_PLAN_LIMITS` → `ErrorDetailsOverPlanLimits`, `ERROR_INVITE_EXPIRED` → `ErrorDetailsInviteExpired`, `ERROR_LAST_ADMIN` → `ErrorDetailsLastAdmin`, `ERROR_SONOS_RECONNECT_REQUIRED` → `ErrorDetailsSonosReconnect`, `ERROR_SONOS_FAILED` → `ErrorDetailsSonosFailed`. Other codes have none.",
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsScope"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsRole"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsPlanRequired"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsPlanLimit"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsOverPlanLimits"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsInviteExpired"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsLastAdmin"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsSonosReconnect"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ErrorDetailsSonosFailed"
+                  }
+                ]
+              },
               "requestId": {
                 "description": "the X-Request-Id of the answer, to find the request in our log",
                 "type": "string"
@@ -3176,6 +3207,307 @@
           "connectedAt",
           "details"
         ]
+      },
+      "ErrorDetailsScope": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "default": "play",
+            "description": "the scope the route needs, login: a login key",
+            "type": "string",
+            "enum": [
+              "play",
+              "create",
+              "manage",
+              "login"
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "ErrorDetailsRole": {
+        "type": "object",
+        "properties": {
+          "required": {
+            "default": "MEMBER",
+            "description": "the role the route needs",
+            "type": "string",
+            "enum": [
+              "MEMBER",
+              "ADMIN"
+            ]
+          }
+        },
+        "required": [
+          "required"
+        ]
+      },
+      "ErrorDetailsPlanRequired": {
+        "type": "object",
+        "properties": {
+          "feature": {
+            "description": "what needs the plan: an effect or ambience name, talkLive, slack",
+            "type": "string"
+          },
+          "requiredPlan": {
+            "default": "home",
+            "description": "the smallest plan with it",
+            "type": "string",
+            "enum": [
+              "home",
+              "family",
+              "team",
+              "business"
+            ]
+          }
+        },
+        "required": [
+          "feature",
+          "requiredPlan"
+        ]
+      },
+      "ErrorDetailsPlanLimit": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "default": "locations",
+            "description": "what is counted",
+            "type": "string",
+            "enum": [
+              "locations",
+              "users",
+              "triggers"
+            ]
+          },
+          "used": {
+            "minimum": 0,
+            "anyOf": [
+              {
+                "format": "integer",
+                "default": 0,
+                "type": "string"
+              },
+              {
+                "minimum": 0,
+                "type": "integer"
+              }
+            ]
+          },
+          "allowed": {
+            "minimum": 0,
+            "anyOf": [
+              {
+                "format": "integer",
+                "default": 0,
+                "type": "string"
+              },
+              {
+                "minimum": 0,
+                "type": "integer"
+              }
+            ]
+          },
+          "requiredPlan": {
+            "description": "the smallest plan that allows more, null when none does",
+            "anyOf": [
+              {
+                "default": "none",
+                "type": "string",
+                "enum": [
+                  "none",
+                  "home",
+                  "family",
+                  "team",
+                  "business"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "limit",
+          "used",
+          "allowed",
+          "requiredPlan"
+        ]
+      },
+      "ErrorDetailsOverPlanLimits": {
+        "type": "object",
+        "properties": {
+          "blockedBy": {
+            "description": "what does not fit the smaller plan yet",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "default": "locations",
+                  "description": "what is counted",
+                  "type": "string",
+                  "enum": [
+                    "locations",
+                    "users",
+                    "triggers"
+                  ]
+                },
+                "used": {
+                  "minimum": 0,
+                  "anyOf": [
+                    {
+                      "format": "integer",
+                      "default": 0,
+                      "type": "string"
+                    },
+                    {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "allowed": {
+                  "minimum": 0,
+                  "anyOf": [
+                    {
+                      "format": "integer",
+                      "default": 0,
+                      "type": "string"
+                    },
+                    {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "limit",
+                "used",
+                "allowed"
+              ]
+            }
+          }
+        },
+        "required": [
+          "blockedBy"
+        ]
+      },
+      "ErrorDetailsInviteExpired": {
+        "type": "object",
+        "properties": {
+          "workspace": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "invitedBy": {
+            "description": "whom to ask for a new one",
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "workspace",
+          "invitedBy"
+        ]
+      },
+      "ErrorDetailsLastAdmin": {
+        "type": "object",
+        "properties": {
+          "workspaces": {
+            "description": "the workspaces with you as the only admin",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "slug",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "workspaces"
+        ]
+      },
+      "ErrorDetailsSonosReconnect": {
+        "type": "object",
+        "properties": {
+          "sonos": {
+            "description": "the Sonos accounts to reconnect (GET /v1/sonos)",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "slug",
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "sonos"
+        ]
+      },
+      "ErrorDetailsSonosFailed": {
+        "type": "object",
+        "properties": {
+          "play": {
+            "$ref": "#/components/schemas/Play"
+          },
+          "players": {
+            "description": "POST /v1/play/stop: each speaker and its error",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PlayPlayer"
+            }
+          }
+        }
       }
     },
     "securitySchemes": {
@@ -3411,7 +3743,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   },
                   "name": {
                     "type": "string",
@@ -3458,7 +3791,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   },
                   "name": {
                     "type": "string",
@@ -3516,7 +3850,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   },
                   "name": {
                     "type": "string",
@@ -3670,7 +4005,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -3692,7 +4028,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -3714,7 +4051,8 @@
                 "properties": {
                   "email": {
                     "format": "email",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -3801,7 +4139,8 @@
                 "properties": {
                   "verifyToken": {
                     "description": "Login verify token from /v1/user/login (length 30).",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "waitForConfirmation": {
                     "default": false,
@@ -3842,7 +4181,8 @@
                 "properties": {
                   "verifyToken": {
                     "description": "Login verify token from /v1/user/login (length 30).",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "waitForConfirmation": {
                     "default": false,
@@ -3883,7 +4223,8 @@
                 "properties": {
                   "verifyToken": {
                     "description": "Login verify token from /v1/user/login (length 30).",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "waitForConfirmation": {
                     "default": false,
@@ -4497,7 +4838,8 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "the new address, confirmed by a link to it"
+                    "description": "the new address, confirmed by a link to it",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -4520,7 +4862,8 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "the new address, confirmed by a link to it"
+                    "description": "the new address, confirmed by a link to it",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -4543,7 +4886,8 @@
                   "email": {
                     "type": "string",
                     "format": "email",
-                    "description": "the new address, confirmed by a link to it"
+                    "description": "the new address, confirmed by a link to it",
+                    "maxLength": 254
                   }
                 },
                 "required": [
@@ -4944,7 +5288,8 @@
                     "description": "IANA time zone, e.g. Europe/Berlin",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 },
                 "required": [
@@ -4969,7 +5314,8 @@
                     "description": "IANA time zone, e.g. Europe/Berlin",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 },
                 "required": [
@@ -4994,7 +5340,8 @@
                     "description": "IANA time zone, e.g. Europe/Berlin",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 },
                 "required": [
@@ -5353,7 +5700,8 @@
               "examples": [
                 "current"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           }
         ],
@@ -6031,7 +6379,10 @@
                         "message": "You are the only admin of Office: make someone else admin or delete the workspace first.",
                         "details": {
                           "workspaces": [
-                            "office"
+                            {
+                              "slug": "office",
+                              "name": "Office"
+                            }
                           ]
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -6181,21 +6532,24 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "unique, letters, digits and dashes",
                     "examples": [
                       "office"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "timeZone": {
                     "type": "string",
                     "description": "IANA time zone for quiet hours (and later schedules)",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "audioCacheMinutes": {
                     "type": "integer",
@@ -6246,21 +6600,24 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "unique, letters, digits and dashes",
                     "examples": [
                       "office"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "timeZone": {
                     "type": "string",
                     "description": "IANA time zone for quiet hours (and later schedules)",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "audioCacheMinutes": {
                     "type": "integer",
@@ -6311,21 +6668,24 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "unique, letters, digits and dashes",
                     "examples": [
                       "office"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "timeZone": {
                     "type": "string",
                     "description": "IANA time zone for quiet hours (and later schedules)",
                     "examples": [
                       "Europe/Berlin"
-                    ]
+                    ],
+                    "maxLength": 64
                   },
                   "audioCacheMinutes": {
                     "type": "integer",
@@ -6472,7 +6832,7 @@
                         "code": "ERROR_INSUFFICIENT_ROLE",
                         "message": "Only admins of the workspace can do this.",
                         "details": {
-                          "required": "admin"
+                          "required": "ADMIN"
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
                       }
@@ -6826,7 +7186,8 @@
                 "properties": {
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices"
+                    "description": "voice slug from /v1/voices",
+                    "maxLength": 100
                   },
                   "volume": {
                     "type": "integer",
@@ -6842,25 +7203,30 @@
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers, the default of `to`",
@@ -6961,14 +7327,16 @@
                     "description": "TTS language of multi-language voices when a play names none, e.g. en-GB or en",
                     "examples": [
                       "en-GB"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "quietHours": {
                     "type": "string",
                     "description": "when nothing plays, e.g. \"22-7\", \"su-th 22-7, fr-sa 23-9\" or \"none\"",
                     "examples": [
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   }
                 }
               },
@@ -7017,7 +7385,8 @@
                 "properties": {
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices"
+                    "description": "voice slug from /v1/voices",
+                    "maxLength": 100
                   },
                   "volume": {
                     "type": "integer",
@@ -7033,25 +7402,30 @@
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers, the default of `to`",
@@ -7152,14 +7526,16 @@
                     "description": "TTS language of multi-language voices when a play names none, e.g. en-GB or en",
                     "examples": [
                       "en-GB"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "quietHours": {
                     "type": "string",
                     "description": "when nothing plays, e.g. \"22-7\", \"su-th 22-7, fr-sa 23-9\" or \"none\"",
                     "examples": [
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   }
                 }
               },
@@ -7208,7 +7584,8 @@
                 "properties": {
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices"
+                    "description": "voice slug from /v1/voices",
+                    "maxLength": 100
                   },
                   "volume": {
                     "type": "integer",
@@ -7224,25 +7601,30 @@
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\"",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers, the default of `to`",
@@ -7343,14 +7725,16 @@
                     "description": "TTS language of multi-language voices when a play names none, e.g. en-GB or en",
                     "examples": [
                       "en-GB"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "quietHours": {
                     "type": "string",
                     "description": "when nothing plays, e.g. \"22-7\", \"su-th 22-7, fr-sa 23-9\" or \"none\"",
                     "examples": [
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   }
                 }
               },
@@ -8239,7 +8623,8 @@
                     "description": "who to invite",
                     "examples": [
                       "kim@example.com"
-                    ]
+                    ],
+                    "maxLength": 254
                   },
                   "role": {
                     "type": "string",
@@ -8283,7 +8668,8 @@
                     "description": "who to invite",
                     "examples": [
                       "kim@example.com"
-                    ]
+                    ],
+                    "maxLength": 254
                   },
                   "role": {
                     "type": "string",
@@ -8327,7 +8713,8 @@
                     "description": "who to invite",
                     "examples": [
                       "kim@example.com"
-                    ]
+                    ],
+                    "maxLength": 254
                   },
                   "role": {
                     "type": "string",
@@ -8992,7 +9379,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -9512,7 +9901,8 @@
                     "examples": [
                       "billing@example.com"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -9529,7 +9919,8 @@
                     "examples": [
                       "billing@example.com"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -9546,7 +9937,8 @@
                     "examples": [
                       "billing@example.com"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -10427,7 +10819,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -10926,7 +11320,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -11265,7 +11661,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -11783,7 +12181,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -12080,7 +12480,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -12540,7 +12942,8 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -12565,7 +12968,8 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -12590,7 +12994,8 @@
                     "description": "1 to 100 characters",
                     "examples": [
                       "Office"
-                    ]
+                    ],
+                    "maxLength": 100
                   }
                 },
                 "required": [
@@ -12746,7 +13151,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -12949,7 +13356,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -13240,7 +13649,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -13322,7 +13733,8 @@
                 "WORKSPACE,PLAYER,GROUP",
                 "LOCATION"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -13556,7 +13968,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "players": {
                     "type": "array",
@@ -13569,7 +13982,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "groups": {
                     "type": "array",
@@ -13582,7 +13996,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   }
                 }
               }
@@ -13602,7 +14017,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "players": {
                     "type": "array",
@@ -13615,7 +14031,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "groups": {
                     "type": "array",
@@ -13628,7 +14045,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   }
                 }
               }
@@ -13648,7 +14066,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "players": {
                     "type": "array",
@@ -13661,7 +14080,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   },
                   "groups": {
                     "type": "array",
@@ -13674,7 +14094,8 @@
                       [
                         "6f1c2e1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b"
                       ]
-                    ]
+                    ],
+                    "maxItems": 500
                   }
                 }
               }
@@ -13872,14 +14293,16 @@
                     "description": "a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name",
                     "examples": [
                       "Home"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a slug of its own (409 ERROR_SLUG_TAKEN if another speaker has it); without one the slug follows a new name. Default speakers move along",
                     "examples": [
                       "home"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               }
@@ -13893,14 +14316,16 @@
                     "description": "a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name",
                     "examples": [
                       "Home"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a slug of its own (409 ERROR_SLUG_TAKEN if another speaker has it); without one the slug follows a new name. Default speakers move along",
                     "examples": [
                       "home"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               }
@@ -13914,14 +14339,16 @@
                     "description": "a name of its own, unique among the workspace's locations (409 ERROR_NAME_TAKEN); the sync keeps it instead of the Sonos name",
                     "examples": [
                       "Home"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a slug of its own (409 ERROR_SLUG_TAKEN if another speaker has it); without one the slug follows a new name. Default speakers move along",
                     "examples": [
                       "home"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               }
@@ -14090,7 +14517,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -14301,22 +14730,27 @@
                     "description": "display name, unique per user",
                     "examples": [
                       "Erdgeschoss"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "default: made from the name; taken by another speaker → 409"
+                    "description": "default: made from the name; taken by another speaker → 409",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -14372,22 +14806,27 @@
                     "description": "display name, unique per user",
                     "examples": [
                       "Erdgeschoss"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "default: made from the name; taken by another speaker → 409"
+                    "description": "default: made from the name; taken by another speaker → 409",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -14443,22 +14882,27 @@
                     "description": "display name, unique per user",
                     "examples": [
                       "Erdgeschoss"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "default: made from the name; taken by another speaker → 409"
+                    "description": "default: made from the name; taken by another speaker → 409",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -14887,22 +15331,27 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; default speakers that use the group move along"
+                    "description": "new slug; default speakers that use the group move along",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "replaces all speakers of the group",
@@ -14941,22 +15390,27 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; default speakers that use the group move along"
+                    "description": "new slug; default speakers that use the group move along",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "replaces all speakers of the group",
@@ -14995,22 +15449,27 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; default speakers that use the group move along"
+                    "description": "new slug; default speakers that use the group move along",
+                    "maxLength": 64
                   },
                   "speakers": {
                     "anyOf": [
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "replaces all speakers of the group",
@@ -15403,11 +15862,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -15443,11 +15905,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -15483,11 +15948,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -15728,11 +16196,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -15768,11 +16239,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -15808,11 +16282,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers as array or CSV, no groups",
@@ -16044,7 +16521,8 @@
                 "duck",
                 "cash register"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16058,7 +16536,8 @@
                 "INTRO,OUTRO",
                 "ANIMALS,CASH"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 500
             }
           },
           {
@@ -16291,7 +16770,8 @@
                 "google",
                 "openai"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16304,7 +16784,8 @@
                 "MALE",
                 "female"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16317,7 +16798,8 @@
                 "en-GB",
                 "en-GB,de-DE"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16330,7 +16812,8 @@
                 "eleven_v3",
                 "chirp3-hd,gemini-2.5-flash-tts"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16343,7 +16826,8 @@
                 "true",
                 "false"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -16398,7 +16882,8 @@
                 "de",
                 "de,en"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           }
         ],
@@ -16578,7 +17063,8 @@
                 "de",
                 "de,en"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           }
         ],
@@ -17126,14 +17612,16 @@
                   },
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices, default: the workspace default"
+                    "description": "voice slug from /v1/voices, default: the workspace default",
+                    "maxLength": 100
                   },
                   "language": {
                     "type": "string",
                     "description": "multi-language voices only: the language to speak, e.g. en or en-GB",
                     "examples": [
                       "en"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "intro": {
                     "type": "string",
@@ -17141,14 +17629,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "type": "integer",
@@ -17284,11 +17774,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -17305,7 +17798,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "type": "boolean",
@@ -17398,14 +17892,16 @@
                   },
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices, default: the workspace default"
+                    "description": "voice slug from /v1/voices, default: the workspace default",
+                    "maxLength": 100
                   },
                   "language": {
                     "type": "string",
                     "description": "multi-language voices only: the language to speak, e.g. en or en-GB",
                     "examples": [
                       "en"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "intro": {
                     "type": "string",
@@ -17413,14 +17909,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -17432,7 +17930,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -17566,7 +18065,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -17586,7 +18086,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -17602,11 +18104,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -17623,7 +18128,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -17652,7 +18158,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -17746,14 +18253,16 @@
                   },
                   "voice": {
                     "type": "string",
-                    "description": "voice slug from /v1/voices, default: the workspace default"
+                    "description": "voice slug from /v1/voices, default: the workspace default",
+                    "maxLength": 100
                   },
                   "language": {
                     "type": "string",
                     "description": "multi-language voices only: the language to speak, e.g. en or en-GB",
                     "examples": [
                       "en"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "intro": {
                     "type": "string",
@@ -17761,14 +18270,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -17780,7 +18291,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -17914,7 +18426,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -17934,7 +18447,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -17950,11 +18465,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -17971,7 +18489,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -18000,7 +18519,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -18097,8 +18617,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -18184,8 +18703,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -18281,8 +18799,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -18463,7 +18980,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -18500,7 +19019,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -18597,7 +19171,8 @@
                     "default": "File",
                     "description": "the spoken audio, max. 10 MB, any common audio format (browser MediaRecorder WebM/Opus, iOS M4A, WAV etc.), mono is enough, Opus or M4A keep the upload small",
                     "type": "string",
-                    "format": "binary"
+                    "format": "binary",
+                    "maxLength": 100
                   },
                   "intro": {
                     "type": "string",
@@ -18605,14 +19180,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -18624,7 +19201,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -18812,11 +19390,14 @@
                               ]
                             }
                           }
-                        }
+                        },
+                        "maxItems": 100
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "change the voice effect and the ambience during the take, instead of effect, effectIntensity, ambience and ambienceIntensity (never together): a JSON array of up to 100 changes {\"at\": seconds since the start of the recording, \"effect\"?, \"effectIntensity\"?, \"ambience\"?, \"ambienceIntensity\"?}, ascending. A change sets only what it names, the rest stays; before the first change no effect and no ambience, intensities medium. Faster, slower and reverse work for parts too (the take gets longer or shorter, the ambience is not stretched).",
@@ -18833,7 +19414,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -18853,7 +19435,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -18869,11 +19453,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -18890,7 +19477,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -18919,7 +19507,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -18999,8 +19588,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -19082,8 +19670,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -19175,8 +19762,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -19353,7 +19939,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -19390,7 +19978,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -19512,7 +20155,8 @@
                     "description": "sound slug from /v1/sounds",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "type": "boolean",
@@ -19527,14 +20171,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "type": "integer",
@@ -19663,11 +20309,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -19684,7 +20333,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "type": "boolean",
@@ -19766,7 +20416,8 @@
                     "description": "sound slug from /v1/sounds",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "anyOf": [
@@ -19792,14 +20443,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -19811,7 +20464,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -19927,7 +20581,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -19947,7 +20602,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -19963,11 +20620,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -19984,7 +20644,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -20013,7 +20674,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -20096,7 +20758,8 @@
                     "description": "sound slug from /v1/sounds",
                     "examples": [
                       "quakquak"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "anyOf": [
@@ -20122,14 +20785,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -20141,7 +20806,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -20257,7 +20923,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -20277,7 +20944,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -20293,11 +20962,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -20314,7 +20986,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -20343,7 +21016,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -20433,8 +21107,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -20517,8 +21190,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -20611,8 +21283,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -20790,7 +21461,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -20827,7 +21500,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -20925,7 +21653,8 @@
                     "description": "clip slug from /v1/clips",
                     "examples": [
                       "front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "type": "boolean",
@@ -20940,14 +21669,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "type": "integer",
@@ -21076,11 +21807,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -21097,7 +21831,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "type": "boolean",
@@ -21123,7 +21858,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21179,7 +21913,8 @@
                     "description": "clip slug from /v1/clips",
                     "examples": [
                       "front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "anyOf": [
@@ -21205,14 +21940,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -21224,7 +21961,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -21340,7 +22078,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -21360,7 +22099,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -21376,11 +22117,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -21397,7 +22141,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -21426,7 +22171,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -21453,7 +22199,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21509,7 +22254,8 @@
                     "description": "clip slug from /v1/clips",
                     "examples": [
                       "front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "process": {
                     "anyOf": [
@@ -21535,14 +22281,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -21554,7 +22302,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -21670,7 +22419,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -21690,7 +22440,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -21706,11 +22458,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -21727,7 +22482,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -21756,7 +22512,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -21783,7 +22540,6 @@
                     ]
                   }
                 },
-                "additionalProperties": false,
                 "required": [
                   "clip"
                 ]
@@ -21846,8 +22602,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -21930,8 +22685,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22024,8 +22778,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -22203,7 +22956,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -22240,7 +22995,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -22337,7 +23147,8 @@
                     "default": "File",
                     "description": "the audio file, max. 10 MB and 180 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small",
                     "type": "string",
-                    "format": "binary"
+                    "format": "binary",
+                    "maxLength": 100
                   },
                   "intro": {
                     "type": "string",
@@ -22345,14 +23156,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -22364,7 +23177,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -22498,7 +23312,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -22518,7 +23333,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -22534,11 +23351,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -22555,7 +23375,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -22584,7 +23405,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -22668,8 +23490,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -22751,8 +23572,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -22844,8 +23664,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -23022,7 +23841,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -23059,7 +23880,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -23158,7 +24034,8 @@
                     "description": "http(s) URL of an audio file",
                     "examples": [
                       "https://example.com/news.mp3"
-                    ]
+                    ],
+                    "maxLength": 2048
                   },
                   "process": {
                     "type": "boolean",
@@ -23173,14 +24050,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "type": "integer",
@@ -23309,11 +24188,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -23330,7 +24212,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "type": "boolean",
@@ -23413,7 +24296,8 @@
                     "description": "http(s) URL of an audio file",
                     "examples": [
                       "https://example.com/news.mp3"
-                    ]
+                    ],
+                    "maxLength": 2048
                   },
                   "process": {
                     "anyOf": [
@@ -23439,14 +24323,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -23458,7 +24344,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -23574,7 +24461,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -23594,7 +24482,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -23610,11 +24500,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -23631,7 +24524,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -23660,7 +24554,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -23744,7 +24639,8 @@
                     "description": "http(s) URL of an audio file",
                     "examples": [
                       "https://example.com/news.mp3"
-                    ]
+                    ],
+                    "maxLength": 2048
                   },
                   "process": {
                     "anyOf": [
@@ -23770,14 +24666,16 @@
                     "examples": [
                       "quakquak",
                       "clip:front-door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "outro": {
                     "type": "string",
                     "description": "sound slug, \"clip:<slug>\" for one of your clips or \"none\", default: the workspace default",
                     "examples": [
                       "none"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "gap": {
                     "anyOf": [
@@ -23789,7 +24687,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "pause between intro, content and outro in ms: 0, 100, ..., 1000, default: the workspace default",
@@ -23905,7 +24804,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -23925,7 +24825,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -23941,11 +24843,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -23962,7 +24867,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -23991,7 +24897,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -24081,8 +24988,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -24164,8 +25070,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -24257,8 +25162,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -24435,7 +25339,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -24472,7 +25378,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -24570,11 +25531,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -24611,11 +25575,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -24652,11 +25619,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -24943,7 +25913,8 @@
                 "TALK",
                 "TEXT,TALK"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -24956,7 +25927,8 @@
                 "CLI",
                 "CLI,WEB"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25013,8 +25985,7 @@
                   "required": [
                     "data",
                     "meta"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Your history": {
@@ -25217,7 +26188,8 @@
                 "TALK",
                 "TEXT,TALK"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25230,7 +26202,8 @@
                 "CLI",
                 "CLI,WEB"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25264,8 +26237,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "One play": {
@@ -25460,7 +26432,8 @@
                 "TALK",
                 "TEXT,TALK"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25473,7 +26446,8 @@
                 "CLI",
                 "CLI,WEB"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25507,8 +26481,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Stopped": {
@@ -25733,7 +26706,8 @@
                 "TALK",
                 "TEXT,TALK"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25746,7 +26720,8 @@
                 "CLI",
                 "CLI,WEB"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -25786,11 +26761,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date"
+                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "optional, derived from the name"
+                    "description": "optional, derived from the name",
+                    "maxLength": 64
                   }
                 }
               },
@@ -25820,11 +26797,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date"
+                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "optional, derived from the name"
+                    "description": "optional, derived from the name",
+                    "maxLength": 64
                   }
                 }
               },
@@ -25854,11 +26833,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date"
+                    "description": "display name, unique per user; default: the first words of the text, else the kind of play and its date",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "optional, derived from the name"
+                    "description": "optional, derived from the name",
+                    "maxLength": 64
                   }
                 }
               },
@@ -26131,7 +27112,8 @@
                 "TALK",
                 "TEXT,TALK"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -26144,7 +27126,8 @@
                 "CLI",
                 "CLI,WEB"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           },
           {
@@ -26211,11 +27194,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -26232,7 +27218,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "type": "boolean",
@@ -26303,7 +27290,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -26323,7 +27311,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -26339,11 +27329,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -26360,7 +27353,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -26389,7 +27383,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -26461,7 +27456,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "10-100, default: the workspace's volume. 10 is the quietest Sonos plays an announcement, below that every volume sounds the same.",
@@ -26481,7 +27477,9 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same as a JSON string (multipart)"
+                        "description": "the same as a JSON string (multipart)",
+                        "x-quak-json-string": true,
+                        "maxLength": 10000
                       }
                     ],
                     "description": "volume per speaker, overrides volume for the players of that speaker: an object speaker slug → 10-100 (multipart: a JSON string). The most specific speaker wins per player (room before group, location, \"all\"), players without an entry get volume. The volume each player got is in params.volumeBySpeaker.",
@@ -26497,11 +27495,14 @@
                       {
                         "type": "array",
                         "items": {
-                          "type": "string"
-                        }
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "maxItems": 100
                       },
                       {
-                        "type": "string"
+                        "type": "string",
+                        "maxLength": 2000
                       }
                     ],
                     "description": "speaker slugs from GET /v1/speakers (rooms, groups, locations, all) as array or CSV, default: the workspace's default speakers",
@@ -26518,7 +27519,8 @@
                     "examples": [
                       "none",
                       "22-7"
-                    ]
+                    ],
+                    "maxLength": 200
                   },
                   "priority": {
                     "anyOf": [
@@ -26547,7 +27549,8 @@
                       },
                       {
                         "type": "string",
-                        "description": "the same number as a string (query, multipart)"
+                        "description": "the same number as a string (query, multipart)",
+                        "maxLength": 100
                       }
                     ],
                     "description": "seconds until the play goes to Sonos, 0-60, decimals allowed; the audio is made right away, the answer is 202 with status SCHEDULED and startsAt, credits are charged at the start. Stop it with POST /v1/plays/:id/stop before. Not with preview or talk live.",
@@ -26622,8 +27625,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Skipped: quiet hours": {
@@ -26709,8 +27711,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Sent to the speakers": {
@@ -26806,8 +27807,7 @@
                   },
                   "required": [
                     "data"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "examples": {
                   "Scheduled with startIn": {
@@ -27049,7 +28049,62 @@
                         "details": {
                           "play": {
                             "id": "11413f47-0bed-49a6-be1c-d3468da4d239",
-                            "status": "FAILED"
+                            "type": "SOUND",
+                            "status": "FAILED",
+                            "skipReason": null,
+                            "preview": false,
+                            "params": {
+                              "to": [
+                                "kitchen"
+                              ],
+                              "volume": 30,
+                              "intro": "quakquak",
+                              "outro": "none",
+                              "gap": 200,
+                              "effect": "none",
+                              "effectIntensity": "medium",
+                              "ambience": "none",
+                              "ambienceIntensity": "medium",
+                              "quietHours": "22-7",
+                              "priority": false,
+                              "preview": false,
+                              "sound": "quakquak"
+                            },
+                            "players": [
+                              {
+                                "id": "4e90028c-eb5f-4a3b-bef9-995a16314c3e",
+                                "slug": "kitchen",
+                                "name": "Kitchen",
+                                "status": "FAILED",
+                                "error": "the speaker is offline",
+                                "startedAt": "2026-09-28T07:15:03.020Z",
+                                "endedAt": null
+                              }
+                            ],
+                            "audioUrl": "https://api.quak.party/audio/b3b54c4fb8876337529f32cd3113b94d42734334.mp3",
+                            "seconds": 4,
+                            "creditsUsed": 6,
+                            "fromCache": false,
+                            "test": false,
+                            "startsAt": null,
+                            "client": {
+                              "platform": "CLI",
+                              "name": "cli",
+                              "version": "0.9.5"
+                            },
+                            "canReplay": true,
+                            "canSave": true,
+                            "user": {
+                              "name": "Mike",
+                              "email": "mike@example.com"
+                            },
+                            "key": {
+                              "name": null,
+                              "type": "LOGIN",
+                              "app": null
+                            },
+                            "requestId": "3f6c2a1e-8b4d-4e7a-9c15-2d0b7e9a4f61",
+                            "createdAt": "2026-09-28T07:15:02.184Z"
                           }
                         },
                         "requestId": "b2f41255-3619-44de-8697-25dd781fcb78"
@@ -27274,21 +28329,24 @@
                     "default": "File",
                     "description": "the audio file, max. 10 MB and 180 s, any common audio format (MP3, M4A/AAC, Opus, WAV, FLAC etc.), mono is enough, compressed formats keep the upload small",
                     "type": "string",
-                    "format": "binary"
+                    "format": "binary",
+                    "maxLength": 100
                   },
                   "name": {
                     "type": "string",
                     "description": "display name, unique per user; default: the file name without extension",
                     "examples": [
                       "Front door"
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "optional, derived from the name",
                     "examples": [
                       "front-door"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 },
                 "required": [
@@ -27551,11 +28609,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; intro and outro defaults that use the clip move along"
+                    "description": "new slug; intro and outro defaults that use the clip move along",
+                    "maxLength": 64
                   }
                 }
               },
@@ -27581,11 +28641,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; intro and outro defaults that use the clip move along"
+                    "description": "new slug; intro and outro defaults that use the clip move along",
+                    "maxLength": 64
                   }
                 }
               },
@@ -27611,11 +28673,13 @@
                 "properties": {
                   "name": {
                     "type": "string",
-                    "description": "new display name, unique per user"
+                    "description": "new display name, unique per user",
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
-                    "description": "new slug; intro and outro defaults that use the clip move along"
+                    "description": "new slug; intro and outro defaults that use the clip move along",
+                    "maxLength": 64
                   }
                 }
               },
@@ -32043,7 +33107,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -32800,21 +33866,24 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               },
@@ -32847,21 +33916,24 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               },
@@ -32894,21 +33966,24 @@
                 "type": "object",
                 "properties": {
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "description": "play (default), create or manage, never more than the key that makes the request",
                     "examples": [
                       "play"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               },
@@ -33269,14 +34344,16 @@
                 "properties": {
                   "name": {
                     "description": "a new name keeps the slug",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "enum": [
@@ -33318,14 +34395,16 @@
                 "properties": {
                   "name": {
                     "description": "a new name keeps the slug",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "enum": [
@@ -33367,14 +34446,16 @@
                 "properties": {
                   "name": {
                     "description": "a new name keeps the slug",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   },
                   "slug": {
                     "description": "lowercase letters, digits and dashes (other characters are converted), unique among your keys",
                     "examples": [
                       "home-assistant"
                     ],
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 64
                   },
                   "scope": {
                     "enum": [
@@ -34097,7 +35178,8 @@
                 "0",
                 "1"
               ],
-              "type": "string"
+              "type": "string",
+              "maxLength": 100
             }
           }
         ],
@@ -34243,14 +35325,16 @@
                     "examples": [
                       "Formrausch",
                       null
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a new slug, unique among the workspace's Sonos accounts (409 ERROR_SLUG_TAKEN); an account is no speaker, its slug does not work in `to`",
                     "examples": [
                       "formrausch"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               },
@@ -34289,14 +35373,16 @@
                     "examples": [
                       "Formrausch",
                       null
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a new slug, unique among the workspace's Sonos accounts (409 ERROR_SLUG_TAKEN); an account is no speaker, its slug does not work in `to`",
                     "examples": [
                       "formrausch"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               },
@@ -34335,14 +35421,16 @@
                     "examples": [
                       "Formrausch",
                       null
-                    ]
+                    ],
+                    "maxLength": 100
                   },
                   "slug": {
                     "type": "string",
                     "description": "a new slug, unique among the workspace's Sonos accounts (409 ERROR_SLUG_TAKEN); an account is no speaker, its slug does not work in `to`",
                     "examples": [
                       "formrausch"
-                    ]
+                    ],
+                    "maxLength": 64
                   }
                 }
               },
@@ -35052,7 +36140,9 @@
                         "details": {
                           "sonos": [
                             {
-                              "error": "invalid_grant"
+                              "id": "6f1c2a9e-3b7d-4e21-9a5c-0d8e4f7b1a23",
+                              "slug": "kamisury",
+                              "name": "KaMiSuRy"
                             }
                           ]
                         },
@@ -35863,7 +36953,8 @@
                 "properties": {
                   "workspace": {
                     "description": "slug or id of the workspace the app gets, default: the one of the request",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               }
@@ -35874,7 +36965,8 @@
                 "properties": {
                   "workspace": {
                     "description": "slug or id of the workspace the app gets, default: the one of the request",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               }
@@ -35885,7 +36977,8 @@
                 "properties": {
                   "workspace": {
                     "description": "slug or id of the workspace the app gets, default: the one of the request",
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100
                   }
                 }
               }

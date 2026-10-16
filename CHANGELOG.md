@@ -4,6 +4,9 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+- OpenAPI snapshot updated: upper bounds for every request field, error `details` typed per code
+  (`ErrorDetailsScope`, `ErrorDetailsPlanRequired` etc. under `components["schemas"]`)
+
 - Opt-in `Idempotency-Key`: `new Quak({ idempotency: true })` or `quak.play.text(params, { idempotencyKey })` (also
   the other plays, `plays.replay()` and `plays.save()`). Retries after a network error, a 503 or
   `ERROR_IDEMPOTENCY_IN_PROGRESS` with the same key, up to 3 times; the answer has `replayed: true` when the API repeated
