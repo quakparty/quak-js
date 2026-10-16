@@ -4,6 +4,8 @@ All notable changes to `@quak/js`. 0.9.x follows the API while it still changes.
 
 ## Unreleased
 
+## 0.9.18 - 2026-10-16
+
 - OpenAPI snapshot updated: upper bounds for every request field, error `details` typed per code
   (`ErrorDetailsScope`, `ErrorDetailsPlanRequired` etc. under `components["schemas"]`)
 
